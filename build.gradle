@@ -13,10 +13,14 @@ repositories {
     mavenCentral()
 }
 
+configurations {
+    all*.exclude group: "org.slf4j", module: "slf4j-log4j12"
+}
+
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     compile 'org.eclipse.jgit:org.eclipse.jgit.pgm:5.4.0.201906121030-r'
     implementation 'io.vavr:vavr:1.0.0-alpha-2'
-    
+
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }

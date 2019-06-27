@@ -1,6 +1,5 @@
 package pl.potat0x.potapaas.potapaasservice.util;
 
-import io.vavr.control.Either;
 import org.assertj.core.api.Condition;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -28,15 +27,13 @@ public class GitClonerTest {
         GitCloner cloner = new GitCloner(temporaryReposDirectory.toAbsolutePath().toString());
         String repoLink = "https://github.com/spotify/comet-core";
 
+        String clonedRepoDir = cloner.cloneBranch(repoLink, "master").get();
+
         Condition<String> containsGitRepo = new Condition<>(
                 path -> Paths.get(path, ".git").toFile().isDirectory(),
                 "contains .git directory"
         );
-
-        Either<String, String> result = cloner.cloneBranch(repoLink, "master");
-
-        assertThat(result.isRight()).isTrue();
-        assertThat(result.getOrElse("/dev/null")).satisfies(containsGitRepo);
+        assertThat(clonedRepoDir).satisfies(containsGitRepo);
     }
 
     @AfterClass

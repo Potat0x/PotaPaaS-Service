@@ -37,12 +37,19 @@ public class GitClonerTest {
         );
         assertThat(clonedRepoDir).satisfies(containsGitRepo);
     }
-    
+
     @Test(expected = NoSuchElementException.class)
     public void shouldGetCloneErrorDueToInvalidBranchName() {
         String repoUrl = "https://github.com/spotify/comet-core";
 
         cloner.cloneBranch(repoUrl, "this_branch_does_not_exist").get();
+    }
+
+    @Test(expected = NoSuchElementException.class)
+    public void shouldGetCloneErrorDueToInvalidRepoUrl() {
+        String invalidRepoUrl = "https://github.com/potat0x/invalid-repo-url";
+
+        cloner.cloneBranch(invalidRepoUrl, "master").get();
     }
 
     @AfterClass

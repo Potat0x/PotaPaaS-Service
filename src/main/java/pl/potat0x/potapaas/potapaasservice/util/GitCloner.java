@@ -24,13 +24,17 @@ public final class GitCloner {
 
         String clonedRepoDirectory = preparePathForClonedRepository(repositoryUri);
         try {
-            Git.cloneRepository()
+            Git repo = Git.cloneRepository()
                     .setURI(repositoryUri)
                     .setBranch(branchName)
                     .setDirectory(new File(clonedRepoDirectory))
                     .call();
 
-            return Either.right(clonedRepoDirectory);
+            if (repo.branchList().call().size() > 0) {
+                return Either.right(clonedRepoDirectory);
+            }
+
+            return Either.left("branch \"" + branchName + "\" not found in " + repositoryUri);
         } catch (GitAPIException e) {
             e.printStackTrace();
             return Either.left(e.getMessage());

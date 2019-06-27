@@ -10,30 +10,39 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.NoSuchElementException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class GitClonerTest {
 
     private static Path temporaryReposDirectory;
+    private static GitCloner cloner;
 
     @BeforeClass
     public static void createTemporaryReposDirectory() throws IOException {
         temporaryReposDirectory = Files.createTempDirectory("potapaas_test_dir");
+        cloner = new GitCloner(temporaryReposDirectory.toAbsolutePath().toString());
     }
 
     @Test
     public void shouldClonePublicRepo() {
-        GitCloner cloner = new GitCloner(temporaryReposDirectory.toAbsolutePath().toString());
-        String repoLink = "https://github.com/spotify/comet-core";
+        String repoUrl = "https://github.com/spotify/comet-core";
 
-        String clonedRepoDir = cloner.cloneBranch(repoLink, "master").get();
+        String clonedRepoDir = cloner.cloneBranch(repoUrl, "master").get();
 
         Condition<String> containsGitRepo = new Condition<>(
                 path -> Paths.get(path, ".git").toFile().isDirectory(),
                 "contains .git directory"
         );
         assertThat(clonedRepoDir).satisfies(containsGitRepo);
+    }
+    
+    @Test(expected = NoSuchElementException.class)
+    public void shouldGetCloneErrorDueToInvalidBranchName() {
+        String repoUrl = "https://github.com/spotify/comet-core";
+
+        cloner.cloneBranch(repoUrl, "this_branch_does_not_exist").get();
     }
 
     @AfterClass

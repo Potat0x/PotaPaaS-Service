@@ -28,6 +28,7 @@ final class DockerImageManager {
             Path temporaryBuildDir = createTempDirectory();
             copyAppSourcesToTempDirectory(temporaryBuildDir);
             copyDockerfileToTempDirectory(temporaryBuildDir);
+
             String imageId = buildDockerImage(temporaryBuildDir);
             deleteTempDirectory(temporaryBuildDir);
             return Either.right(imageId);
@@ -59,7 +60,7 @@ final class DockerImageManager {
     }
 
     private Path getDockerfilePath() {
-        return Path.of(DockerImageManager.class.getResource("/test/dockerfiles/NodeJS").getPath());
+        return Path.of(DockerImageManager.class.getResource("/test/samples/nodejs/Dockerfile").getPath());
     }
 
     private Path createTempDirectory() throws IOException {

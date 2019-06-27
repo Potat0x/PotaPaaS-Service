@@ -16,7 +16,7 @@ public final class GitCloner {
         if (new File(targetPath).isDirectory()) {
             this.targetPath = targetPath;
         } else {
-            throw new RuntimeException(targetPath + " is not directory");
+            throw new IllegalArgumentException(targetPath + " is not directory");
         }
     }
 

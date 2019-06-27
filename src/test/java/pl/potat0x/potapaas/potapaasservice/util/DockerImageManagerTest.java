@@ -7,12 +7,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class DockerImageManagerTest {
 
+    //todo: add helloworld source code to resources/test
+    //todo: https://github.com/assertj/assertj-vavr
+
     @Test
     public void shouldBuildAndDeleteDockerImage() {
-        DockerImageManager imageManager = new DockerImageManager("/home/ziemniak/programowanie/docker-test/expressjs");//todo: add helloworld app to resources/test
+        DockerImageManager imageManager = new DockerImageManager("/home/ziemniak/programowanie/docker-test/expressjs");
 
-        Either<String, String> e = imageManager.buildImage();
-        String imageId = e.getOrElse("image build failed!");
+        Either<String, String> result = imageManager.buildImage();
+        String imageId = result.getOrElse("image build failed!");
 
         assertThat(imageManager.checkIfImageExists(imageId)).isEqualTo(Either.right(true));
         assertThat(imageManager.removeImage(imageId)).isEqualTo(Either.right(true));

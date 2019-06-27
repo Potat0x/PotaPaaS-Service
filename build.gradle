@@ -20,7 +20,7 @@ configurations {
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     compile 'org.eclipse.jgit:org.eclipse.jgit.pgm:5.4.0.201906121030-r'
-    implementation 'io.vavr:vavr:1.0.0-alpha-2'
+    implementation 'io.vavr:vavr:0.10.0'
 
     implementation group: 'com.spotify', name: 'docker-client', version: '8.16.0'
     implementation 'org.glassfish.jersey.inject:jersey-hk2:2.27'

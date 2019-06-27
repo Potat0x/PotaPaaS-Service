@@ -1,5 +1,6 @@
 package pl.potat0x.potapaas.potapaasservice.util;
 
+
 import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.exceptions.DockerException;
@@ -11,23 +12,31 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 
+import static io.vavr.API.*;
+
 final class DockerImageManager {
 
-    private final Path dockerfilePath;
+    public enum ImageType {
+        NODEJS
+    }
+
     private final Path applicationSrcDir;
     private final DockerClient docker;
+    private final String imageTypeName;
 
-    public DockerImageManager(String applicationSrcDirectory) {
-        docker = new DefaultDockerClient("http://127.0.0.1:2375");
+    public DockerImageManager(String dockerClientUri, String applicationSrcDirectory, ImageType imageType) {
+        docker = new DefaultDockerClient(dockerClientUri);
         applicationSrcDir = Path.of(applicationSrcDirectory);
-        dockerfilePath = getDockerfilePath();
+        imageTypeName = Match(imageType).of(
+                Case($(ImageType.NODEJS), "nodejs")
+        );
     }
 
     public Either<String, String> buildImage() {
         try {
             Path temporaryBuildDir = createTempDirectory();
             copyAppSourcesToTempDirectory(temporaryBuildDir);
-            copyDockerfileToTempDirectory(temporaryBuildDir);
+            copyDockerfileAndDockerignoreToTempDirectory(temporaryBuildDir);
 
             String imageId = buildDockerImage(temporaryBuildDir);
             deleteTempDirectory(temporaryBuildDir);
@@ -59,20 +68,29 @@ final class DockerImageManager {
         return docker.build(temporaryBuildDir);
     }
 
-    private Path getDockerfilePath() {
-        return Path.of(DockerImageManager.class.getResource("/test/samples/nodejs/Dockerfile").getPath());
-    }
-
     private Path createTempDirectory() throws IOException {
-        return Files.createTempDirectory("potapaas_image_build_nodejs" + LocalDateTime.now());
+        return Files.createTempDirectory("potapaas_image_build_" + imageTypeName + LocalDateTime.now());
     }
 
     private void copyAppSourcesToTempDirectory(Path temporaryBuildDir) throws IOException {
         FileSystemUtils.copyRecursively(applicationSrcDir, temporaryBuildDir);
     }
 
-    private void copyDockerfileToTempDirectory(Path temporaryBuildDir) throws IOException {
-        Files.copy(dockerfilePath, temporaryBuildDir.resolve("Dockerfile"));
+    private void copyDockerfileAndDockerignoreToTempDirectory(Path temporaryBuildDir) throws IOException {
+        Files.copy(getDockerfilePath(), temporaryBuildDir.resolve("Dockerfile"));
+        Files.copy(getDockerignorePath(), temporaryBuildDir.resolve(".dockerignore"));
+    }
+
+    private Path getFileFromResources(String filename) {
+        return Path.of(DockerImageManager.class.getResource("/docker/" + imageTypeName + "/" + filename).getPath());
+    }
+
+    private Path getDockerfilePath() {
+        return getFileFromResources("Dockerfile");
+    }
+
+    private Path getDockerignorePath() {
+        return getFileFromResources(".dockerignore");
     }
 
     private void deleteTempDirectory(Path temporaryBuildDir) throws IOException {

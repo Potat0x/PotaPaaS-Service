@@ -1,7 +1,11 @@
 package pl.potat0x.potapaas.potapaasservice.util;
 
+import com.spotify.docker.client.DefaultDockerClient;
+import com.spotify.docker.client.DockerClient;
+import com.spotify.docker.client.exceptions.DockerException;
 import com.spotify.docker.client.messages.ContainerConfig;
 import io.vavr.control.Either;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.List;
@@ -12,6 +16,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class DockerContainerManagerTest {
 
     private DockerContainerManager manager = new DockerContainerManager("http://127.0.0.1:2375");
+    private static String testImageName = "alpine:latest";
+
+    @BeforeClass
+    public static void pullAlpineImage() throws DockerException, InterruptedException {
+        DefaultDockerClient docker = new DefaultDockerClient("http://127.0.0.1:2375");
+        if (docker.listImages(DockerClient.ListImagesParam.byName(testImageName)).size() == 0) {
+            docker.pull(testImageName);
+        }
+    }
 
     @Test
     public void shouldRunAndKillContainer() {
@@ -61,11 +74,10 @@ public class DockerContainerManagerTest {
     }
 
     private ContainerConfig.Builder defaultConfig() {
-        String alpineImageId = "055936d3920576da37aa9bc460d70c5f212028bda1c08c0879aedf03d7a66ea1";
         Map<String, String> defaultLabels = Map.of("potapaas_test_container", "true");
 
         return ContainerConfig.builder()
-                .image(alpineImageId)
+                .image(testImageName)
                 .cmd("sh", "-c", "sleep 1m")
                 .labels(defaultLabels);
     }

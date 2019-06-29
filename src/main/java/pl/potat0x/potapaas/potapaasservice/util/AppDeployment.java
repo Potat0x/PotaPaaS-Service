@@ -2,15 +2,12 @@ package pl.potat0x.potapaas.potapaasservice.util;
 
 import com.spotify.docker.client.messages.ContainerConfig;
 import com.spotify.docker.client.messages.HostConfig;
-import com.spotify.docker.client.messages.PortBinding;
 import io.vavr.control.Either;
 import io.vavr.control.Try;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -55,17 +52,19 @@ final class AppDeployment {
         return containerManager.killContainerIfRunning(containerId);
     }
 
+    public Either<String, String> getPort() {
+        return containerManager.getHostPort(containerId);
+    }
+
     private Either<String, String> runApp(String imageId) {
-        Map<String, List<PortBinding>> stringListMap = new HashMap<>();
-        stringListMap.put("5000/tcp", List.of(PortBinding.of("", "5000")));
 
         HostConfig hostConfig = HostConfig.builder()
-                .portBindings(stringListMap)
+                .publishAllPorts(true)
                 .build();
 
         ContainerConfig.Builder config = ContainerConfig.builder()
                 .image(imageId)
-                .exposedPorts("5000/tcp")
+                .exposedPorts(PotapaasConfig.get("default_webapp_port"))
                 .hostConfig(hostConfig)
                 .labels(Map.of("potapaas_deployment", potapaasAppId.substring(0, 13) + "..."));
 

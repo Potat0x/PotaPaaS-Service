@@ -1,5 +1,6 @@
 package pl.potat0x.potapaas.potapaasservice.util;
 
+import com.google.common.collect.ImmutableMap;
 import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.exceptions.DockerException;
@@ -8,6 +9,7 @@ import com.spotify.docker.client.messages.Container;
 import com.spotify.docker.client.messages.ContainerConfig;
 import com.spotify.docker.client.messages.ContainerCreation;
 import com.spotify.docker.client.messages.NetworkConfig;
+import com.spotify.docker.client.messages.PortBinding;
 import io.vavr.control.Either;
 import io.vavr.control.Try;
 
@@ -31,6 +33,20 @@ final class DockerContainerManager {
             ContainerCreation containerCreation = docker.createContainer(containerConfig.build());
             docker.startContainer(containerCreation.id());
             return Either.right(containerCreation.id());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Either.left(e.getClass().getSimpleName() + " " + e.getMessage());
+        }
+    }
+
+    public Either<String, String> getHostPort(String containerId) {
+        try {
+            ImmutableMap<String, List<PortBinding>> ports = docker.inspectContainer(containerId).networkSettings().ports();
+            if (ports == null || ports.isEmpty()) {
+                return Either.left("no port bindings found");
+            } else {
+                return Either.right(ports.get(PotapaasConfig.get("default_webapp_port")).get(0).hostPort());
+            }
         } catch (Exception e) {
             e.printStackTrace();
             return Either.left(e.getClass().getSimpleName() + " " + e.getMessage());

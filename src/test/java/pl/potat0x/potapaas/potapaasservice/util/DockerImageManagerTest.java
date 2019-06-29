@@ -9,7 +9,7 @@ public class DockerImageManagerTest {
 
     @Test
     public void shouldBuildAndDeleteDockerImage() {
-        DockerImageManager imageManager = new DockerImageManager("http://127.0.0.1:2375", getHelloworldAppSourceDir(), DockerImageManager.ImageType.NODEJS);
+        DockerImageManager imageManager = new DockerImageManager(PotapaasConfig.get("docker_api_uri"), getHelloworldAppSourceDir(), DockerImageManager.ImageType.NODEJS);
 
         String imageId = imageManager.buildImage().get();
 

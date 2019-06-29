@@ -15,12 +15,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class DockerContainerManagerTest {
 
-    private DockerContainerManager manager = new DockerContainerManager("http://127.0.0.1:2375");
+    private DockerContainerManager manager = new DockerContainerManager(PotapaasConfig.get("docker_api_uri"));
     private static String testImageName = "alpine:latest";
 
     @BeforeClass
     public static void pullAlpineImage() throws DockerException, InterruptedException {
-        DefaultDockerClient docker = new DefaultDockerClient("http://127.0.0.1:2375");
+        DefaultDockerClient docker = new DefaultDockerClient(PotapaasConfig.get("docker_api_uri"));
         if (docker.listImages(DockerClient.ListImagesParam.byName(testImageName)).size() == 0) {
             docker.pull(testImageName);
         }

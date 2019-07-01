@@ -73,6 +73,18 @@ public class DockerContainerManagerTest {
         manager.killContainer(containerId2);
     }
 
+    @Test
+    public void shouldReadContainerLogs() {
+        String logContent = "container log test";
+        ContainerConfig.Builder config = defaultConfig()
+                .cmd("echo", logContent);
+
+        String containerId = manager.runContainer(config).get();
+        String logs = manager.getLogs(containerId).get();
+
+        assertThat(logs).contains(logContent);
+    }
+
     private ContainerConfig.Builder defaultConfig() {
         Map<String, String> defaultLabels = Map.of("potapaas_test_container", "true");
 

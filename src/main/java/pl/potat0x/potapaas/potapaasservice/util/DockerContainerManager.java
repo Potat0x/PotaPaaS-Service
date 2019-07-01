@@ -119,6 +119,23 @@ final class DockerContainerManager {
         }
     }
 
+    public Either<String, String> getLogs(String containerId) {
+
+        DockerClient.LogsParam[] logsParams = new DockerClient.LogsParam[]{
+                DockerClient.LogsParam.timestamps(),
+                DockerClient.LogsParam.stderr(),
+                DockerClient.LogsParam.stdout()
+        };
+
+        try {
+            String logs = docker.logs(containerId, logsParams).readFully();
+            return Either.right(logs);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Either.left(e.getClass().getSimpleName() + " " + e.getMessage());
+        }
+    }
+
     private Set<String> getNetworkIds(String containerId) throws DockerException, InterruptedException {
         Map<String, AttachedNetwork> containerNetworks = docker.inspectContainer(containerId).networkSettings().networks();
 

@@ -61,6 +61,10 @@ final class AppDeployment {
         return containerManager.getHostPort(containerId);
     }
 
+    public Either<String, String> getLogs() {
+        return containerManager.getLogs(containerId);
+    }
+
     private Either<String, String> runApp(String imageId) {
         return runContainer(imageId, DockerImageManager.BuildType.RELEASE);
     }

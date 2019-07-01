@@ -69,6 +69,20 @@ final class DockerContainerManager {
         });
     }
 
+    public Either<String, Long> waitForExit(String containerId) {
+        try {
+            while (true) {
+                if (!docker.inspectContainer(containerId).state().running()) {
+                    return Either.right(docker.inspectContainer(containerId).state().exitCode());
+                }
+                Thread.sleep(200);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Either.left(e.getClass().getSimpleName() + " " + e.getMessage());
+        }
+    }
+
     public Try<Boolean> connectContainerToNetwork(String containerId1, String containerId2, String networkId) {
         return Try.of(() -> {
             docker.connectToNetwork(containerId1, networkId);

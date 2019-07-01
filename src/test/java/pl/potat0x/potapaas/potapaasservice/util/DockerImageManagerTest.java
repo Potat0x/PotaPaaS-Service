@@ -11,11 +11,13 @@ public class DockerImageManagerTest {
     public void shouldBuildAndDeleteDockerImage() {
         DockerImageManager imageManager = new DockerImageManager(PotapaasConfig.get("docker_api_uri"), getHelloworldAppSourceDir(), DockerImageManager.ImageType.NODEJS);
 
-        String imageId = imageManager.buildImage().get();
+        for (var buildType : DockerImageManager.BuildType.values()) {
+            String imageId = imageManager.buildImage(buildType).get();
 
-        assertThat(imageManager.checkIfImageExists(imageId)).isEqualTo(Either.right(true));
-        assertThat(imageManager.removeImage(imageId)).isEqualTo(Either.right(true));
-        assertThat(imageManager.checkIfImageExists(imageId)).isEqualTo(Either.right(false));
+            assertThat(imageManager.checkIfImageExists(imageId)).isEqualTo(Either.right(true));
+            assertThat(imageManager.removeImage(imageId)).isEqualTo(Either.right(true));
+            assertThat(imageManager.checkIfImageExists(imageId)).isEqualTo(Either.right(false));
+        }
     }
 
     private String getHelloworldAppSourceDir() {

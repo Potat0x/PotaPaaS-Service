@@ -30,6 +30,7 @@ final class AppDeployment {
     private final DeploymentType deploymentType;
     private final String potapaasAppId;
     private String containerId;
+    private String appSourceDir;
 
     private DockerContainerManager containerManager = new DockerContainerManager(PotapaasConfig.get("docker_api_uri"));
 
@@ -40,12 +41,20 @@ final class AppDeployment {
         potapaasAppId = UUID.randomUUID().toString();
     }
 
-    public Either<String, String> deployFromGithub() {
-        return cloneRepo().flatMap(this::buildImage).flatMap(
-                imageId -> runApp(imageId)
-                        .map(containerId -> this.containerId = containerId)
-                        .map(x -> potapaasAppId)
-        );
+    public Either<String, String> deploy() {
+        Either<String, String> cloneResult = cloneRepo();
+        if (cloneResult.isLeft()) {
+            return cloneResult;
+        } else {
+            appSourceDir = cloneResult.get();
+            return buildTestImage(appSourceDir)
+                    .flatMap(this::runAppTests)
+                    .flatMap(testResults -> buildReleaseImage(appSourceDir))
+                    .flatMap(imageId -> runApp(imageId)
+                            .map(containerId -> this.containerId = containerId)
+                            .map(containerId -> potapaasAppId)
+                    );
+        }
     }
 
     public Try<Boolean> killApp() {
@@ -57,27 +66,45 @@ final class AppDeployment {
     }
 
     private Either<String, String> runApp(String imageId) {
+        return runContainer(imageId, DockerImageManager.BuildType.RELEASE);
+    }
 
+    private Either<String, String> runAppTests(String imageId) {
+        return runContainer(imageId, DockerImageManager.BuildType.TEST)
+                .flatMap(testContainerId -> containerManager.waitForExit(testContainerId))
+                .flatMap(exitCode -> exitCode == 0 ? Either.right("Tests passed!") : Either.left("Tests failed!"));
+    }
+
+    private Either<String, String> buildReleaseImage(String appSourceDir) {
+        return buildImage(appSourceDir, DockerImageManager.BuildType.RELEASE);
+    }
+
+    private Either<String, String> buildTestImage(String appSourceDir) {
+        return buildImage(appSourceDir, DockerImageManager.BuildType.TEST);
+    }
+
+    private Either<String, String> runContainer(String imageId, DockerImageManager.BuildType buildType) {
         HostConfig hostConfig = HostConfig.builder()
-                .publishAllPorts(true)
+                .publishAllPorts(buildType == DockerImageManager.BuildType.RELEASE)
                 .build();
 
+        Map<String, String> labels = Map.of("potapaas_deployment_" + buildType, potapaasAppId.substring(0, 13) + "...");
         ContainerConfig.Builder config = ContainerConfig.builder()
                 .image(imageId)
                 .exposedPorts(PotapaasConfig.get("default_webapp_port"))
                 .hostConfig(hostConfig)
-                .labels(Map.of("potapaas_deployment", potapaasAppId.substring(0, 13) + "..."));
+                .labels(labels);
 
         return containerManager.runContainer(config);
     }
 
-    private Either<String, String> buildImage(String appSourceDir) {
+    private Either<String, String> buildImage(String appSourceDir, DockerImageManager.BuildType buildType) {
         DockerImageManager.ImageType dockerImageType = Match(deploymentType).of(
                 Case($(DeploymentType.NODEJS), DockerImageManager.ImageType.NODEJS)
         );
 
         DockerImageManager imageManager = new DockerImageManager(PotapaasConfig.get("docker_api_uri"), appSourceDir, dockerImageType);
-        return imageManager.buildImage();
+        return imageManager.buildImage(buildType);
     }
 
     private Either<String, String> cloneRepo() {

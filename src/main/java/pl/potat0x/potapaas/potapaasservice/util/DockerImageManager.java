@@ -20,6 +20,11 @@ final class DockerImageManager {
         NODEJS
     }
 
+    public enum BuildType {
+        RELEASE,
+        TEST
+    }
+
     private final Path applicationSrcDir;
     private final DockerClient docker;
     private final String imageTypeName;
@@ -32,11 +37,12 @@ final class DockerImageManager {
         );
     }
 
-    public Either<String, String> buildImage() {
+    public Either<String, String> buildImage(BuildType buildType) {
         try {
             Path temporaryBuildDir = createTempDirectory();
+
             copyAppSourcesToTempDirectory(temporaryBuildDir);
-            copyDockerfileAndDockerignoreToTempDirectory(temporaryBuildDir);
+            copyDockerfileAndDockerignoreToTempDirectory(temporaryBuildDir, buildType);
 
             String imageId = buildDockerImage(temporaryBuildDir);
             deleteTempDirectory(temporaryBuildDir);
@@ -65,7 +71,7 @@ final class DockerImageManager {
     }
 
     private String buildDockerImage(Path temporaryBuildDir) throws InterruptedException, DockerException, IOException {
-        return docker.build(temporaryBuildDir);
+        return docker.build(temporaryBuildDir, DockerClient.BuildParam.noCache());
     }
 
     private Path createTempDirectory() throws IOException {
@@ -76,8 +82,8 @@ final class DockerImageManager {
         FileSystemUtils.copyRecursively(applicationSrcDir, temporaryBuildDir);
     }
 
-    private void copyDockerfileAndDockerignoreToTempDirectory(Path temporaryBuildDir) throws IOException {
-        Files.copy(getDockerfilePath(), temporaryBuildDir.resolve("Dockerfile"));
+    private void copyDockerfileAndDockerignoreToTempDirectory(Path temporaryBuildDir, BuildType buildType) throws IOException {
+        Files.copy(getDockerfilePath(buildType), temporaryBuildDir.resolve("Dockerfile"));
         Files.copy(getDockerignorePath(), temporaryBuildDir.resolve(".dockerignore"));
     }
 
@@ -85,8 +91,9 @@ final class DockerImageManager {
         return Path.of(DockerImageManager.class.getResource("/docker/" + imageTypeName + "/" + filename).getPath());
     }
 
-    private Path getDockerfilePath() {
-        return getFileFromResources("Dockerfile");
+    private Path getDockerfilePath(BuildType buildType) {
+        String dockerfileLocation = buildType == BuildType.TEST ? "test/Dockerfile" : "release/Dockerfile";
+        return getFileFromResources(dockerfileLocation);
     }
 
     private Path getDockerignorePath() {

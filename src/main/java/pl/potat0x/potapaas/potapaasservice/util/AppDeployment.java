@@ -5,7 +5,6 @@ import com.spotify.docker.client.messages.HostConfig;
 import io.vavr.control.Either;
 import io.vavr.control.Try;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
@@ -32,33 +31,30 @@ final class AppDeployment {
     private String containerId;
     private String appSourceDir;
 
-    private DockerContainerManager containerManager = new DockerContainerManager(PotapaasConfig.get("docker_api_uri"));
+    private final DockerContainerManager containerManager;
 
     public AppDeployment(DeploymentType deploymentType, String githubRepoUrl, String branchName) {
+        containerManager = new DockerContainerManager(PotapaasConfig.get("docker_api_uri"));
+        potapaasAppId = UUID.randomUUID().toString();
         this.githubRepoUrl = githubRepoUrl;
         this.branchName = branchName;
         this.deploymentType = deploymentType;
-        potapaasAppId = UUID.randomUUID().toString();
     }
 
     public Either<String, String> deploy() {
-        Either<String, String> cloneResult = cloneRepo();
-        if (cloneResult.isLeft()) {
-            return cloneResult;
-        } else {
-            appSourceDir = cloneResult.get();
-            return buildTestImage(appSourceDir)
-                    .flatMap(this::runAppTests)
-                    .flatMap(testResults -> buildReleaseImage(appSourceDir))
-                    .flatMap(imageId -> runApp(imageId)
-                            .map(containerId -> this.containerId = containerId)
-                            .map(containerId -> potapaasAppId)
-                    );
-        }
+        return cloneRepo()
+                .map(clonedRepoDir -> this.appSourceDir = clonedRepoDir)
+                .flatMap(clonedRepoDir -> buildTestImage())
+                .flatMap(this::runAppTests)
+                .flatMap(testResults -> buildReleaseImage())
+                .flatMap(imageId -> runApp(imageId)
+                        .map(containerId -> this.containerId = containerId)
+                        .map(containerId -> potapaasAppId)
+                );
     }
 
-    public Try<Boolean> killApp() {
-        return containerManager.killContainerIfRunning(containerId);
+    public Try<Void> killApp() {
+        return containerManager.killContainer(containerId);
     }
 
     public Either<String, String> getPort() {
@@ -71,15 +67,15 @@ final class AppDeployment {
 
     private Either<String, String> runAppTests(String imageId) {
         return runContainer(imageId, DockerImageManager.BuildType.TEST)
-                .flatMap(testContainerId -> containerManager.waitForExit(testContainerId))
+                .flatMap(containerManager::waitForExit)
                 .flatMap(exitCode -> exitCode == 0 ? Either.right("Tests passed!") : Either.left("Tests failed!"));
     }
 
-    private Either<String, String> buildReleaseImage(String appSourceDir) {
+    private Either<String, String> buildReleaseImage() {
         return buildImage(appSourceDir, DockerImageManager.BuildType.RELEASE);
     }
 
-    private Either<String, String> buildTestImage(String appSourceDir) {
+    private Either<String, String> buildTestImage() {
         return buildImage(appSourceDir, DockerImageManager.BuildType.TEST);
     }
 
@@ -108,14 +104,13 @@ final class AppDeployment {
     }
 
     private Either<String, String> cloneRepo() {
-        Path tmpDir;
         try {
-            tmpDir = Files.createTempDirectory("potapaas_tmp_git");
-        } catch (IOException e) {
+            Path tmpDir = Files.createTempDirectory("potapaas_tmp_git");
+            GitCloner cloner = new GitCloner(tmpDir.toAbsolutePath().toString());
+            return cloner.cloneBranch(githubRepoUrl, branchName);
+        } catch (Exception e) {
             e.printStackTrace();
             return Either.left("create temp directory for github repo: " + e.getMessage());
         }
-        GitCloner cloner = new GitCloner(tmpDir.toAbsolutePath().toString());
-        return cloner.cloneBranch(githubRepoUrl, branchName);
     }
 }

@@ -12,18 +12,17 @@ public final class GitCloner {
 
     private final String targetPath;
 
-    GitCloner(String targetPath) {
+    GitCloner(String targetPath) throws Exception {
         if (new File(targetPath).isDirectory()) {
             this.targetPath = targetPath;
         } else {
-            throw new IllegalArgumentException(targetPath + " is not directory");
+            throw new Exception(targetPath + " is not directory");
         }
     }
 
     Either<String, String> cloneBranch(String repositoryUri, String branchName) {
-
-        String clonedRepoDirectory = preparePathForClonedRepository(repositoryUri);
         try {
+            String clonedRepoDirectory = preparePathForClonedRepository(repositoryUri);
             Git repo = Git.cloneRepository()
                     .setURI(repositoryUri)
                     .setBranch(branchName)
@@ -42,8 +41,7 @@ public final class GitCloner {
     }
 
     private String preparePathForClonedRepository(String repositoryUri) {
-        String normalizedPath = replaceSlashes(repositoryUri);
-        return Paths.get(targetPath, normalizedPath, LocalDateTime.now().toString()).toString();
+        return Paths.get(targetPath, replaceSlashes(repositoryUri), LocalDateTime.now().toString()).toString();
     }
 
     private String replaceSlashes(String path) {

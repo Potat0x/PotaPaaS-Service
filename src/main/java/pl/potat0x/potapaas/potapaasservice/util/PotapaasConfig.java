@@ -12,7 +12,7 @@ final class PotapaasConfig {
         return properties.get().get(propertyName).toString();
     }
 
-    private static Function0<Properties> properties = Function0.of(PotapaasConfig::loadProperties).memoized();
+    private static final Function0<Properties> properties = Function0.of(PotapaasConfig::loadProperties).memoized();
 
     private static Properties loadProperties() {
         Properties properties = new Properties();

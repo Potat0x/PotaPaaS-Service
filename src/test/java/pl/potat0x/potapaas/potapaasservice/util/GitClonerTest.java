@@ -20,7 +20,7 @@ public class GitClonerTest {
     private static GitCloner cloner;
 
     @BeforeClass
-    public static void createTemporaryReposDirectory() throws IOException {
+    public static void createTemporaryReposDirectory() throws Exception {
         temporaryReposDirectory = Files.createTempDirectory("potapaas_test_dir");
         cloner = new GitCloner(temporaryReposDirectory.toAbsolutePath().toString());
     }

@@ -39,7 +39,7 @@ final class DockerContainerManager {
         }
     }
 
-    public Either<String, String> getHostPort(String containerId) {
+    Either<String, String> getHostPort(String containerId) {
         try {
             ImmutableMap<String, List<PortBinding>> ports = docker.inspectContainer(containerId).networkSettings().ports();
             if (ports == null || ports.isEmpty()) {
@@ -62,14 +62,11 @@ final class DockerContainerManager {
         }
     }
 
-    public Try<Boolean> killContainerIfRunning(String containerId) {
-        return Try.of(() -> {
-            docker.killContainer(containerId);
-            return true;
-        });
+    public Try<Void> killContainer(String containerId) {
+        return Try.run(() -> docker.killContainer(containerId));
     }
 
-    public Either<String, Long> waitForExit(String containerId) {
+    Either<String, Long> waitForExit(String containerId) {
         try {
             while (true) {
                 if (!docker.inspectContainer(containerId).state().running()) {
@@ -83,11 +80,10 @@ final class DockerContainerManager {
         }
     }
 
-    public Try<Boolean> connectContainerToNetwork(String containerId1, String containerId2, String networkId) {
-        return Try.of(() -> {
+    public Try<Void> connectContainerToNetwork(String containerId1, String containerId2, String networkId) {
+        return Try.run(() -> {
             docker.connectToNetwork(containerId1, networkId);
             docker.connectToNetwork(containerId2, networkId);
-            return true;
         });
     }
 
@@ -106,20 +102,21 @@ final class DockerContainerManager {
         return Try.of(() -> docker.createNetwork(networkConfig).id());
     }
 
-    public Try<Boolean> removeNetwork(String networkId) {
-        return Try.of(() -> {
-            docker.removeNetwork(networkId);
-            return true;
-        });
+    public Try<Void> removeNetwork(String networkId) {
+        return Try.run(() -> docker.removeNetwork(networkId));
     }
 
-    public Try<List<String>> getContainersByLabel(String label, String value) {
-        return Try.of(() ->
-                docker.listContainers(DockerClient.ListContainersParam.withLabel(label, value))
-                        .stream()
-                        .map(Container::id)
-                        .collect(Collectors.toList())
-        );
+    public Either<String, List<String>> getContainersByLabel(String label, String value) {
+        try {
+            List<String> containerIds = docker.listContainers(DockerClient.ListContainersParam.withLabel(label, value))
+                    .stream()
+                    .map(Container::id)
+                    .collect(Collectors.toList());
+            return Either.right(containerIds);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Either.left(e.getClass().getSimpleName() + " " + e.getMessage());
+        }
     }
 
     private Set<String> getNetworkIds(String containerId) throws DockerException, InterruptedException {

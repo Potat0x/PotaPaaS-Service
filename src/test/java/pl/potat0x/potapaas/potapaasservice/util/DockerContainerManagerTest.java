@@ -31,7 +31,7 @@ public class DockerContainerManagerTest {
         String containerId = manager.runContainer(defaultConfig()).get();
 
         assertThat(manager.checkIfContainerIsRunning(containerId)).isEqualTo(Either.right(true));
-        assertThat(manager.killContainerIfRunning(containerId).get()).isTrue();
+        assertThat(manager.killContainer(containerId).isSuccess()).isTrue();
         assertThat(manager.checkIfContainerIsRunning(containerId).get()).isFalse();
     }
 
@@ -41,13 +41,13 @@ public class DockerContainerManagerTest {
         String containerId2 = manager.runContainer(defaultConfig()).get();
         String networkId = manager.createNetwork().get();
 
-        assertThat(manager.connectContainerToNetwork(containerId1, containerId2, networkId).get()).isTrue();
+        assertThat(manager.connectContainerToNetwork(containerId1, containerId2, networkId).isSuccess()).isTrue();
         assertThat(manager.checkIfContainersAreConnected(containerId1, containerId2, networkId).get()).isTrue();
 
-        manager.killContainerIfRunning(containerId1);
-        manager.killContainerIfRunning(containerId2);
+        manager.killContainer(containerId1);
+        manager.killContainer(containerId2);
 
-        assertThat(manager.removeNetwork(networkId).get()).isTrue();
+        assertThat(manager.removeNetwork(networkId).isSuccess()).isTrue();
     }
 
     @Test
@@ -69,8 +69,8 @@ public class DockerContainerManagerTest {
         assertThat(containerIdsWithLabel1).containsExactly(containerId1);
         assertThat(containerIdsWithLabel2).containsExactly(containerId2);
 
-        manager.killContainerIfRunning(containerId1);
-        manager.killContainerIfRunning(containerId2);
+        manager.killContainer(containerId1);
+        manager.killContainer(containerId2);
     }
 
     private ContainerConfig.Builder defaultConfig() {

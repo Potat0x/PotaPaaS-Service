@@ -1,4 +1,4 @@
-package pl.potat0x.potapaas.potapaasservice.util;
+package pl.potat0x.potapaas.potapaasservice.core;
 
 import com.spotify.docker.client.messages.ContainerConfig;
 import com.spotify.docker.client.messages.HostConfig;

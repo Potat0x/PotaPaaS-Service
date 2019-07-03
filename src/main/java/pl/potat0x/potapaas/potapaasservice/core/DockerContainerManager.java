@@ -1,4 +1,4 @@
-package pl.potat0x.potapaas.potapaasservice.util;
+package pl.potat0x.potapaas.potapaasservice.core;
 
 import com.google.common.collect.ImmutableMap;
 import com.spotify.docker.client.DefaultDockerClient;

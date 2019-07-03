@@ -1,4 +1,4 @@
-package pl.potat0x.potapaas.potapaasservice.util;
+package pl.potat0x.potapaas.potapaasservice.core;
 
 import org.assertj.core.api.Condition;
 import org.junit.AfterClass;

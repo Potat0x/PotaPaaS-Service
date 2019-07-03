@@ -110,8 +110,8 @@ final class AppDeployment {
     private Either<String, String> cloneRepo() {
         try {
             Path tmpDir = Files.createTempDirectory("potapaas_tmp_git");
-            GitCloner cloner = new GitCloner(tmpDir.toAbsolutePath().toString());
-            return cloner.cloneBranch(githubRepoUrl, branchName);
+            return GitCloner.create(tmpDir.toAbsolutePath())
+                    .flatMap(cloner -> cloner.cloneBranch(githubRepoUrl, branchName));
         } catch (Exception e) {
             e.printStackTrace();
             return Either.left("create temp directory for github repo: " + e.getMessage());

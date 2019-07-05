@@ -75,7 +75,7 @@ final class DockerImageManager {
     }
 
     private Path createTempDirectory() throws IOException {
-        return Files.createTempDirectory("potapaas_image_build_" + imageTypeName + LocalDateTime.now());
+        return Files.createTempDirectory(PotapaasConfig.get("tmp_image_building_dir_prefix") + imageTypeName + LocalDateTime.now());
     }
 
     private void copyAppSourcesToTempDirectory(Path temporaryBuildDir) throws IOException {

@@ -95,7 +95,7 @@ final class DockerContainerManager {
     public Try<String> createNetwork() {
         NetworkConfig networkConfig = NetworkConfig.builder()
                 .attachable(true)
-                .name("potapaas_test_network_" + UUID.randomUUID())
+                .name(PotapaasConfig.get("network_name_prefix") + UUID.randomUUID())
                 .checkDuplicate(true)
                 .build();
 

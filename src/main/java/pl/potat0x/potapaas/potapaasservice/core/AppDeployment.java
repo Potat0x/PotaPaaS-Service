@@ -88,7 +88,9 @@ final class AppDeployment {
                 .publishAllPorts(buildType == DockerImageManager.BuildType.RELEASE)
                 .build();
 
-        Map<String, String> labels = Map.of("potapaas_deployment_" + buildType, potapaasAppId.substring(0, 13) + "...");
+        Map<String, String> labels = Map.of(PotapaasConfig.get("containers_label_prefix") + buildType,
+                potapaasAppId.substring(0, PotapaasConfig.getInt("deployment_uuid_label_length")));
+
         ContainerConfig.Builder config = ContainerConfig.builder()
                 .image(imageId)
                 .exposedPorts(PotapaasConfig.get("default_webapp_port"))
@@ -109,7 +111,7 @@ final class AppDeployment {
 
     private Either<String, String> cloneRepo() {
         try {
-            Path tmpDir = Files.createTempDirectory("potapaas_tmp_git");
+            Path tmpDir = Files.createTempDirectory(PotapaasConfig.get("tmp_git_dir_prefix"));
             return GitCloner.create(tmpDir.toAbsolutePath())
                     .flatMap(cloner -> cloner.cloneBranch(githubRepoUrl, branchName));
         } catch (Exception e) {

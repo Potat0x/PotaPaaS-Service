@@ -1,4 +1,4 @@
-package pl.potat0x.potapaas.potapaasservice.core;
+package pl.potat0x.potapaas.potapaasservice.system;
 
 import io.vavr.Function0;
 
@@ -10,6 +10,10 @@ final class PotapaasConfig {
 
     public static String get(String propertyName) {
         return properties.get().get(propertyName).toString();
+    }
+
+    public static Integer getInt(String propertyName) {
+        return Integer.parseInt(properties.get().get(propertyName).toString());
     }
 
     private static final Function0<Properties> properties = Function0.of(PotapaasConfig::loadProperties).memoized();

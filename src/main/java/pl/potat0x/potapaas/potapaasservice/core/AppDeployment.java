@@ -4,7 +4,9 @@ import com.spotify.docker.client.messages.ContainerConfig;
 import com.spotify.docker.client.messages.HostConfig;
 import io.vavr.control.Either;
 import io.vavr.control.Try;
+import pl.potat0x.potapaas.potapaasservice.system.errormessage.ErrorMessage;
 import pl.potat0x.potapaas.potapaasservice.system.PotapaasConfig;
+import pl.potat0x.potapaas.potapaasservice.system.exceptionmapper.ExceptionMapper;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -42,7 +44,7 @@ final class AppDeployment {
         this.deploymentType = deploymentType;
     }
 
-    public Either<String, String> deploy() {
+    public Either<ErrorMessage, String> deploy() {
         return cloneRepo()
                 .map(clonedRepoDir -> this.appSourceDir = clonedRepoDir)
                 .flatMap(clonedRepoDir -> buildTestImage())
@@ -58,33 +60,33 @@ final class AppDeployment {
         return containerManager.killContainer(containerId);
     }
 
-    public Either<String, String> getPort() {
+    public Either<ErrorMessage, String> getPort() {
         return containerManager.getHostPort(containerId);
     }
 
-    public Either<String, String> getLogs() {
+    public Either<ErrorMessage, String> getLogs() {
         return containerManager.getLogs(containerId);
     }
 
-    private Either<String, String> runApp(String imageId) {
+    private Either<ErrorMessage, String> runApp(String imageId) {
         return runContainer(imageId, DockerImageManager.BuildType.RELEASE);
     }
 
-    private Either<String, String> runAppTests(String imageId) {
+    private Either<ErrorMessage, String> runAppTests(String imageId) {
         return runContainer(imageId, DockerImageManager.BuildType.TEST)
                 .flatMap(containerManager::waitForExit)
-                .flatMap(exitCode -> exitCode == 0 ? Either.right("Tests passed!") : Either.left("Tests failed!"));
+                .flatMap(exitCode -> exitCode == 0 ? Either.right("Tests passed!") : Either.left(CoreErrorMessage.APP_TESTS_FAIL));
     }
 
-    private Either<String, String> buildReleaseImage() {
+    private Either<ErrorMessage, String> buildReleaseImage() {
         return buildImage(appSourceDir, DockerImageManager.BuildType.RELEASE);
     }
 
-    private Either<String, String> buildTestImage() {
+    private Either<ErrorMessage, String> buildTestImage() {
         return buildImage(appSourceDir, DockerImageManager.BuildType.TEST);
     }
 
-    private Either<String, String> runContainer(String imageId, DockerImageManager.BuildType buildType) {
+    private Either<ErrorMessage, String> runContainer(String imageId, DockerImageManager.BuildType buildType) {
         HostConfig hostConfig = HostConfig.builder()
                 .publishAllPorts(buildType == DockerImageManager.BuildType.RELEASE)
                 .build();
@@ -101,7 +103,7 @@ final class AppDeployment {
         return containerManager.runContainer(config);
     }
 
-    private Either<String, String> buildImage(String appSourceDir, DockerImageManager.BuildType buildType) {
+    private Either<ErrorMessage, String> buildImage(String appSourceDir, DockerImageManager.BuildType buildType) {
         DockerImageManager.ImageType dockerImageType = Match(deploymentType).of(
                 Case($(DeploymentType.NODEJS), DockerImageManager.ImageType.NODEJS)
         );
@@ -110,14 +112,13 @@ final class AppDeployment {
         return imageManager.buildImage(buildType);
     }
 
-    private Either<String, String> cloneRepo() {
+    private Either<ErrorMessage, String> cloneRepo() {
         try {
             Path tmpDir = Files.createTempDirectory(PotapaasConfig.get("tmp_git_dir_prefix"));
             return GitCloner.create(tmpDir.toAbsolutePath())
                     .flatMap(cloner -> cloner.cloneBranch(githubRepoUrl, branchName));
         } catch (Exception e) {
-            e.printStackTrace();
-            return Either.left("create temp directory for github repo: " + e.getMessage());
+            return ExceptionMapper.map(e).of();
         }
     }
 }

@@ -1,5 +1,7 @@
 package pl.potat0x.potapaas.potapaasservice.system.exceptionmapper;
 
+import pl.potat0x.potapaas.potapaasservice.system.errormessage.ErrorMessage;
+
 public final class CaseBuilderEnd {
     private final Class<? extends Exception> exceptionClass;
 
@@ -7,7 +9,7 @@ public final class CaseBuilderEnd {
         this.exceptionClass = exceptionClass;
     }
 
-    public Case to(ErrorInfo errorInfo) {
-        return new Case(errorInfo, exceptionClass);
+    public Case to(ErrorMessage errorMessage) {
+        return new Case(errorMessage, exceptionClass);
     }
 }

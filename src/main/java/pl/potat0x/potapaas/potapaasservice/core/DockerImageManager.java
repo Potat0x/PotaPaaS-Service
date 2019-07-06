@@ -6,7 +6,9 @@ import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.exceptions.DockerException;
 import io.vavr.control.Either;
 import org.springframework.util.FileSystemUtils;
+import pl.potat0x.potapaas.potapaasservice.system.errormessage.ErrorMessage;
 import pl.potat0x.potapaas.potapaasservice.system.PotapaasConfig;
+import pl.potat0x.potapaas.potapaasservice.system.exceptionmapper.ExceptionMapper;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -38,7 +40,7 @@ final class DockerImageManager {
         );
     }
 
-    public Either<String, String> buildImage(BuildType buildType) {
+    public Either<ErrorMessage, String> buildImage(BuildType buildType) {
         try {
             Path temporaryBuildDir = createTempDirectory();
 
@@ -49,25 +51,23 @@ final class DockerImageManager {
             deleteTempDirectory(temporaryBuildDir);
             return Either.right(imageId);
         } catch (Exception e) {
-            e.printStackTrace();
-            return Either.left(e.getMessage());
+            return ExceptionMapper.map(e).to(CoreErrorMessage.DEPLOYMENT_ERROR);
         }
     }
 
-    public Either<String, Boolean> removeImage(String imageId) {
+    public Either<ErrorMessage, Boolean> removeImage(String imageId) {
         try {
             return Either.right(docker.removeImage(imageId).size() > 0);
         } catch (Exception e) {
-            e.printStackTrace();
-            return Either.left(e.getMessage());
+            return ExceptionMapper.map(e).to(CoreErrorMessage.SERVER_ERROR);
         }
     }
 
-    public Either<String, Boolean> checkIfImageExists(String imageId) {
+    public Either<ErrorMessage, Boolean> checkIfImageExists(String imageId) {
         try {
             return Either.right(docker.listImages().stream().anyMatch(image -> image.id().startsWith("sha256:" + imageId)));
         } catch (Exception e) {
-            return Either.left(e.getMessage());
+            return ExceptionMapper.map(e).to(CoreErrorMessage.SERVER_ERROR);
         }
     }
 

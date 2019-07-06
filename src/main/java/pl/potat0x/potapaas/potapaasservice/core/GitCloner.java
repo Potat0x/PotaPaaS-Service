@@ -3,29 +3,34 @@ package pl.potat0x.potapaas.potapaasservice.core;
 import io.vavr.control.Either;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import pl.potat0x.potapaas.potapaasservice.system.errormessage.ErrorMessage;
+import pl.potat0x.potapaas.potapaasservice.system.exceptionmapper.ExceptionMapper;
 
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 
+import static pl.potat0x.potapaas.potapaasservice.system.exceptionmapper.CaseBuilderStart.exception;
+import static pl.potat0x.potapaas.potapaasservice.system.errormessage.CustomErrorMessage.message;
+
 public final class GitCloner {
 
     private final String targetPath;
 
-    static Either<String, GitCloner> create(Path targetPath) {
+    static Either<ErrorMessage, GitCloner> create(Path targetPath) {
         return create(targetPath.toString());
     }
 
-    static Either<String, GitCloner> create(String targetPath) {
+    static Either<ErrorMessage, GitCloner> create(String targetPath) {
         if (targetPath != null && new File(targetPath).isDirectory()) {
             return Either.right(new GitCloner(targetPath));
         } else {
-            return Either.left(targetPath + " is not directory");
+            return Either.left(CoreErrorMessage.SERVER_ERROR);
         }
     }
 
-    Either<String, String> cloneBranch(String repositoryUri, String branchName) {
+    Either<ErrorMessage, String> cloneBranch(String repositoryUri, String branchName) {
         try {
             String clonedRepoDirectory = preparePathForClonedRepository(repositoryUri);
             Git repo = Git.cloneRepository()
@@ -38,10 +43,13 @@ public final class GitCloner {
                 return Either.right(clonedRepoDirectory);
             }
 
-            return Either.left("branch \"" + branchName + "\" not found in " + repositoryUri);
-        } catch (GitAPIException e) {
-            e.printStackTrace();
-            return Either.left(e.getMessage());
+            return Either.left(message("branch \"" + branchName + "\" not found in repository: " + repositoryUri, 404));
+        } catch (Exception e) {
+            return ExceptionMapper.map(e).of(
+                    exception(GitAPIException.class).to(
+                            message("Error while cloning \"" + branchName + "\" branch from repository:" + repositoryUri, 500)
+                    )
+            );
         }
     }
 

@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import pl.potat0x.potapaas.potapaasservice.system.errormessage.ErrorMessage;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -13,7 +14,7 @@ public class AppDeploymentTest {
     @Test
     public void shouldDeployWebAppFromGithub() throws InterruptedException {
         AppDeployment app = appDeploymentFromTestGithubRepo("nodejs_test_ok_delay");
-        Either<String, String> deploymentResult = app.deploy();
+        Either<ErrorMessage, String> deploymentResult = app.deploy();
 
         String appUrl = "http://127.0.0.1:" + app.getPort().get();
 
@@ -28,9 +29,9 @@ public class AppDeploymentTest {
     public void shouldDetectThatTestsFail() {
         AppDeployment app = appDeploymentFromTestGithubRepo("nodejs_test_fail_delay");
 
-        Either<String, String> deploymentResult = app.deploy();
+        Either<ErrorMessage, String> deploymentResult = app.deploy();
 
-        assertThat(deploymentResult.getLeft()).contains("Tests failed");
+        assertThat(deploymentResult.getLeft().getText().toLowerCase()).contains("tests failed");
     }
 
     private AppDeployment appDeploymentFromTestGithubRepo(String branchName) {

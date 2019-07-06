@@ -3,6 +3,8 @@ package pl.potat0x.potapaas.potapaasservice.core;
 import com.google.common.collect.ImmutableMap;
 import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DockerClient;
+import com.spotify.docker.client.exceptions.BadParamException;
+import com.spotify.docker.client.exceptions.ContainerNotFoundException;
 import com.spotify.docker.client.exceptions.DockerException;
 import com.spotify.docker.client.messages.AttachedNetwork;
 import com.spotify.docker.client.messages.Container;
@@ -12,7 +14,9 @@ import com.spotify.docker.client.messages.NetworkConfig;
 import com.spotify.docker.client.messages.PortBinding;
 import io.vavr.control.Either;
 import io.vavr.control.Try;
+import pl.potat0x.potapaas.potapaasservice.system.errormessage.ErrorMessage;
 import pl.potat0x.potapaas.potapaasservice.system.PotapaasConfig;
+import pl.potat0x.potapaas.potapaasservice.system.exceptionmapper.ExceptionMapper;
 
 import java.util.HashSet;
 import java.util.List;
@@ -20,6 +24,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import static pl.potat0x.potapaas.potapaasservice.system.exceptionmapper.CaseBuilderStart.exception;
+import static pl.potat0x.potapaas.potapaasservice.system.errormessage.CustomErrorMessage.message;
 
 final class DockerContainerManager {
 
@@ -29,37 +36,37 @@ final class DockerContainerManager {
         docker = new DefaultDockerClient(dockerClientUri);
     }
 
-    public Either<String, String> runContainer(ContainerConfig.Builder containerConfig) {
+    public Either<ErrorMessage, String> runContainer(ContainerConfig.Builder containerConfig) {
         try {
             ContainerCreation containerCreation = docker.createContainer(containerConfig.build());
             docker.startContainer(containerCreation.id());
             return Either.right(containerCreation.id());
         } catch (Exception e) {
-            e.printStackTrace();
-            return Either.left(e.getClass().getSimpleName() + " " + e.getMessage());
+            return ExceptionMapper.map(e).to(CoreErrorMessage.APP_START_FAIL);
         }
     }
 
-    Either<String, String> getHostPort(String containerId) {
+    Either<ErrorMessage, String> getHostPort(String containerId) {
         try {
             ImmutableMap<String, List<PortBinding>> ports = docker.inspectContainer(containerId).networkSettings().ports();
             if (ports == null || ports.isEmpty()) {
-                return Either.left("no port bindings found");
+                return Either.left(message("no port bindings found", 500));
             } else {
                 return Either.right(ports.get(PotapaasConfig.get("default_webapp_port")).get(0).hostPort());
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            return Either.left(e.getClass().getSimpleName() + " " + e.getMessage());
+            return ExceptionMapper.map(e).to(CoreErrorMessage.SERVER_ERROR);
         }
     }
 
-    public Either<String, Boolean> checkIfContainerIsRunning(String containerId) {
+    public Either<ErrorMessage, Boolean> checkIfContainerIsRunning(String containerId) {
         try {
             return Either.right(docker.inspectContainer(containerId).state().running());
         } catch (Exception e) {
-            e.printStackTrace();
-            return Either.left(e.getClass().getSimpleName() + " " + e.getMessage());
+            return ExceptionMapper.map(e).of(
+                    exception(ContainerNotFoundException.class).to(CoreErrorMessage.CONTAINER_NOT_FOUND),
+                    exception(DockerException.class).to(CoreErrorMessage.SERVER_ERROR)
+            );
         }
     }
 
@@ -67,7 +74,7 @@ final class DockerContainerManager {
         return Try.run(() -> docker.killContainer(containerId));
     }
 
-    Either<String, Long> waitForExit(String containerId) {
+    Either<ErrorMessage, Long> waitForExit(String containerId) {
         try {
             while (true) {
                 if (!docker.inspectContainer(containerId).state().running()) {
@@ -76,8 +83,10 @@ final class DockerContainerManager {
                 Thread.sleep(200);
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            return Either.left(e.getClass().getSimpleName() + " " + e.getMessage());
+            return ExceptionMapper.map(e).of(
+                    exception(ContainerNotFoundException.class).to(CoreErrorMessage.CONTAINER_NOT_FOUND),
+                    exception(DockerException.class).to(CoreErrorMessage.SERVER_ERROR)
+            );
         }
     }
 
@@ -107,7 +116,7 @@ final class DockerContainerManager {
         return Try.run(() -> docker.removeNetwork(networkId));
     }
 
-    public Either<String, List<String>> getContainersByLabel(String label, String value) {
+    public Either<ErrorMessage, List<String>> getContainersByLabel(String label, String value) {
         try {
             List<String> containerIds = docker.listContainers(DockerClient.ListContainersParam.withLabel(label, value))
                     .stream()
@@ -115,12 +124,11 @@ final class DockerContainerManager {
                     .collect(Collectors.toList());
             return Either.right(containerIds);
         } catch (Exception e) {
-            e.printStackTrace();
-            return Either.left(e.getClass().getSimpleName() + " " + e.getMessage());
+            return ExceptionMapper.map(e).to(CoreErrorMessage.SERVER_ERROR);
         }
     }
 
-    public Either<String, String> getLogs(String containerId) {
+    public Either<ErrorMessage, String> getLogs(String containerId) {
 
         DockerClient.LogsParam[] logsParams = new DockerClient.LogsParam[]{
                 DockerClient.LogsParam.timestamps(),
@@ -132,8 +140,11 @@ final class DockerContainerManager {
             String logs = docker.logs(containerId, logsParams).readFully();
             return Either.right(logs);
         } catch (Exception e) {
-            e.printStackTrace();
-            return Either.left(e.getClass().getSimpleName() + " " + e.getMessage());
+            return ExceptionMapper.map(e).of(
+                    exception(ContainerNotFoundException.class).to(CoreErrorMessage.CONTAINER_NOT_FOUND),
+                    exception(DockerException.class).to(CoreErrorMessage.SERVER_ERROR),
+                    exception(BadParamException.class).to(CoreErrorMessage.SERVER_ERROR)
+            );
         }
     }
 

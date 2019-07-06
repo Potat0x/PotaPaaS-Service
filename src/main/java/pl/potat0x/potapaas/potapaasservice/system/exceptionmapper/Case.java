@@ -1,16 +1,18 @@
 package pl.potat0x.potapaas.potapaasservice.system.exceptionmapper;
 
+import pl.potat0x.potapaas.potapaasservice.system.errormessage.ErrorMessage;
+
 public final class Case {
     private final Class<? extends Exception> exceptionClass;
-    private final ErrorInfo errorInfo;
+    private final ErrorMessage errorMessage;
 
-    Case(ErrorInfo errorInfo, Class<? extends Exception> exceptionClass) {
-        this.errorInfo = errorInfo;
+    Case(ErrorMessage errorMessage, Class<? extends Exception> exceptionClass) {
+        this.errorMessage = errorMessage;
         this.exceptionClass = exceptionClass;
     }
 
-    ErrorInfo getErrorInfo() {
-        return errorInfo;
+    ErrorMessage getErrorInfo() {
+        return errorMessage;
     }
 
     Class<? extends Exception> getExceptionClass() {

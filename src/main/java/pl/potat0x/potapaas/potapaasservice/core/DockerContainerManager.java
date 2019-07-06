@@ -12,6 +12,7 @@ import com.spotify.docker.client.messages.NetworkConfig;
 import com.spotify.docker.client.messages.PortBinding;
 import io.vavr.control.Either;
 import io.vavr.control.Try;
+import pl.potat0x.potapaas.potapaasservice.system.PotapaasConfig;
 
 import java.util.HashSet;
 import java.util.List;

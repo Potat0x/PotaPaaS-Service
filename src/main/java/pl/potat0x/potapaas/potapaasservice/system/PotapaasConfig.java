@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-final class PotapaasConfig {
+public final class PotapaasConfig {
 
     public static String get(String propertyName) {
         return properties.get().get(propertyName).toString();

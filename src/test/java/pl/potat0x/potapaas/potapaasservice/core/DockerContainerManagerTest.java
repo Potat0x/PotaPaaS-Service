@@ -7,6 +7,7 @@ import com.spotify.docker.client.messages.ContainerConfig;
 import io.vavr.control.Either;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import pl.potat0x.potapaas.potapaasservice.system.PotapaasConfig;
 
 import java.util.List;
 import java.util.Map;

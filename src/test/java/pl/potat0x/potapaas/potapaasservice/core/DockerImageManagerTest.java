@@ -2,6 +2,7 @@ package pl.potat0x.potapaas.potapaasservice.core;
 
 import io.vavr.control.Either;
 import org.junit.Test;
+import pl.potat0x.potapaas.potapaasservice.system.PotapaasConfig;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

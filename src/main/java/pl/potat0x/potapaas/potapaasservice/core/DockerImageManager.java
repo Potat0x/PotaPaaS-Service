@@ -6,6 +6,7 @@ import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.exceptions.DockerException;
 import io.vavr.control.Either;
 import org.springframework.util.FileSystemUtils;
+import pl.potat0x.potapaas.potapaasservice.system.PotapaasConfig;
 
 import java.io.IOException;
 import java.nio.file.Files;

@@ -4,6 +4,7 @@ import com.spotify.docker.client.messages.ContainerConfig;
 import com.spotify.docker.client.messages.HostConfig;
 import io.vavr.control.Either;
 import io.vavr.control.Try;
+import pl.potat0x.potapaas.potapaasservice.system.PotapaasConfig;
 
 import java.nio.file.Files;
 import java.nio.file.Path;

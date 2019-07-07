@@ -5,21 +5,21 @@ import io.vavr.control.Option;
 import pl.potat0x.potapaas.potapaasservice.system.errormessage.CustomErrorMessage;
 import pl.potat0x.potapaas.potapaasservice.system.errormessage.ErrorMessage;
 
-import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public final class ExceptionMapper {
 
+    private static final CustomErrorMessage UNKNOWN_ERROR_MESSAGE = new CustomErrorMessage("Unknown error", 500);
     private final Exception exception;
 
     public <ER> Either<ErrorMessage, ER> of(Case... cases) {
 
-        ErrorMessage mappedErrorInfo = getMappedErrorInfo(cases)
-                .getOrElse(new CustomErrorMessage("unknown errormessage", 500));
+        ErrorMessage mappedErrorMessage = getMappedErrorMessage(cases)
+                .getOrElse(UNKNOWN_ERROR_MESSAGE);
 
-        printError(mappedErrorInfo);
-        return Either.left(mappedErrorInfo);
+        printError(mappedErrorMessage);
+        return Either.left(mappedErrorMessage);
     }
 
     public <ER> Either<ErrorMessage, ER> to(ErrorMessage errorMessage) {
@@ -40,9 +40,14 @@ public final class ExceptionMapper {
         this.exception = e;
     }
 
-    private Option<ErrorMessage> getMappedErrorInfo(Case... cases) {
-        Map<? extends Class<? extends Exception>, ErrorMessage> exceptionToErrorInfo = Arrays.stream(cases)
-                .collect(Collectors.toMap(Case::getExceptionClass, Case::getErrorInfo));
-        return Option.of(exceptionToErrorInfo.get(exception.getClass()));
+    private Option<ErrorMessage> getMappedErrorMessage(Case... cases) {
+        Map<Class<? extends Exception>, ErrorMessage> exceptionToErrorMessage = new HashMap<>();
+
+        for (Case c : cases) {
+            for (Class<? extends Exception> e : c.getExceptionClasses())
+                exceptionToErrorMessage.put(e, c.getErrorMessage());
+        }
+
+        return Option.of(exceptionToErrorMessage.get(exception.getClass()));
     }
 }

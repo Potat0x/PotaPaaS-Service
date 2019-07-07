@@ -14,8 +14,8 @@ import com.spotify.docker.client.messages.NetworkConfig;
 import com.spotify.docker.client.messages.PortBinding;
 import io.vavr.control.Either;
 import io.vavr.control.Try;
-import pl.potat0x.potapaas.potapaasservice.system.errormessage.ErrorMessage;
 import pl.potat0x.potapaas.potapaasservice.system.PotapaasConfig;
+import pl.potat0x.potapaas.potapaasservice.system.errormessage.ErrorMessage;
 import pl.potat0x.potapaas.potapaasservice.system.exceptionmapper.ExceptionMapper;
 
 import java.util.HashSet;
@@ -25,8 +25,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static pl.potat0x.potapaas.potapaasservice.system.exceptionmapper.CaseBuilderStart.exception;
 import static pl.potat0x.potapaas.potapaasservice.system.errormessage.CustomErrorMessage.message;
+import static pl.potat0x.potapaas.potapaasservice.system.exceptionmapper.CaseBuilderStart.exception;
 
 final class DockerContainerManager {
 
@@ -142,8 +142,7 @@ final class DockerContainerManager {
         } catch (Exception e) {
             return ExceptionMapper.map(e).of(
                     exception(ContainerNotFoundException.class).to(CoreErrorMessage.CONTAINER_NOT_FOUND),
-                    exception(DockerException.class).to(CoreErrorMessage.SERVER_ERROR),
-                    exception(BadParamException.class).to(CoreErrorMessage.SERVER_ERROR)
+                    exception(DockerException.class, BadParamException.class).to(CoreErrorMessage.SERVER_ERROR)
             );
         }
     }

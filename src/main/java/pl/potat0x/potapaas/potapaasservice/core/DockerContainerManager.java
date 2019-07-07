@@ -59,7 +59,7 @@ final class DockerContainerManager {
         }
     }
 
-    public Either<ErrorMessage, Boolean> checkIfContainerIsRunning(String containerId) {
+    Either<ErrorMessage, Boolean> checkIfContainerIsRunning(String containerId) {
         try {
             return Either.right(docker.inspectContainer(containerId).state().running());
         } catch (Exception e) {
@@ -70,8 +70,13 @@ final class DockerContainerManager {
         }
     }
 
-    public Try<Void> killContainer(String containerId) {
-        return Try.run(() -> docker.killContainer(containerId));
+    Either<ErrorMessage, String> killContainer(String containerId) {
+        try {
+            docker.killContainer(containerId);
+            return Either.right(containerId);
+        } catch (Exception e) {
+            return ExceptionMapper.map(e).to(CoreErrorMessage.SERVER_ERROR);
+        }
     }
 
     Either<ErrorMessage, Long> waitForExit(String containerId) {
@@ -90,30 +95,45 @@ final class DockerContainerManager {
         }
     }
 
-    public Try<Void> connectContainerToNetwork(String containerId1, String containerId2, String networkId) {
-        return Try.run(() -> {
+    Either<ErrorMessage, String> connectContainerToNetwork(String containerId1, String containerId2, String networkId) {
+        try {
             docker.connectToNetwork(containerId1, networkId);
             docker.connectToNetwork(containerId2, networkId);
-        });
+            return Either.right(networkId);
+        } catch (Exception e) {
+            return ExceptionMapper.map(e).to(CoreErrorMessage.SERVER_ERROR);
+        }
     }
 
-    public Try<Boolean> checkIfContainersAreConnected(String containerId1, String containerId2, String networkId) {
-        return Try.of(() -> checkIfContainerIsConnectedToNetwork(containerId1, networkId)
-                && checkIfContainerIsConnectedToNetwork(containerId2, networkId));
+    Either<ErrorMessage, Boolean> checkIfContainersAreConnected(String containerId1, String containerId2, String networkId) {
+        try {
+            return Either.right(checkIfContainerIsConnectedToNetwork(containerId1, networkId)
+                    && checkIfContainerIsConnectedToNetwork(containerId2, networkId));
+        } catch (Exception e) {
+            return ExceptionMapper.map(e).to(CoreErrorMessage.SERVER_ERROR);
+        }
     }
 
-    public Try<String> createNetwork() {
+    Either<ErrorMessage, String> createNetwork() {
         NetworkConfig networkConfig = NetworkConfig.builder()
                 .attachable(true)
                 .name(PotapaasConfig.get("network_name_prefix") + UUID.randomUUID())
                 .checkDuplicate(true)
                 .build();
-
-        return Try.of(() -> docker.createNetwork(networkConfig).id());
+        try {
+            return Either.right(docker.createNetwork(networkConfig).id());
+        } catch (Exception e) {
+            return ExceptionMapper.map(e).to(CoreErrorMessage.SERVER_ERROR);
+        }
     }
 
-    public Try<Void> removeNetwork(String networkId) {
-        return Try.run(() -> docker.removeNetwork(networkId));
+    Either<ErrorMessage, String> removeNetwork(String networkId) {
+        try {
+            docker.removeNetwork(networkId);
+            return Either.right(networkId);
+        } catch (Exception e) {
+            return ExceptionMapper.map(e).to(CoreErrorMessage.SERVER_ERROR);
+        }
     }
 
     public Either<ErrorMessage, List<String>> getContainersByLabel(String label, String value) {

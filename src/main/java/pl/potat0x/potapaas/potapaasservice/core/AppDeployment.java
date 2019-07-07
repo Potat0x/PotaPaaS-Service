@@ -56,7 +56,7 @@ final class AppDeployment {
                 );
     }
 
-    public Try<Void> killApp() {
+    public Either<ErrorMessage, String> killApp() {
         return containerManager.killContainer(containerId);
     }
 

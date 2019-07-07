@@ -32,7 +32,7 @@ public class DockerContainerManagerTest {
         String containerId = manager.runContainer(defaultConfig()).get();
 
         assertThat(manager.checkIfContainerIsRunning(containerId)).isEqualTo(Either.right(true));
-        assertThat(manager.killContainer(containerId).isSuccess()).isTrue();
+        assertThat(manager.killContainer(containerId).isRight()).isTrue();
         assertThat(manager.checkIfContainerIsRunning(containerId).get()).isFalse();
     }
 
@@ -42,13 +42,13 @@ public class DockerContainerManagerTest {
         String containerId2 = manager.runContainer(defaultConfig()).get();
         String networkId = manager.createNetwork().get();
 
-        assertThat(manager.connectContainerToNetwork(containerId1, containerId2, networkId).isSuccess()).isTrue();
+        assertThat(manager.connectContainerToNetwork(containerId1, containerId2, networkId).isRight()).isTrue();
         assertThat(manager.checkIfContainersAreConnected(containerId1, containerId2, networkId).get()).isTrue();
 
         manager.killContainer(containerId1);
         manager.killContainer(containerId2);
 
-        assertThat(manager.removeNetwork(networkId).isSuccess()).isTrue();
+        assertThat(manager.removeNetwork(networkId).isRight()).isTrue();
     }
 
     @Test

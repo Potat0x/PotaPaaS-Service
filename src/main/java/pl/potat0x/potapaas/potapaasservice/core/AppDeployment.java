@@ -3,9 +3,8 @@ package pl.potat0x.potapaas.potapaasservice.core;
 import com.spotify.docker.client.messages.ContainerConfig;
 import com.spotify.docker.client.messages.HostConfig;
 import io.vavr.control.Either;
-import io.vavr.control.Try;
-import pl.potat0x.potapaas.potapaasservice.system.errormessage.ErrorMessage;
 import pl.potat0x.potapaas.potapaasservice.system.PotapaasConfig;
+import pl.potat0x.potapaas.potapaasservice.system.errormessage.ErrorMessage;
 import pl.potat0x.potapaas.potapaasservice.system.exceptionmapper.ExceptionMapper;
 
 import java.nio.file.Files;
@@ -15,7 +14,7 @@ import java.util.UUID;
 
 import static io.vavr.API.*;
 
-final class AppDeployment {
+public final class AppDeployment {
 
     public enum DeploymentType {
         NODEJS("Node.js (NPM)");

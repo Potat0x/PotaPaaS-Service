@@ -3,6 +3,7 @@ package pl.potat0x.potapaas.potapaasservice.core;
 import io.vavr.control.Either;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import pl.potat0x.potapaas.potapaasservice.system.errormessage.ErrorMessage;
 import pl.potat0x.potapaas.potapaasservice.system.exceptionmapper.ExceptionMapper;
 
@@ -46,7 +47,7 @@ public final class GitCloner {
             return Either.left(message("branch \"" + branchName + "\" not found in repository: " + repositoryUri, 404));
         } catch (Exception e) {
             return ExceptionMapper.map(e).of(
-                    exception(GitAPIException.class).to(
+                    exception(GitAPIException.class, InvalidRemoteException.class).to(
                             message("Error while cloning \"" + branchName + "\" branch from repository:" + repositoryUri, 500)
                     )
             );

@@ -10,7 +10,7 @@ public class DockerImageManagerTest {
 
     @Test
     public void shouldBuildAndDeleteDockerImage() {
-        DockerImageManager imageManager = new DockerImageManager(PotapaasConfig.get("docker_api_uri"), getHelloworldAppSourceDir(), DockerImageManager.ImageType.NODEJS);
+        DockerImageManager imageManager = new DockerImageManager(PotapaasConfig.get("docker_api_uri"), getHelloworldAppSourceDir(), AppType.NODEJS);
 
         for (var buildType : DockerImageManager.BuildType.values()) {
             String imageId = imageManager.buildImage(buildType).get();

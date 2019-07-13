@@ -6,8 +6,8 @@ import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.exceptions.DockerException;
 import io.vavr.control.Either;
 import org.springframework.util.FileSystemUtils;
-import pl.potat0x.potapaas.potapaasservice.system.errormessage.ErrorMessage;
 import pl.potat0x.potapaas.potapaasservice.system.PotapaasConfig;
+import pl.potat0x.potapaas.potapaasservice.system.errormessage.ErrorMessage;
 import pl.potat0x.potapaas.potapaasservice.system.exceptionmapper.ExceptionMapper;
 
 import java.io.IOException;
@@ -15,15 +15,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 
-import static io.vavr.API.*;
-
 final class DockerImageManager {
 
-    public enum ImageType {
-        NODEJS
-    }
-
-    public enum BuildType {
+    enum BuildType {
         RELEASE,
         TEST
     }
@@ -32,12 +26,10 @@ final class DockerImageManager {
     private final DockerClient docker;
     private final String imageTypeName;
 
-    public DockerImageManager(String dockerClientUri, String applicationSrcDirectory, ImageType imageType) {
+    public DockerImageManager(String dockerClientUri, String applicationSrcDirectory, AppType imageType) {
         docker = new DefaultDockerClient(dockerClientUri);
         applicationSrcDir = Path.of(applicationSrcDirectory);
-        imageTypeName = Match(imageType).of(
-                Case($(ImageType.NODEJS), "nodejs")
-        );
+        imageTypeName = imageType.toString().toLowerCase();
     }
 
     public Either<ErrorMessage, String> buildImage(BuildType buildType) {

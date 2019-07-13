@@ -13,6 +13,7 @@ import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
+import pl.potat0x.potapaas.potapaasservice.core.AppType;
 
 import java.time.LocalDateTime;
 
@@ -59,7 +60,7 @@ public class AppControllerTest {
     private AppRequestDtoBuilder validAppRequestDtoBuilder() {
         return new AppRequestDtoBuilder()
                 .withName("app-name-test123")
-                .withType("NODEJS")
+                .withType(AppType.NODEJS.toString())
                 .withSourceRepoUrl("https://github.com/Potat0x/potapaas-test-cases")
                 .withSourceBranchName("nodejs_test_ok");
     }
@@ -67,7 +68,7 @@ public class AppControllerTest {
     private AppResponseDtoBuilder validAppResponseDtoBuilder() {
         return new AppResponseDtoBuilder()
                 .withName("app-name-test456")
-                .withType("NODEJS")
+                .withType(AppType.NODEJS.toString())
                 .withSourceRepoUrl("https://github.com/Potat0x/potapaas-test-cases")
                 .withSourceBranchName("nodejs_test_ok")
                 .withCreatedAt(LocalDateTime.now())

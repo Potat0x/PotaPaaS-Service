@@ -35,6 +35,6 @@ public class AppDeploymentTest {
     }
 
     private AppDeployment appDeploymentFromTestGithubRepo(String branchName) {
-        return new AppDeployment(AppDeployment.DeploymentType.NODEJS, "https://github.com/Potat0x/potapaas-test-cases", branchName);
+        return new AppDeployment(AppType.NODEJS, "https://github.com/Potat0x/potapaas-test-cases", branchName);
     }
 }

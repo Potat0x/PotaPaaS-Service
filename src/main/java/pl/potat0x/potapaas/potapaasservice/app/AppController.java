@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import pl.potat0x.potapaas.potapaasservice.api.ResponseResolver;
+import pl.potat0x.potapaas.potapaasservice.core.AppType;
 import pl.potat0x.potapaas.potapaasservice.system.errormessage.ErrorMessage;
 
 @RestController
@@ -52,7 +53,7 @@ class AppController {
     private AppRequestDto validAppRequestExample() {
         return new AppRequestDtoBuilder()
                 .withName("hello-world-app")
-                .withType("NODEJS")
+                .withType(AppType.NODEJS.toString())
                 .withSourceRepoUrl("https://github.com/Potat0x/potapaas-test-cases")
                 .withSourceBranchName("nodejs_test_ok")
                 .build();

@@ -12,35 +12,23 @@ import java.nio.file.Path;
 import java.util.Map;
 import java.util.UUID;
 
-import static io.vavr.API.*;
-
 public final class AppDeployment {
-
-    public enum DeploymentType {
-        NODEJS("Node.js (NPM)");
-
-        public final String value;
-
-        DeploymentType(String value) {
-            this.value = value;
-        }
-    }
 
     private final String githubRepoUrl;
     private final String branchName;
-    private final DeploymentType deploymentType;
+    private final AppType appType;
     private final String potapaasAppId;
     private String containerId;
     private String appSourceDir;
 
     private final DockerContainerManager containerManager;
 
-    public AppDeployment(DeploymentType deploymentType, String githubRepoUrl, String branchName) {
+    public AppDeployment(AppType appType, String githubRepoUrl, String branchName) {
         containerManager = new DockerContainerManager(PotapaasConfig.get("docker_api_uri"));
         potapaasAppId = UUID.randomUUID().toString();
         this.githubRepoUrl = githubRepoUrl;
         this.branchName = branchName;
-        this.deploymentType = deploymentType;
+        this.appType = appType;
     }
 
     public Either<ErrorMessage, String> deploy() {
@@ -103,11 +91,7 @@ public final class AppDeployment {
     }
 
     private Either<ErrorMessage, String> buildImage(String appSourceDir, DockerImageManager.BuildType buildType) {
-        DockerImageManager.ImageType dockerImageType = Match(deploymentType).of(
-                Case($(DeploymentType.NODEJS), DockerImageManager.ImageType.NODEJS)
-        );
-
-        DockerImageManager imageManager = new DockerImageManager(PotapaasConfig.get("docker_api_uri"), appSourceDir, dockerImageType);
+        DockerImageManager imageManager = new DockerImageManager(PotapaasConfig.get("docker_api_uri"), appSourceDir, appType);
         return imageManager.buildImage(buildType);
     }
 

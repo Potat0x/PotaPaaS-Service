@@ -4,6 +4,7 @@ import io.vavr.collection.Seq;
 import io.vavr.collection.Stream;
 import io.vavr.control.Option;
 import io.vavr.control.Validation;
+import pl.potat0x.potapaas.potapaasservice.core.AppType;
 
 
 import java.net.MalformedURLException;
@@ -11,7 +12,6 @@ import java.net.URL;
 import java.util.Objects;
 
 import static io.vavr.API.*;
-import static pl.potat0x.potapaas.potapaasservice.core.AppDeployment.DeploymentType;
 
 final class AppRequestDtoValidator {
 
@@ -48,11 +48,11 @@ final class AppRequestDtoValidator {
         }
 
         try {
-            DeploymentType.valueOf(type);
+            AppType.valueOf(type);
             return Validation.valid(type);
         } catch (IllegalArgumentException e) {
-            String availableTypes = Stream.of(DeploymentType.values())
-                    .map(x -> x.value)
+            String availableTypes = Stream.of(AppType.values())
+                    .map(Enum::toString)
                     .reduce((a, b) -> a + ", " + b);
             String message = "Invalid application type. Available types: " + availableTypes;
             return Validation.invalid(message);

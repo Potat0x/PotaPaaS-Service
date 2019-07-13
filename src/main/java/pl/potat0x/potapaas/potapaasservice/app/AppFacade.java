@@ -3,11 +3,11 @@ package pl.potat0x.potapaas.potapaasservice.app;
 import io.vavr.control.Either;
 import org.springframework.stereotype.Service;
 import pl.potat0x.potapaas.potapaasservice.core.AppDeployment;
+import pl.potat0x.potapaas.potapaasservice.core.AppType;
 import pl.potat0x.potapaas.potapaasservice.system.errormessage.ErrorMessage;
 
 import java.time.LocalDateTime;
 
-import static pl.potat0x.potapaas.potapaasservice.core.AppDeployment.DeploymentType;
 
 @Service
 class AppFacade {
@@ -17,8 +17,8 @@ class AppFacade {
     }
 
     private AppDeployment deploymentFromRequestDto(AppRequestDto requestDto) {
-        DeploymentType deploymentType = DeploymentType.valueOf(requestDto.getType());
-        return new AppDeployment(deploymentType, requestDto.getSourceRepoUrl(), requestDto.getSourceBranchName());
+        AppType appType = AppType.valueOf(requestDto.getType());
+        return new AppDeployment(appType, requestDto.getSourceRepoUrl(), requestDto.getSourceBranchName());
     }
 
     private AppResponseDto getAppDetails(String appId) { //todo: return values from database

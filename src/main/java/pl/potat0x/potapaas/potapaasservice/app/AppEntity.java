@@ -37,13 +37,13 @@ class AppEntity {
     private String sourceBranchName;
     private LocalDateTime createdAt;
 
-    public AppEntity(String uuid, AppInstanceEntity appInstance, String name, AppType type, String sourceRepoUrl, String sourceBranchName) {
+    public AppEntity(AppInstanceEntity appInstance, AppType type, String uuid, String name, String sourceRepoUrl, String sourceBranchName) {
         this.appInstance = appInstance;
-        this.name = name;
         this.type = type;
+        this.uuid = uuid;
+        this.name = name;
         this.sourceRepoUrl = sourceRepoUrl;
         this.sourceBranchName = sourceBranchName;
-        this.uuid = uuid;
         this.createdAt = LocalDateTime.now();
     }
 

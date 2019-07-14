@@ -22,21 +22,21 @@ class AppFacade {
     Either<ErrorMessage, AppResponseDto> createAndDeployApp(AppRequestDto requestDto) {
         AppDeployment appDeployment = deploymentFromRequestDto(requestDto);
         return appDeployment.deploy().map(x -> {
-            AppEntity appEntity = saveAppToDatabase(appDeployment);
+            AppEntity appEntity = buildAppEntity(appDeployment);
+            appRepository.save(appEntity);
             return responseDtoFromEntity(appDeployment, appEntity);
         });
     }
 
-    private AppEntity saveAppToDatabase(AppDeployment appDeployment) {
-        AppInstanceEntity instance = new AppInstanceEntity(appDeployment.getContainerId(), appDeployment.getImageId());
-        AppEntity appEntity = new AppEntity(
-                appDeployment.getPotapaasAppId(),
-                instance, appDeployment.getAppName(),
-                appDeployment.getAppType(),
-                appDeployment.getGithubRepoUrl(),
-                appDeployment.getBranchName()
-        );
-        return appRepository.save(appEntity);
+    private AppEntity buildAppEntity(AppDeployment appDeployment) {
+        return new AppEntityBuilder()
+                .withAppInstance(new AppInstanceEntity(appDeployment.getContainerId(), appDeployment.getImageId()))
+                .withType(appDeployment.getAppType())
+                .withUuid(appDeployment.getPotapaasAppId())
+                .withName(appDeployment.getAppName())
+                .withSourceRepoUrl(appDeployment.getGithubRepoUrl())
+                .withSourceBranchName(appDeployment.getBranchName())
+                .build();
     }
 
     private AppDeployment deploymentFromRequestDto(AppRequestDto requestDto) {

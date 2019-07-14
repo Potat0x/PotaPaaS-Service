@@ -9,6 +9,7 @@ import pl.potat0x.potapaas.potapaasservice.system.exceptionmapper.ExceptionMappe
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.UUID;
 
@@ -103,5 +104,33 @@ public final class AppDeployment {
         } catch (Exception e) {
             return ExceptionMapper.map(e).of();
         }
+    }
+
+    public Either<ErrorMessage, String> getStatus() {
+        return containerManager.getStatus(containerId);
+    }
+
+    public Either<ErrorMessage, LocalDateTime> getCreationDate() {
+        return containerManager.getCreationDate(containerId);
+    }
+
+    public String getGithubRepoUrl() {
+        return githubRepoUrl;
+    }
+
+    public String getBranchName() {
+        return branchName;
+    }
+
+    public AppType getAppType() {
+        return appType;
+    }
+
+    public String getPotapaasAppId() {
+        return potapaasAppId;
+    }
+
+    public String getContainerId() {
+        return containerId;
     }
 }

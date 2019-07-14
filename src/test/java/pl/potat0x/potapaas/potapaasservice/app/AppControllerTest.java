@@ -73,7 +73,6 @@ public class AppControllerTest {
                 .withSourceBranchName("nodejs_test_ok")
                 .withCreatedAt(LocalDateTime.now())
                 .withStatus("running")
-                .withUptime("123")
                 .withExposedPort(32323);
     }
 

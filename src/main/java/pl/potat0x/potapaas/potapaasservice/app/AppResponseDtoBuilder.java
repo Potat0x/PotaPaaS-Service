@@ -4,17 +4,22 @@ import java.time.LocalDateTime;
 
 final class AppResponseDtoBuilder {
 
+    private String appId;
     private String name;
     private String type;
     private String sourceRepoUrl;
     private String sourceBranchName;
     private LocalDateTime createdAt;
     private String status;
-    private String uptime;
     private int exposedPort;
 
     AppResponseDto build() {
-        return new AppResponseDto(name, type, sourceRepoUrl, sourceBranchName, createdAt, status, uptime, exposedPort);
+        return new AppResponseDto(appId, name, type, sourceRepoUrl, sourceBranchName, createdAt, status, exposedPort);
+    }
+
+    public AppResponseDtoBuilder withAppId(String appId) {
+        this.appId = appId;
+        return this;
     }
 
     public AppResponseDtoBuilder withName(String name) {
@@ -44,11 +49,6 @@ final class AppResponseDtoBuilder {
 
     public AppResponseDtoBuilder withStatus(String status) {
         this.status = status;
-        return this;
-    }
-
-    public AppResponseDtoBuilder withUptime(String uptime) {
-        this.uptime = uptime;
         return this;
     }
 

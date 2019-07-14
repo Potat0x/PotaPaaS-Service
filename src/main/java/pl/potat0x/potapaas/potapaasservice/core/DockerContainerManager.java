@@ -10,14 +10,17 @@ import com.spotify.docker.client.messages.AttachedNetwork;
 import com.spotify.docker.client.messages.Container;
 import com.spotify.docker.client.messages.ContainerConfig;
 import com.spotify.docker.client.messages.ContainerCreation;
+import com.spotify.docker.client.messages.ContainerState;
 import com.spotify.docker.client.messages.NetworkConfig;
 import com.spotify.docker.client.messages.PortBinding;
 import io.vavr.control.Either;
-import io.vavr.control.Try;
 import pl.potat0x.potapaas.potapaasservice.system.PotapaasConfig;
 import pl.potat0x.potapaas.potapaasservice.system.errormessage.ErrorMessage;
 import pl.potat0x.potapaas.potapaasservice.system.exceptionmapper.ExceptionMapper;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -163,6 +166,31 @@ final class DockerContainerManager {
             return ExceptionMapper.map(e).of(
                     exception(ContainerNotFoundException.class).to(CoreErrorMessage.CONTAINER_NOT_FOUND),
                     exception(DockerException.class, BadParamException.class).to(CoreErrorMessage.SERVER_ERROR)
+            );
+        }
+    }
+
+    public Either<ErrorMessage, String> getStatus(String containerId) {
+        try {
+            ContainerState state = docker.inspectContainer(containerId).state();
+            return Either.right(state.status());
+        } catch (Exception e) {
+            return ExceptionMapper.map(e).of(
+                    exception(ContainerNotFoundException.class).to(CoreErrorMessage.CONTAINER_NOT_FOUND),
+                    exception(DockerException.class).to(CoreErrorMessage.SERVER_ERROR)
+            );
+        }
+    }
+
+    public Either<ErrorMessage, LocalDateTime> getCreationDate(String containerId) {
+        try {
+            Date creationDate = docker.inspectContainer(containerId).created();
+            LocalDateTime creationDateTime = LocalDateTime.ofInstant(creationDate.toInstant(), ZoneId.systemDefault());
+            return Either.right(creationDateTime);
+        } catch (Exception e) {
+            return ExceptionMapper.map(e).of(
+                    exception(ContainerNotFoundException.class).to(CoreErrorMessage.CONTAINER_NOT_FOUND),
+                    exception(DockerException.class).to(CoreErrorMessage.SERVER_ERROR)
             );
         }
     }

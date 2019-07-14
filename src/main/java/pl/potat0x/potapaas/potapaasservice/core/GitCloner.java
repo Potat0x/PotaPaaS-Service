@@ -42,6 +42,7 @@ public final class GitCloner {
                     .setBranch(branchName)
                     .setDirectory(new File(clonedRepoDirectory))
                     .call();
+            repo.close();//todo: trywith
             System.err.println("___branchList().call()");
             if (repo.branchList().call().size() > 0) {
                 System.err.println("___cloneBranch end right" + clonedRepoDirectory);

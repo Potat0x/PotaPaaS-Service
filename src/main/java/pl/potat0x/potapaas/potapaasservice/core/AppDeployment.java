@@ -10,11 +10,13 @@ import pl.potat0x.potapaas.potapaasservice.system.exceptionmapper.ExceptionMappe
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
 public final class AppDeployment {
 
+    private final String appName;
     private final String githubRepoUrl;
     private final String branchName;
     private final AppType appType;
@@ -24,9 +26,10 @@ public final class AppDeployment {
 
     private final DockerContainerManager containerManager;
 
-    public AppDeployment(AppType appType, String githubRepoUrl, String branchName) {
+    public AppDeployment(String appName, AppType appType, String githubRepoUrl, String branchName) {
         containerManager = new DockerContainerManager(PotapaasConfig.get("docker_api_uri"));
         potapaasAppId = UUID.randomUUID().toString();
+        this.appName = appName;
         this.githubRepoUrl = githubRepoUrl;
         this.branchName = branchName;
         this.appType = appType;
@@ -79,8 +82,10 @@ public final class AppDeployment {
                 .publishAllPorts(buildType == DockerImageManager.BuildType.RELEASE)
                 .build();
 
-        Map<String, String> labels = Map.of(PotapaasConfig.get("containers_label_prefix") + buildType,
-                potapaasAppId.substring(0, PotapaasConfig.getInt("deployment_uuid_label_length")));
+        Map<String, String> labels = new HashMap<>();
+        labels.put(PotapaasConfig.get("container_label_app_name"), appName);
+        labels.put(PotapaasConfig.get("container_label_app_type"), appType.toString());
+        labels.put(PotapaasConfig.get("container_label_build_type"), buildType.toString());
 
         ContainerConfig.Builder config = ContainerConfig.builder()
                 .image(imageId)
@@ -112,6 +117,10 @@ public final class AppDeployment {
 
     public Either<ErrorMessage, LocalDateTime> getCreationDate() {
         return containerManager.getCreationDate(containerId);
+    }
+
+    public String getAppName() {
+        return appName;
     }
 
     public String getGithubRepoUrl() {

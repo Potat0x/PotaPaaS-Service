@@ -22,16 +22,16 @@ class AppFacade {
     Either<ErrorMessage, AppResponseDto> createAndDeployApp(AppRequestDto requestDto) {
         AppDeployment appDeployment = deploymentFromRequestDto(requestDto);
         return appDeployment.deploy().map(x -> {
-            App app = saveAppToDatabase(requestDto.getName(), appDeployment);
+            App app = saveAppToDatabase(appDeployment);
             return responseDtoFromEntity(appDeployment, app);
         });
     }
 
-    private App saveAppToDatabase(String appName, AppDeployment appDeployment) {
+    private App saveAppToDatabase(AppDeployment appDeployment) {
         AppInstance instance = new AppInstance(appDeployment.getContainerId(), null);
         App app = new App(
                 appDeployment.getPotapaasAppId(),
-                instance, appName,
+                instance, appDeployment.getAppName(),
                 appDeployment.getAppType(),
                 appDeployment.getGithubRepoUrl(),
                 appDeployment.getBranchName()
@@ -41,7 +41,7 @@ class AppFacade {
 
     private AppDeployment deploymentFromRequestDto(AppRequestDto requestDto) {
         AppType appType = AppType.valueOf(requestDto.getType());
-        return new AppDeployment(appType, requestDto.getSourceRepoUrl(), requestDto.getSourceBranchName());
+        return new AppDeployment(requestDto.getName(), appType, requestDto.getSourceRepoUrl(), requestDto.getSourceBranchName());
     }
 
     private AppResponseDto responseDtoFromEntity(AppDeployment app, App appEntity) {

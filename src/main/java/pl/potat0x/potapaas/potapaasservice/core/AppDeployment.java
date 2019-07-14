@@ -22,6 +22,7 @@ public final class AppDeployment {
     private final AppType appType;
     private final String potapaasAppId;
     private String containerId;
+    private String imageId;
     private String appSourceDir;
 
     private final DockerContainerManager containerManager;
@@ -41,6 +42,7 @@ public final class AppDeployment {
                 .flatMap(clonedRepoDir -> buildTestImage())
                 .flatMap(this::runAppTests)
                 .flatMap(testResults -> buildReleaseImage())
+                .map(imageId -> this.imageId = imageId)
                 .flatMap(imageId -> runApp(imageId)
                         .map(containerId -> this.containerId = containerId)
                         .map(containerId -> potapaasAppId)
@@ -141,5 +143,9 @@ public final class AppDeployment {
 
     public String getContainerId() {
         return containerId;
+    }
+
+    public String getImageId() {
+        return imageId;
     }
 }

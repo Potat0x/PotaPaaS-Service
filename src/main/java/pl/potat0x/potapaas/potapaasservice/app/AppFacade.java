@@ -28,7 +28,7 @@ class AppFacade {
     }
 
     private App saveAppToDatabase(AppDeployment appDeployment) {
-        AppInstance instance = new AppInstance(appDeployment.getContainerId(), null);
+        AppInstance instance = new AppInstance(appDeployment.getContainerId(), appDeployment.getImageId());
         App app = new App(
                 appDeployment.getPotapaasAppId(),
                 instance, appDeployment.getAppName(),

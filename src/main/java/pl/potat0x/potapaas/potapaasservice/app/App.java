@@ -12,6 +12,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Entity
@@ -32,6 +33,7 @@ public class App {
     private String name;
     private String sourceRepoUrl;
     private String sourceBranchName;
+    private LocalDateTime createdAt;
 
     public App(String uuid, AppInstance appInstance, String name, AppType type, String sourceRepoUrl, String sourceBranchName) {
         this.appInstance = appInstance;
@@ -40,6 +42,7 @@ public class App {
         this.sourceRepoUrl = sourceRepoUrl;
         this.sourceBranchName = sourceBranchName;
         this.uuid = uuid;
+        this.createdAt = LocalDateTime.now();
     }
 
     protected App() {
@@ -71,6 +74,10 @@ public class App {
 
     public String getSourceBranchName() {
         return sourceBranchName;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
     @Override

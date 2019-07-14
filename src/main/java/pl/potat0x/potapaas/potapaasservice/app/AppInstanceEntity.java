@@ -6,42 +6,44 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToOne;
+import javax.persistence.Table;
 import java.util.Objects;
 import java.util.UUID;
 
 @Entity
-public class AppInstance {
+@Table(name = "app_instance")
+class AppInstanceEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     @OneToOne(fetch = FetchType.EAGER, mappedBy = "appInstance")
-    private App app;
+    private AppEntity appEntity;
 
     private String containerId;
     private String imageId;
 
     private String uuid;
 
-    public AppInstance(String containerId, String imageId) {
+    public AppInstanceEntity(String containerId, String imageId) {
         this.uuid = UUID.randomUUID().toString();
         this.imageId = imageId;
         this.containerId = containerId;
     }
 
-    protected AppInstance() {
+    protected AppInstanceEntity() {
     }
 
-    public App getApp() {
-        return app;
+    public AppEntity getAppEntity() {
+        return appEntity;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        AppInstance that = (AppInstance) o;
+        AppInstanceEntity that = (AppInstanceEntity) o;
         return uuid.equals(that.uuid);
     }
 

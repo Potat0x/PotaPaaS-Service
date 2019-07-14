@@ -12,18 +12,20 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
+import javax.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Entity
-public class App {
+@Table(name = "app")
+class AppEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "app_instance_id", referencedColumnName = "id")
-    private AppInstance appInstance;
+    private AppInstanceEntity appInstance;
 
     @Enumerated(value = EnumType.STRING)
     private AppType type;
@@ -35,7 +37,7 @@ public class App {
     private String sourceBranchName;
     private LocalDateTime createdAt;
 
-    public App(String uuid, AppInstance appInstance, String name, AppType type, String sourceRepoUrl, String sourceBranchName) {
+    public AppEntity(String uuid, AppInstanceEntity appInstance, String name, AppType type, String sourceRepoUrl, String sourceBranchName) {
         this.appInstance = appInstance;
         this.name = name;
         this.type = type;
@@ -45,7 +47,7 @@ public class App {
         this.createdAt = LocalDateTime.now();
     }
 
-    protected App() {
+    protected AppEntity() {
     }
 
     public String getUuid() {
@@ -56,7 +58,7 @@ public class App {
         return id;
     }
 
-    public AppInstance getAppInstance() {
+    public AppInstanceEntity getAppInstance() {
         return appInstance;
     }
 
@@ -84,8 +86,8 @@ public class App {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        App app = (App) o;
-        return uuid.equals(app.uuid);
+        AppEntity appEntity = (AppEntity) o;
+        return uuid.equals(appEntity.uuid);
     }
 
     @Override

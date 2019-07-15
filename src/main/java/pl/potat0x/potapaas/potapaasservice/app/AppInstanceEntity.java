@@ -39,6 +39,14 @@ class AppInstanceEntity {
         return appEntity;
     }
 
+    public String getContainerId() {
+        return containerId;
+    }
+
+    public String getImageId() {
+        return imageId;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

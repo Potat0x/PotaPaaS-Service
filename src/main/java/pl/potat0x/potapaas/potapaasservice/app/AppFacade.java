@@ -3,11 +3,11 @@ package pl.potat0x.potapaas.potapaasservice.app;
 import io.vavr.control.Either;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import pl.potat0x.potapaas.potapaasservice.core.AppDeployment;
+import pl.potat0x.potapaas.potapaasservice.core.AppManager;
 import pl.potat0x.potapaas.potapaasservice.core.AppType;
 import pl.potat0x.potapaas.potapaasservice.system.errormessage.ErrorMessage;
 
-import java.time.LocalDateTime;
+import static pl.potat0x.potapaas.potapaasservice.system.errormessage.CustomErrorMessage.message;
 
 @Service
 class AppFacade {
@@ -20,40 +20,52 @@ class AppFacade {
     }
 
     Either<ErrorMessage, AppResponseDto> createAndDeployApp(AppRequestDto requestDto) {
-        AppDeployment appDeployment = deploymentFromRequestDto(requestDto);
-        return appDeployment.deploy().map(x -> {
-            AppEntity appEntity = buildAppEntity(appDeployment);
+        AppManager appManager = buildAppManagerForNewApp(requestDto);
+        return appManager.deploy().map(x -> {
+            AppEntity appEntity = buildAppEntity(appManager);
             appRepository.save(appEntity);
-            return responseDtoFromEntity(appDeployment, appEntity);
+            return buildResponseDto(appManager, appEntity);
         });
     }
-
-    private AppEntity buildAppEntity(AppDeployment appDeployment) {
+    
+    private AppEntity buildAppEntity(AppManager appManager) {
         return new AppEntityBuilder()
-                .withAppInstance(new AppInstanceEntity(appDeployment.getContainerId(), appDeployment.getImageId()))
-                .withType(appDeployment.getAppType())
-                .withUuid(appDeployment.getPotapaasAppId())
-                .withName(appDeployment.getAppName())
-                .withSourceRepoUrl(appDeployment.getGithubRepoUrl())
-                .withSourceBranchName(appDeployment.getBranchName())
+                .withAppInstance(new AppInstanceEntity(appManager.getContainerId(), appManager.getImageId()))
+                .withType(appManager.getAppType())
+                .withUuid(appManager.getPotapaasAppId())
+                .withName(appManager.getAppName())
+                .withSourceRepoUrl(appManager.getGitRepoUrl())
+                .withSourceBranchName(appManager.getBranchName())
                 .build();
     }
 
-    private AppDeployment deploymentFromRequestDto(AppRequestDto requestDto) {
-        AppType appType = AppType.valueOf(requestDto.getType());
-        return new AppDeployment(requestDto.getName(), appType, requestDto.getSourceRepoUrl(), requestDto.getSourceBranchName());
+    private AppManager buildAppManagerForExistingApp(AppEntity app) {
+        AppInstanceEntity instance = app.getAppInstance();
+        return AppManager.forExistingApp(
+                app.getUuid(),
+                app.getName(),
+                app.getType(),
+                app.getSourceRepoUrl(),
+                app.getSourceBranchName(),
+                instance.getContainerId(),
+                instance.getImageId()
+        );
     }
 
-    private AppResponseDto responseDtoFromEntity(AppDeployment app, AppEntity appEntity) {
+    private AppManager buildAppManagerForNewApp(AppRequestDto dto) {
+        AppType appType = AppType.valueOf(dto.getType());
+        return AppManager.createApp(dto.getName(), appType, dto.getSourceRepoUrl(), dto.getSourceBranchName());
+    }
+
+    private AppResponseDto buildResponseDto(AppManager app, AppEntity appEntity) {
         return new AppResponseDtoBuilder()
                 .withAppId(appEntity.getUuid())
                 .withName(appEntity.getName())
                 .withType(appEntity.getType().userFriendlyName)
                 .withSourceRepoUrl(appEntity.getSourceRepoUrl())
                 .withSourceBranchName(appEntity.getSourceBranchName())
-
-                .withCreatedAt(app.getCreationDate().getOrElse(((LocalDateTime) null)))
-                .withStatus(app.getStatus().getOrElse(""))
+                .withCreatedAt(appEntity.getCreatedAt())
+                .withStatus(app.getStatus().getOrElse("not deployed"))
                 .withExposedPort(app.getPort().map(Integer::parseInt).getOrElse(-1))
                 .build();
     }

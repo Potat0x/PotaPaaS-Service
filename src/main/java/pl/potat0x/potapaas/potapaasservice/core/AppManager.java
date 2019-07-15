@@ -14,31 +14,30 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public final class AppDeployment {
+public final class AppManager {
 
     private final String appName;
-    private final String githubRepoUrl;
+    private final String gitRepoUrl;
     private final String branchName;
     private final AppType appType;
     private final String potapaasAppId;
     private String containerId;
     private String imageId;
-    private String appSourceDir;
+    private String clonedRepoDir;
 
     private final DockerContainerManager containerManager;
 
-    public AppDeployment(String appName, AppType appType, String githubRepoUrl, String branchName) {
-        containerManager = new DockerContainerManager(PotapaasConfig.get("docker_api_uri"));
-        potapaasAppId = UUID.randomUUID().toString();
-        this.appName = appName;
-        this.githubRepoUrl = githubRepoUrl;
-        this.branchName = branchName;
-        this.appType = appType;
+    public static AppManager createApp(String name, AppType type, String gitRepoUrl, String repoBranchName) {
+        return new AppManager(UUID.randomUUID().toString(), name, type, gitRepoUrl, repoBranchName);
+    }
+
+    public static AppManager forExistingApp(String appUuid, String name, AppType type, String gitRepoUrl, String repoBranchName, String containerId, String imageId) {
+        return new AppManager(appUuid, name, type, gitRepoUrl, repoBranchName, containerId, imageId);
     }
 
     public Either<ErrorMessage, String> deploy() {
         return cloneRepo()
-                .map(clonedRepoDir -> this.appSourceDir = clonedRepoDir)
+                .map(clonedRepoDir -> this.clonedRepoDir = clonedRepoDir)
                 .flatMap(clonedRepoDir -> buildTestImage())
                 .flatMap(this::runAppTests)
                 .flatMap(testResults -> buildReleaseImage())
@@ -61,6 +60,57 @@ public final class AppDeployment {
         return containerManager.getLogs(containerId);
     }
 
+    public Either<ErrorMessage, String> getStatus() {
+        return containerManager.getStatus(containerId);
+    }
+
+    public Either<ErrorMessage, LocalDateTime> getCreationDate() {
+        return containerManager.getCreationDate(containerId);
+    }
+
+    public String getAppName() {
+        return appName;
+    }
+
+    public String getGitRepoUrl() {
+        return gitRepoUrl;
+    }
+
+    public String getBranchName() {
+        return branchName;
+    }
+
+    public AppType getAppType() {
+        return appType;
+    }
+
+    public String getPotapaasAppId() {
+        return potapaasAppId;
+    }
+
+    public String getContainerId() {
+        return containerId;
+    }
+
+    public String getImageId() {
+        return imageId;
+    }
+
+    private AppManager(String potapaasAppId, String name, AppType type, String gitRepoUrl, String branchName) {
+        containerManager = new DockerContainerManager(PotapaasConfig.get("docker_api_uri"));
+        this.appName = name;
+        this.gitRepoUrl = gitRepoUrl;
+        this.branchName = branchName;
+        this.appType = type;
+        this.potapaasAppId = potapaasAppId;
+    }
+
+    private AppManager(String potapaasAppId, String name, AppType type, String gitRepoUrl, String branchName, String containerId, String imageId) {
+        this(potapaasAppId, name, type, gitRepoUrl, branchName);
+        this.containerId = containerId;
+        this.imageId = imageId;
+    }
+
     private Either<ErrorMessage, String> runApp(String imageId) {
         return runContainer(imageId, DockerImageManager.BuildType.RELEASE);
     }
@@ -72,11 +122,11 @@ public final class AppDeployment {
     }
 
     private Either<ErrorMessage, String> buildReleaseImage() {
-        return buildImage(appSourceDir, DockerImageManager.BuildType.RELEASE);
+        return buildImage(clonedRepoDir, DockerImageManager.BuildType.RELEASE);
     }
 
     private Either<ErrorMessage, String> buildTestImage() {
-        return buildImage(appSourceDir, DockerImageManager.BuildType.TEST);
+        return buildImage(clonedRepoDir, DockerImageManager.BuildType.TEST);
     }
 
     private Either<ErrorMessage, String> runContainer(String imageId, DockerImageManager.BuildType buildType) {
@@ -107,45 +157,9 @@ public final class AppDeployment {
         try {
             Path tmpDir = Files.createTempDirectory(PotapaasConfig.get("tmp_git_dir_prefix"));
             return GitCloner.create(tmpDir.toAbsolutePath())
-                    .flatMap(cloner -> cloner.cloneBranch(githubRepoUrl, branchName));
+                    .flatMap(cloner -> cloner.cloneBranch(gitRepoUrl, branchName));
         } catch (Exception e) {
             return ExceptionMapper.map(e).of();
         }
-    }
-
-    public Either<ErrorMessage, String> getStatus() {
-        return containerManager.getStatus(containerId);
-    }
-
-    public Either<ErrorMessage, LocalDateTime> getCreationDate() {
-        return containerManager.getCreationDate(containerId);
-    }
-
-    public String getAppName() {
-        return appName;
-    }
-
-    public String getGithubRepoUrl() {
-        return githubRepoUrl;
-    }
-
-    public String getBranchName() {
-        return branchName;
-    }
-
-    public AppType getAppType() {
-        return appType;
-    }
-
-    public String getPotapaasAppId() {
-        return potapaasAppId;
-    }
-
-    public String getContainerId() {
-        return containerId;
-    }
-
-    public String getImageId() {
-        return imageId;
     }
 }

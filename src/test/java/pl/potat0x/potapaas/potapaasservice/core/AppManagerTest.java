@@ -9,11 +9,11 @@ import pl.potat0x.potapaas.potapaasservice.system.errormessage.ErrorMessage;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class AppDeploymentTest {
+public class AppManagerTest {
 
     @Test
     public void shouldDeployWebAppFromGithub() throws InterruptedException {
-        AppDeployment app = appDeploymentFromTestGithubRepo("nodejs_test_ok_delay");
+        AppManager app = appDeploymentFromTestGithubRepo("nodejs_test_ok_delay");
         Either<ErrorMessage, String> deploymentResult = app.deploy();
 
         String appUrl = "http://127.0.0.1:" + app.getPort().get();
@@ -27,14 +27,14 @@ public class AppDeploymentTest {
 
     @Test
     public void shouldDetectThatTestsFail() {
-        AppDeployment app = appDeploymentFromTestGithubRepo("nodejs_test_fail_delay");
+        AppManager app = appDeploymentFromTestGithubRepo("nodejs_test_fail_delay");
 
         Either<ErrorMessage, String> deploymentResult = app.deploy();
 
         assertThat(deploymentResult.getLeft().getText().toLowerCase()).contains("tests failed");
     }
 
-    private AppDeployment appDeploymentFromTestGithubRepo(String branchName) {
-        return new AppDeployment("depl-test-app-name", AppType.NODEJS, "https://github.com/Potat0x/potapaas-test-cases", branchName);
+    private AppManager appDeploymentFromTestGithubRepo(String branchName) {
+        return AppManager.createApp("depl-test-app-name", AppType.NODEJS, "https://github.com/Potat0x/potapaas-test-cases", branchName);
     }
 }

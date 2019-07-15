@@ -32,27 +32,19 @@ public final class GitCloner {
     }
 
     Either<ErrorMessage, String> cloneBranch(String repositoryUri, String branchName) {
-        System.err.println("___cloneBranch start");
-        try {
-            System.err.println("___cloneBranch start a");
-            String clonedRepoDirectory = preparePathForClonedRepository(repositoryUri);
-            System.err.println("___cloneBranch start b");
-            Git repo = Git.cloneRepository()
-                    .setURI(repositoryUri)
-                    .setBranch(branchName)
-                    .setDirectory(new File(clonedRepoDirectory))
-                    .call();
-            repo.close();//todo: trywith
-            System.err.println("___branchList().call()");
-            if (repo.branchList().call().size() > 0) {
-                System.err.println("___cloneBranch end right" + clonedRepoDirectory);
+        String clonedRepoDirectory = preparePathForClonedRepository(repositoryUri);
+        try (Git gitRepository = Git.cloneRepository()
+                .setURI(repositoryUri)
+                .setBranch(branchName)
+                .setDirectory(new File(clonedRepoDirectory))
+                .call()
+        ) {
+            if (gitRepository.branchList().call().size() > 0) {
                 return Either.right(clonedRepoDirectory);
             }
 
-            System.err.println("___cloneBranch end left ");
             return Either.left(message("branch \"" + branchName + "\" not found in repository: " + repositoryUri, 404));
         } catch (Exception e) {
-            System.err.println("___cloneBranch end left map");
             return ExceptionMapper.map(e).of(
                     exception(GitAPIException.class, InvalidRemoteException.class).to(
                             message("Error while cloning \"" + branchName + "\" branch from repository:" + repositoryUri, 500)

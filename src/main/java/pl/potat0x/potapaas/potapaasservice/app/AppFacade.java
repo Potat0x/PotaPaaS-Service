@@ -27,7 +27,18 @@ class AppFacade {
             return buildResponseDto(appManager, appEntity);
         });
     }
-    
+
+    Either<ErrorMessage, AppResponseDto> getAppDetails(String appUuid) {
+        AppEntity appEntity = appRepository.findOneByUuid(appUuid);
+
+        if (appEntity != null) {
+            AppManager appManager = buildAppManagerForExistingApp(appEntity);
+            return Either.right(buildResponseDto(appManager, appEntity));
+        } else {
+            return Either.left(message("App not found", 404));
+        }
+    }
+
     private AppEntity buildAppEntity(AppManager appManager) {
         return new AppEntityBuilder()
                 .withAppInstance(new AppInstanceEntity(appManager.getContainerId(), appManager.getImageId()))

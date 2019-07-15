@@ -9,6 +9,8 @@ import io.vavr.control.Validation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import pl.potat0x.potapaas.potapaasservice.api.ResponseResolver;
 import pl.potat0x.potapaas.potapaasservice.core.AppType;
 import pl.potat0x.potapaas.potapaasservice.system.errormessage.ErrorMessage;
+import pl.potat0x.potapaas.potapaasservice.utils.UuidValidator;
 
 @RestController
 @RequestMapping("/app")
@@ -48,6 +51,15 @@ class AppController {
             }
             return ResponseResolver.toErrorResponseEntity(message.toString(), HttpStatus.UNPROCESSABLE_ENTITY);
         }
+    }
+
+    @GetMapping("/{appUuid}")
+    ResponseEntity getAppDetails(@PathVariable String appUuid) {
+        if (UuidValidator.checkIfValid(appUuid)) {
+            return ResponseResolver.toResponseEntity(facade.getAppDetails(appUuid), HttpStatus.OK);
+        }
+
+        return new ResponseEntity<>(appUuid + " is not a valid UUID", HttpStatus.BAD_REQUEST);
     }
 
     private AppRequestDto validAppRequestExample() {

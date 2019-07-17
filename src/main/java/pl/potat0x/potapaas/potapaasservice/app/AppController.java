@@ -1,8 +1,5 @@
 package pl.potat0x.potapaas.potapaasservice.app;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import io.vavr.collection.Seq;
 import io.vavr.control.Either;
 import io.vavr.control.Validation;
@@ -17,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import pl.potat0x.potapaas.potapaasservice.api.ResponseResolver;
+import pl.potat0x.potapaas.potapaasservice.api.ValidationErrorMapper;
 import pl.potat0x.potapaas.potapaasservice.core.AppType;
 import pl.potat0x.potapaas.potapaasservice.system.errormessage.ErrorMessage;
 import pl.potat0x.potapaas.potapaasservice.utils.UuidValidator;
@@ -35,22 +33,14 @@ class AppController {
     @PostMapping
     ResponseEntity createApp(@RequestBody AppRequestDto requestDto) {
 
-        Validation<Seq<String>, AppRequestDto> validate = new AppRequestDtoValidator().validate(requestDto);
+        Validation<Seq<String>, AppRequestDto> validation = new AppRequestDtoValidator().validate(requestDto);
 
-        if (validate.isValid()) {
+        if (validation.isValid()) {
             Either<ErrorMessage, AppResponseDto> deploymentResult = facade.createAndDeployApp(requestDto);
             return ResponseResolver.toResponseEntity(deploymentResult, HttpStatus.CREATED);
         } else {
-            StringBuilder message = new StringBuilder();
-            message.append(validate.getError().toStream().reduce((a, b) -> a + "\n" + b));
-            try {
-                ObjectWriter prettyJsonMapper = new ObjectMapper().writerWithDefaultPrettyPrinter();
-                message.append("\n\nExample of valid request:\n")
-                        .append(prettyJsonMapper.writeValueAsString(validAppRequestExample()));
-            } catch (JsonProcessingException e) {
-                e.printStackTrace();
-            }
-            return ResponseResolver.toErrorResponseEntity(message.toString(), HttpStatus.UNPROCESSABLE_ENTITY);
+            String error422message = new ValidationErrorMapper().map(validation, validAppRequestExample());
+            return ResponseResolver.toErrorResponseEntity(error422message, HttpStatus.UNPROCESSABLE_ENTITY);
         }
     }
 

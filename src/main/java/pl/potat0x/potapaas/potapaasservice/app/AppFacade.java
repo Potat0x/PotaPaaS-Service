@@ -39,6 +39,21 @@ class AppFacade {
         }
     }
 
+    Either<ErrorMessage, Object> deleteApp(String appUuid) {
+        AppEntity appEntity = appRepository.findOneByUuid(appUuid);
+
+        if (appEntity != null) {
+            AppManager appManager = buildAppManagerForExistingApp(appEntity);
+            appManager.killApp();
+            appManager.removeApp();
+
+            appRepository.delete(appEntity);
+            return Either.right(null);
+        } else {
+            return Either.left(message("App not found", 404));
+        }
+    }
+
     private AppEntity buildAppEntity(AppManager appManager) {
         return new AppEntityBuilder()
                 .withAppInstance(new AppInstanceEntity(appManager.getContainerId(), appManager.getImageId()))

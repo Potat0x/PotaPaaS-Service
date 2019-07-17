@@ -52,6 +52,10 @@ public final class AppManager {
         return containerManager.killContainer(containerId);
     }
 
+    public Either<ErrorMessage, String> removeApp() {
+        return containerManager.deleteContainer(containerId);
+    }
+
     public Either<ErrorMessage, String> getPort() {
         return containerManager.getHostPort(containerId);
     }

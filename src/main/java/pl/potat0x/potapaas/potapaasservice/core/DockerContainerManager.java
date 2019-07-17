@@ -82,6 +82,15 @@ final class DockerContainerManager {
         }
     }
 
+    Either<ErrorMessage, String> deleteContainer(String containerId) {
+        try {
+            docker.removeContainer(containerId);
+            return Either.right(containerId);
+        } catch (Exception e) {
+            return ExceptionMapper.map(e).to(CoreErrorMessage.SERVER_ERROR);
+        }
+    }
+
     Either<ErrorMessage, Long> waitForExit(String containerId) {
         try {
             while (true) {

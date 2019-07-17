@@ -9,6 +9,7 @@ import io.vavr.control.Validation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -58,8 +59,19 @@ class AppController {
         if (UuidValidator.checkIfValid(appUuid)) {
             return ResponseResolver.toResponseEntity(facade.getAppDetails(appUuid), HttpStatus.OK);
         }
+        return invalidUuidResponseEntity(appUuid);
+    }
 
-        return new ResponseEntity<>(appUuid + " is not a valid UUID", HttpStatus.BAD_REQUEST);
+    @DeleteMapping("/{appUuid}")
+    ResponseEntity deleteApp(@PathVariable String appUuid) {
+        if (UuidValidator.checkIfValid(appUuid)) {
+            return ResponseResolver.toResponseEntity(facade.deleteApp(appUuid), HttpStatus.NO_CONTENT);
+        }
+        return invalidUuidResponseEntity(appUuid);
+    }
+
+    private ResponseEntity invalidUuidResponseEntity(String invalidUuid) {
+        return new ResponseEntity<>(invalidUuid + " is not a valid UUID", HttpStatus.BAD_REQUEST);
     }
 
     private AppRequestDto validAppRequestExample() {

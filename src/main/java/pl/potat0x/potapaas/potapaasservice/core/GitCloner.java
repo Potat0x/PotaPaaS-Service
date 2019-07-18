@@ -8,31 +8,16 @@ import pl.potat0x.potapaas.potapaasservice.system.errormessage.ErrorMessage;
 import pl.potat0x.potapaas.potapaasservice.system.exceptionmapper.ExceptionMapper;
 
 import java.io.File;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 
-import static pl.potat0x.potapaas.potapaasservice.system.exceptionmapper.CaseBuilderStart.exception;
 import static pl.potat0x.potapaas.potapaasservice.system.errormessage.CustomErrorMessage.message;
+import static pl.potat0x.potapaas.potapaasservice.system.exceptionmapper.CaseBuilderStart.exception;
 
-public final class GitCloner {
+public class GitCloner {
 
-    private final String targetPath;
-
-    static Either<ErrorMessage, GitCloner> create(Path targetPath) {
-        return create(targetPath.toString());
-    }
-
-    static Either<ErrorMessage, GitCloner> create(String targetPath) {
-        if (targetPath != null && new File(targetPath).isDirectory()) {
-            return Either.right(new GitCloner(targetPath));
-        } else {
-            return Either.left(CoreErrorMessage.SERVER_ERROR);
-        }
-    }
-
-    Either<ErrorMessage, String> cloneBranch(String repositoryUri, String branchName) {
-        String clonedRepoDirectory = preparePathForClonedRepository(repositoryUri);
+    Either<ErrorMessage, String> cloneBranch(String repositoryUri, String branchName, String targetPath) {
+        String clonedRepoDirectory = preparePathForClonedRepository(repositoryUri, targetPath);
         try (Git gitRepository = Git.cloneRepository()
                 .setURI(repositoryUri)
                 .setBranch(branchName)
@@ -53,11 +38,7 @@ public final class GitCloner {
         }
     }
 
-    private GitCloner(String targetPath) {
-        this.targetPath = targetPath;
-    }
-
-    private String preparePathForClonedRepository(String repositoryUri) {
+    private String preparePathForClonedRepository(String repositoryUri, String targetPath) {
         return Paths.get(targetPath, replaceSlashes(repositoryUri), LocalDateTime.now().toString()).toString();
     }
 

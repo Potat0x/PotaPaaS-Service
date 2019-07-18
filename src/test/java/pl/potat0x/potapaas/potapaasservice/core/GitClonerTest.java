@@ -16,20 +16,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class GitClonerTest {
 
-    private static Path temporaryReposDirectory;
+    private static String temporaryReposDirectory;
     private static GitCloner cloner;
 
     @BeforeClass
     public static void createTemporaryReposDirectory() throws Exception {
-        temporaryReposDirectory = Files.createTempDirectory("potapaas_test_dir");
-        cloner = GitCloner.create(temporaryReposDirectory.toAbsolutePath()).get();
+        temporaryReposDirectory = Files.createTempDirectory("potapaas_test_dir").toAbsolutePath().toString();
+        cloner = new GitCloner();
     }
 
     @Test
     public void shouldClonePublicRepo() {
         String repoUrl = "https://github.com/spotify/comet-core";
 
-        String clonedRepoDir = cloner.cloneBranch(repoUrl, "master").get();
+        String clonedRepoDir = cloner.cloneBranch(repoUrl, "master", temporaryReposDirectory).get();
 
         Condition<String> containsGitRepo = new Condition<>(
                 path -> Paths.get(path, ".git").toFile().isDirectory(),
@@ -42,18 +42,18 @@ public class GitClonerTest {
     public void shouldGetCloneErrorDueToInvalidBranchName() {
         String repoUrl = "https://github.com/spotify/comet-core";
 
-        cloner.cloneBranch(repoUrl, "this_branch_does_not_exist").get();
+        cloner.cloneBranch(repoUrl, "this_branch_does_not_exist", temporaryReposDirectory).get();
     }
 
     @Test(expected = NoSuchElementException.class)
     public void shouldGetCloneErrorDueToInvalidRepoUrl() {
         String invalidRepoUrl = "https://github.com/potat0x/invalid-repo-url";
 
-        cloner.cloneBranch(invalidRepoUrl, "master").get();
+        cloner.cloneBranch(invalidRepoUrl, "master", temporaryReposDirectory).get();
     }
 
     @AfterClass
     public static void deleteTemporaryReposDirectory() throws IOException {
-        FileSystemUtils.deleteRecursively(temporaryReposDirectory);
+        FileSystemUtils.deleteRecursively(Path.of(temporaryReposDirectory));
     }
 }

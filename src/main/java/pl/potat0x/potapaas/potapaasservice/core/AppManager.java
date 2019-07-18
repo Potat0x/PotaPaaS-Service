@@ -18,6 +18,7 @@ public final class AppManager {
 
     private final DockerContainerManager containerManager;
     private final DockerImageManager imageManager;
+    private final GitCloner gitCloner;
 
     private final String appName;
     private final String gitRepoUrl;
@@ -28,12 +29,12 @@ public final class AppManager {
     private String imageId;
     private String clonedRepoDir;
 
-    static AppManager createApp(DockerContainerManager containerManager, DockerImageManager imageManager, String name, AppType type, String gitRepoUrl, String repoBranchName) {
-        return new AppManager(containerManager, imageManager, UUID.randomUUID().toString(), name, type, gitRepoUrl, repoBranchName);
+    static AppManager createApp(GitCloner gitCloner, DockerContainerManager containerManager, DockerImageManager imageManager, String name, AppType type, String gitRepoUrl, String repoBranchName) {
+        return new AppManager(gitCloner, containerManager, imageManager, UUID.randomUUID().toString(), name, type, gitRepoUrl, repoBranchName);
     }
 
-    static AppManager forExistingApp(DockerContainerManager containerManager, DockerImageManager imageManager, String appUuid, String name, AppType type, String gitRepoUrl, String repoBranchName, String containerId, String imageId) {
-        return new AppManager(containerManager, imageManager, appUuid, name, type, gitRepoUrl, repoBranchName, containerId, imageId);
+    static AppManager forExistingApp(GitCloner gitCloner, DockerContainerManager containerManager, DockerImageManager imageManager, String appUuid, String name, AppType type, String gitRepoUrl, String repoBranchName, String containerId, String imageId) {
+        return new AppManager(gitCloner, containerManager, imageManager, appUuid, name, type, gitRepoUrl, repoBranchName, containerId, imageId);
     }
 
     public Either<ErrorMessage, String> deploy() {
@@ -101,9 +102,10 @@ public final class AppManager {
         return imageId;
     }
 
-    private AppManager(DockerContainerManager containerManager, DockerImageManager imageManager, String potapaasAppId, String name, AppType type, String gitRepoUrl, String branchName) {
+    private AppManager(GitCloner gitCloner, DockerContainerManager containerManager, DockerImageManager imageManager, String potapaasAppId, String name, AppType type, String gitRepoUrl, String branchName) {
         this.containerManager = containerManager;
         this.imageManager = imageManager;
+        this.gitCloner = gitCloner;
         this.appName = name;
         this.gitRepoUrl = gitRepoUrl;
         this.branchName = branchName;
@@ -111,8 +113,8 @@ public final class AppManager {
         this.potapaasAppId = potapaasAppId;
     }
 
-    private AppManager(DockerContainerManager containerManager, DockerImageManager imageManager, String potapaasAppId, String name, AppType type, String gitRepoUrl, String branchName, String containerId, String imageId) {
-        this(containerManager, imageManager, potapaasAppId, name, type, gitRepoUrl, branchName);
+    private AppManager(GitCloner gitCloner, DockerContainerManager containerManager, DockerImageManager imageManager, String potapaasAppId, String name, AppType type, String gitRepoUrl, String branchName, String containerId, String imageId) {
+        this(gitCloner, containerManager, imageManager, potapaasAppId, name, type, gitRepoUrl, branchName);
         this.containerId = containerId;
         this.imageId = imageId;
     }
@@ -160,9 +162,8 @@ public final class AppManager {
 
     private Either<ErrorMessage, String> cloneRepo() {
         try {
-            Path tmpDir = Files.createTempDirectory(PotapaasConfig.get("tmp_git_dir_prefix"));
-            return GitCloner.create(tmpDir.toAbsolutePath())
-                    .flatMap(cloner -> cloner.cloneBranch(gitRepoUrl, branchName));
+            Path tmpTargetDir = Files.createTempDirectory(PotapaasConfig.get("tmp_git_dir_prefix"));
+            return gitCloner.cloneBranch(gitRepoUrl, branchName, tmpTargetDir.toString());
         } catch (Exception e) {
             return ExceptionMapper.map(e).of();
         }

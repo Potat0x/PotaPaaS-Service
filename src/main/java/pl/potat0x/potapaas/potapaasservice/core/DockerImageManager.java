@@ -22,21 +22,20 @@ final class DockerImageManager {
         TEST
     }
 
-    private final Path applicationSrcDir;
     private final DockerClient docker;
     private final String imageTypeName;
 
-    public DockerImageManager(String dockerClientUri, String applicationSrcDirectory, AppType imageType) {
+    public DockerImageManager(String dockerClientUri, AppType imageType) {
         docker = new DefaultDockerClient(dockerClientUri);
-        applicationSrcDir = Path.of(applicationSrcDirectory);
         imageTypeName = imageType.toString().toLowerCase();
     }
 
-    public Either<ErrorMessage, String> buildImage(BuildType buildType) {
+    public Either<ErrorMessage, String> buildImage(String applicationSrcDir, BuildType buildType) {
         try {
             Path temporaryBuildDir = createTempDirectory();
+            Path appSourceCodeDir = Path.of(applicationSrcDir);
 
-            copyAppSourcesToTempDirectory(temporaryBuildDir);
+            copyAppSourcesToTempDirectory(appSourceCodeDir, temporaryBuildDir);
             copyDockerfileAndDockerignoreToTempDirectory(temporaryBuildDir, buildType);
 
             String imageId = buildDockerImage(temporaryBuildDir);
@@ -71,7 +70,7 @@ final class DockerImageManager {
         return Files.createTempDirectory(PotapaasConfig.get("tmp_image_building_dir_prefix") + imageTypeName + LocalDateTime.now());
     }
 
-    private void copyAppSourcesToTempDirectory(Path temporaryBuildDir) throws IOException {
+    private void copyAppSourcesToTempDirectory(Path applicationSrcDir, Path temporaryBuildDir) throws IOException {
         FileSystemUtils.copyRecursively(applicationSrcDir, temporaryBuildDir);
     }
 

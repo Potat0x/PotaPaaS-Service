@@ -13,7 +13,7 @@ public class AppManagerTest {
 
     @Test
     public void shouldDeployWebAppFromGithub() throws InterruptedException {
-        AppManager app = appDeploymentFromTestGithubRepo("nodejs_test_ok_delay");
+        AppManager app = appManagerFromTestGithubRepo("nodejs_test_ok_delay", AppType.NODEJS);
         Either<ErrorMessage, String> deploymentResult = app.deploy();
 
         String appUrl = "http://127.0.0.1:" + app.getPort().get();
@@ -27,14 +27,14 @@ public class AppManagerTest {
 
     @Test
     public void shouldDetectThatTestsFail() {
-        AppManager app = appDeploymentFromTestGithubRepo("nodejs_test_fail_delay");
+        AppManager app = appManagerFromTestGithubRepo("nodejs_test_fail_delay", AppType.NODEJS);
 
         Either<ErrorMessage, String> deploymentResult = app.deploy();
 
         assertThat(deploymentResult.getLeft().getText().toLowerCase()).contains("tests failed");
     }
 
-    private AppManager appDeploymentFromTestGithubRepo(String branchName) {
-        return AppManager.createApp("depl-test-app-name", AppType.NODEJS, "https://github.com/Potat0x/potapaas-test-cases", branchName);
+    private AppManager appManagerFromTestGithubRepo(String branchName, AppType appType) {
+        return AppManagerFactory.defaultAppManager(appType).createApp("depl-test-app-name", "https://github.com/Potat0x/potapaas-test-cases", branchName);
     }
 }

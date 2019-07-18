@@ -4,6 +4,7 @@ import io.vavr.control.Either;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pl.potat0x.potapaas.potapaasservice.core.AppManager;
+import pl.potat0x.potapaas.potapaasservice.core.AppManagerFactory;
 import pl.potat0x.potapaas.potapaasservice.core.AppType;
 import pl.potat0x.potapaas.potapaasservice.system.errormessage.ErrorMessage;
 
@@ -67,20 +68,23 @@ class AppFacade {
 
     private AppManager buildAppManagerForExistingApp(AppEntity app) {
         AppInstanceEntity instance = app.getAppInstance();
-        return AppManager.forExistingApp(
-                app.getUuid(),
-                app.getName(),
-                app.getType(),
-                app.getSourceRepoUrl(),
-                app.getSourceBranchName(),
-                instance.getContainerId(),
-                instance.getImageId()
-        );
+        return AppManagerFactory
+                .defaultAppManager(app.getType())
+                .forExistingApp(
+                        app.getUuid(),
+                        app.getName(),
+                        app.getSourceRepoUrl(),
+                        app.getSourceBranchName(),
+                        instance.getContainerId(),
+                        instance.getImageId()
+                );
     }
 
     private AppManager buildAppManagerForNewApp(AppRequestDto dto) {
         AppType appType = AppType.valueOf(dto.getType());
-        return AppManager.createApp(dto.getName(), appType, dto.getSourceRepoUrl(), dto.getSourceBranchName());
+        return AppManagerFactory
+                .defaultAppManager(appType)
+                .createApp(dto.getName(), dto.getSourceRepoUrl(), dto.getSourceBranchName());
     }
 
     private AppResponseDto buildResponseDto(AppManager app, AppEntity appEntity) {

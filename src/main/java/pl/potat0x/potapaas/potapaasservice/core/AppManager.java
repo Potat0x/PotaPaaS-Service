@@ -16,6 +16,9 @@ import java.util.UUID;
 
 public final class AppManager {
 
+    private final DockerContainerManager containerManager;
+    private final DockerImageManager imageManager;
+
     private final String appName;
     private final String gitRepoUrl;
     private final String branchName;
@@ -25,14 +28,12 @@ public final class AppManager {
     private String imageId;
     private String clonedRepoDir;
 
-    private final DockerContainerManager containerManager;
-
-    public static AppManager createApp(String name, AppType type, String gitRepoUrl, String repoBranchName) {
-        return new AppManager(UUID.randomUUID().toString(), name, type, gitRepoUrl, repoBranchName);
+    static AppManager createApp(DockerContainerManager containerManager, DockerImageManager imageManager, String name, AppType type, String gitRepoUrl, String repoBranchName) {
+        return new AppManager(containerManager, imageManager, UUID.randomUUID().toString(), name, type, gitRepoUrl, repoBranchName);
     }
 
-    public static AppManager forExistingApp(String appUuid, String name, AppType type, String gitRepoUrl, String repoBranchName, String containerId, String imageId) {
-        return new AppManager(appUuid, name, type, gitRepoUrl, repoBranchName, containerId, imageId);
+    static AppManager forExistingApp(DockerContainerManager containerManager, DockerImageManager imageManager, String appUuid, String name, AppType type, String gitRepoUrl, String repoBranchName, String containerId, String imageId) {
+        return new AppManager(containerManager, imageManager, appUuid, name, type, gitRepoUrl, repoBranchName, containerId, imageId);
     }
 
     public Either<ErrorMessage, String> deploy() {
@@ -100,8 +101,9 @@ public final class AppManager {
         return imageId;
     }
 
-    private AppManager(String potapaasAppId, String name, AppType type, String gitRepoUrl, String branchName) {
-        containerManager = new DockerContainerManager(PotapaasConfig.get("docker_api_uri"));
+    private AppManager(DockerContainerManager containerManager, DockerImageManager imageManager, String potapaasAppId, String name, AppType type, String gitRepoUrl, String branchName) {
+        this.containerManager = containerManager;
+        this.imageManager = imageManager;
         this.appName = name;
         this.gitRepoUrl = gitRepoUrl;
         this.branchName = branchName;
@@ -109,8 +111,8 @@ public final class AppManager {
         this.potapaasAppId = potapaasAppId;
     }
 
-    private AppManager(String potapaasAppId, String name, AppType type, String gitRepoUrl, String branchName, String containerId, String imageId) {
-        this(potapaasAppId, name, type, gitRepoUrl, branchName);
+    private AppManager(DockerContainerManager containerManager, DockerImageManager imageManager, String potapaasAppId, String name, AppType type, String gitRepoUrl, String branchName, String containerId, String imageId) {
+        this(containerManager, imageManager, potapaasAppId, name, type, gitRepoUrl, branchName);
         this.containerId = containerId;
         this.imageId = imageId;
     }
@@ -153,8 +155,7 @@ public final class AppManager {
     }
 
     private Either<ErrorMessage, String> buildImage(String appSourceDir, DockerImageManager.BuildType buildType) {
-        DockerImageManager imageManager = new DockerImageManager(PotapaasConfig.get("docker_api_uri"), appSourceDir, appType);
-        return imageManager.buildImage(buildType);
+        return imageManager.buildImage(appSourceDir, buildType);
     }
 
     private Either<ErrorMessage, String> cloneRepo() {

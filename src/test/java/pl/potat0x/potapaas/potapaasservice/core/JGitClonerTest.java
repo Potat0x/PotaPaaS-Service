@@ -14,15 +14,15 @@ import java.util.NoSuchElementException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class GitClonerTest {
+public class JGitClonerTest {
 
     private static String temporaryReposDirectory;
-    private static GitCloner cloner;
+    private static JGitCloner cloner;
 
     @BeforeClass
     public static void createTemporaryReposDirectory() throws Exception {
         temporaryReposDirectory = Files.createTempDirectory("potapaas_test_dir").toAbsolutePath().toString();
-        cloner = new GitCloner();
+        cloner = new JGitCloner();
     }
 
     @Test

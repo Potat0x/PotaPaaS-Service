@@ -27,7 +27,7 @@ final public class AppManagerFactory {
     }
 
     public static AppManagerCreator defaultAppManager(AppType appType) {
-        return new AppManagerCreator(new GitCloner(), PotapaasConfig.get("docker_api_uri"), appType);
+        return new AppManagerCreator(new JGitCloner(), PotapaasConfig.get("docker_api_uri"), appType);
     }
 
     public static AppManagerCreator appManager(AppType appType, GitCloner gitCloner, String dockerApiUrl) {

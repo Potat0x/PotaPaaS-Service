@@ -14,10 +14,12 @@ import static pl.potat0x.potapaas.potapaasservice.system.errormessage.CustomErro
 class AppFacade {
 
     private final AppRepository appRepository;
+    private final AppManagerFactory appManagerFactory;
 
     @Autowired
-    AppFacade(AppRepository appRepository) {
+    AppFacade(AppRepository appRepository, AppManagerFactory appManagerFactory) {
         this.appRepository = appRepository;
+        this.appManagerFactory = appManagerFactory;
     }
 
     Either<ErrorMessage, AppResponseDto> createAndDeployApp(AppRequestDto requestDto) {
@@ -68,23 +70,21 @@ class AppFacade {
 
     private AppManager buildAppManagerForExistingApp(AppEntity app) {
         AppInstanceEntity instance = app.getAppInstance();
-        return AppManagerFactory
-                .defaultAppManager(app.getType())
-                .forExistingApp(
-                        app.getUuid(),
-                        app.getName(),
-                        app.getSourceRepoUrl(),
-                        app.getSourceBranchName(),
-                        instance.getContainerId(),
-                        instance.getImageId()
-                );
+
+        return appManagerFactory.forExistingApp(
+                app.getType(),
+                app.getUuid(),
+                app.getName(),
+                app.getSourceRepoUrl(),
+                app.getSourceBranchName(),
+                instance.getContainerId(),
+                instance.getImageId()
+        );
     }
 
     private AppManager buildAppManagerForNewApp(AppRequestDto dto) {
         AppType appType = AppType.valueOf(dto.getType());
-        return AppManagerFactory
-                .defaultAppManager(appType)
-                .createApp(dto.getName(), dto.getSourceRepoUrl(), dto.getSourceBranchName());
+        return appManagerFactory.createApp(appType, dto.getName(), dto.getSourceRepoUrl(), dto.getSourceBranchName());
     }
 
     private AppResponseDto buildResponseDto(AppManager app, AppEntity appEntity) {

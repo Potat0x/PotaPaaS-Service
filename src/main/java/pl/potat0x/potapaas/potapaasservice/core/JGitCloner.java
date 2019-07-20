@@ -14,10 +14,11 @@ import java.time.LocalDateTime;
 import static pl.potat0x.potapaas.potapaasservice.system.errormessage.CustomErrorMessage.message;
 import static pl.potat0x.potapaas.potapaasservice.system.exceptionmapper.CaseBuilderStart.exception;
 
-class JGitCloner implements GitCloner {
+public class JGitCloner implements GitCloner {
 
     @Override
     public Either<ErrorMessage, String> cloneBranch(String repositoryUri, String branchName, String targetPath) {
+        System.out.println("JGitCloner clone");
         String clonedRepoDirectory = preparePathForClonedRepository(repositoryUri, targetPath);
         try (Git gitRepository = Git.cloneRepository()
                 .setURI(repositoryUri)

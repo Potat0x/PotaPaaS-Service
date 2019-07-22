@@ -1,0 +1,33 @@
+{"stream":"Step 1/6 : FROM node:8"}
+{"stream":"\n"}
+{"stream":" ---\u003e a7dabdc7cd4b\n"}
+{"stream":"Step 2/6 : WORKDIR /app"}
+{"stream":"\n"}
+{"stream":" ---\u003e Running in ffde985edfc5\n"}
+{"stream":"Removing intermediate container ffde985edfc5\n"}
+{"stream":" ---\u003e 371fb669bafd\n"}
+{"stream":"Step 3/6 : COPY package*.json ./"}
+{"stream":"\n"}
+{"stream":" ---\u003e b5140aabd5fa\n"}
+{"stream":"Step 4/6 : RUN npm install"}
+{"stream":"\n"}
+{"stream":" ---\u003e Running in 30718f7aebf2\n"}
+{"stream":"\u001b[91mnpm notice created a lockfile as package-lock.json. You should commit this file.\n\u001b[0m"}
+{"stream":"\u001b[91mnpm WARN nodejs_test_ok@1.0.0 No description\n\u001b[0m"}
+{"stream":"\u001b[91mnpm WARN\u001b[0m"}
+{"stream":"\u001b[91m nodejs_test_ok@1.0.0 No repository field.\n\u001b[0m"}
+{"stream":"\u001b[91m\n\u001b[0m"}
+{"stream":"added 62 packages from 40 contributors and audited 142 packages in 2.886s\n"}
+{"stream":"found 0 vulnerabilities\n\n"}
+{"stream":"Removing intermediate container 30718f7aebf2\n"}
+{"stream":" ---\u003e d20d6f587b09\n"}
+{"stream":"Step 5/6 : COPY . ."}
+{"stream":"\n"}
+{"stream":" ---\u003e 67c223542a82\n"}
+{"stream":"Step 6/6 : CMD [ \"npm\", \"test\" ]"}
+{"stream":"\n"}
+{"stream":" ---\u003e Running in 0815b1d0bbaa\n"}
+{"stream":"Removing intermediate container 0815b1d0bbaa\n"}
+{"stream":" ---\u003e 2cbec6d91760\n"}
+{"aux":{"ID":"sha256:2cbec6d917607e6394432f9162a2f1f10544caf62a2df35758aae1d0321bb11d"}}
+{"stream":"Successfully built 2cbec6d91760\n"}

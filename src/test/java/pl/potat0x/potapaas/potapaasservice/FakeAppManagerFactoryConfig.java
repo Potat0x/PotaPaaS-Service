@@ -11,6 +11,6 @@ import pl.potat0x.potapaas.potapaasservice.system.PotapaasConfig;
 public class FakeAppManagerFactoryConfig {
     @Bean
     public AppManagerFactory fakeAppManagerFactory() {
-        return new AppManagerFactory(new FakeGitCloner(), PotapaasConfig.get("docker_api_uri"));
+        return new AppManagerFactory(new FakeGitCloner(), PotapaasConfig.get("docker_stubbed_api_uri"));
     }
 }

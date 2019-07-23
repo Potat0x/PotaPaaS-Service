@@ -18,8 +18,11 @@ public class JGitCloner implements GitCloner {
 
     @Override
     public Either<ErrorMessage, String> cloneBranch(String repositoryUri, String branchName, String targetPath) {
-        System.out.println("JGitCloner clone");
         String clonedRepoDirectory = preparePathForClonedRepository(repositoryUri, targetPath);
+        return clone(repositoryUri, branchName, clonedRepoDirectory);
+    }
+
+    protected Either<ErrorMessage, String> clone(String repositoryUri, String branchName, String clonedRepoDirectory) {
         try (Git gitRepository = Git.cloneRepository()
                 .setURI(repositoryUri)
                 .setBranch(branchName)

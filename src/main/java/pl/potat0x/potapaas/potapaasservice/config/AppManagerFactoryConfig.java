@@ -7,8 +7,8 @@ import pl.potat0x.potapaas.potapaasservice.core.AppManagerFactory;
 import pl.potat0x.potapaas.potapaasservice.core.JGitCloner;
 import pl.potat0x.potapaas.potapaasservice.system.PotapaasConfig;
 
-@Profile("production")
 @Configuration
+@Profile("production")
 public class AppManagerFactoryConfig {
     @Bean
     public AppManagerFactory defaultAppManagerFactory() {

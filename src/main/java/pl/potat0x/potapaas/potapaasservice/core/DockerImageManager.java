@@ -14,6 +14,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 final class DockerImageManager {
 
@@ -24,10 +26,16 @@ final class DockerImageManager {
 
     private final DockerClient docker;
     private final String imageTypeName;
+    private final boolean buildingCacheEnabled;
 
-    public DockerImageManager(String dockerClientUri, AppType imageType) {
+    DockerImageManager(String dockerClientUri, AppType imageType) {
+        this(dockerClientUri, imageType, false);
+    }
+
+    DockerImageManager(String dockerClientUri, AppType imageType, boolean buildingCacheEnabled) {
         docker = new DefaultDockerClient(dockerClientUri);
         imageTypeName = imageType.toString().toLowerCase();
+        this.buildingCacheEnabled = buildingCacheEnabled;
     }
 
     public Either<ErrorMessage, String> buildImage(String applicationSrcDir, BuildType buildType) {
@@ -63,7 +71,13 @@ final class DockerImageManager {
     }
 
     private String buildDockerImage(Path temporaryBuildDir) throws InterruptedException, DockerException, IOException {
-        return docker.build(temporaryBuildDir, DockerClient.BuildParam.noCache());
+
+        List<DockerClient.BuildParam> buildParams = new ArrayList<>();
+        if (!buildingCacheEnabled) {
+            buildParams.add(DockerClient.BuildParam.noCache());
+        }
+
+        return docker.build(temporaryBuildDir, buildParams.toArray(new DockerClient.BuildParam[0]));
     }
 
     private Path createTempDirectory() throws IOException {

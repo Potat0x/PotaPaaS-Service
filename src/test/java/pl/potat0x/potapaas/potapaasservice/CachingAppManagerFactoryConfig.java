@@ -12,6 +12,6 @@ import pl.potat0x.potapaas.potapaasservice.system.PotapaasConfig;
 public class CachingAppManagerFactoryConfig {
     @Bean
     public AppManagerFactory cachingAppManagerFactory() {
-        return new AppManagerFactory(new TestCachingJGitCloner(), PotapaasConfig.get("docker_api_uri"));
+        return new AppManagerFactory(new TestCachingJGitCloner(), PotapaasConfig.get("docker_api_uri"), true);
     }
 }

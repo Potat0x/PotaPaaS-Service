@@ -4,6 +4,7 @@ import io.vavr.control.Either;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
+import org.eclipse.jgit.api.errors.TransportException;
 import pl.potat0x.potapaas.potapaasservice.system.errormessage.ErrorMessage;
 import pl.potat0x.potapaas.potapaasservice.system.exceptionmapper.ExceptionMapper;
 
@@ -37,8 +38,9 @@ public class JGitCloner implements GitCloner {
         } catch (Exception e) {
             return ExceptionMapper.map(e).of(
                     exception(GitAPIException.class, InvalidRemoteException.class).to(
-                            message("Error while cloning \"" + branchName + "\" branch from repository:" + repositoryUri, 500)
-                    )
+                            message("Error while cloning \"" + branchName + "\" branch from repository:" + repositoryUri, 500)),
+                    exception(TransportException.class).to(
+                            message("Error while cloning repository. Ensure that URL is valid and repository is public.", 422))
             );
         }
     }

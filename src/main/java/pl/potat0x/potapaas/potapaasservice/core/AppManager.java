@@ -24,7 +24,7 @@ public final class AppManager {
     private final String gitRepoUrl;
     private final String branchName;
     private final AppType appType;
-    private final String potapaasAppId;
+    private final String appUuid;
     private String containerId;
     private String imageId;
     private String clonedRepoDir;
@@ -46,7 +46,7 @@ public final class AppManager {
                 .map(imageId -> this.imageId = imageId)
                 .flatMap(imageId -> runApp(imageId)
                         .map(containerId -> this.containerId = containerId)
-                        .map(containerId -> potapaasAppId)
+                        .map(containerId -> appUuid)
                 );
     }
 
@@ -90,8 +90,8 @@ public final class AppManager {
         return appType;
     }
 
-    public String getPotapaasAppId() {
-        return potapaasAppId;
+    public String getAppUuid() {
+        return appUuid;
     }
 
     public String getContainerId() {
@@ -102,7 +102,7 @@ public final class AppManager {
         return imageId;
     }
 
-    private AppManager(GitCloner gitCloner, DockerContainerManager containerManager, DockerImageManager imageManager, String potapaasAppId, String name, AppType type, String gitRepoUrl, String branchName) {
+    private AppManager(GitCloner gitCloner, DockerContainerManager containerManager, DockerImageManager imageManager, String appUuid, String name, AppType type, String gitRepoUrl, String branchName) {
         this.containerManager = containerManager;
         this.imageManager = imageManager;
         this.gitCloner = gitCloner;
@@ -110,11 +110,11 @@ public final class AppManager {
         this.gitRepoUrl = gitRepoUrl;
         this.branchName = branchName;
         this.appType = type;
-        this.potapaasAppId = potapaasAppId;
+        this.appUuid = appUuid;
     }
 
-    private AppManager(GitCloner gitCloner, DockerContainerManager containerManager, DockerImageManager imageManager, String potapaasAppId, String name, AppType type, String gitRepoUrl, String branchName, String containerId, String imageId) {
-        this(gitCloner, containerManager, imageManager, potapaasAppId, name, type, gitRepoUrl, branchName);
+    private AppManager(GitCloner gitCloner, DockerContainerManager containerManager, DockerImageManager imageManager, String appUuid, String name, AppType type, String gitRepoUrl, String branchName, String containerId, String imageId) {
+        this(gitCloner, containerManager, imageManager, appUuid, name, type, gitRepoUrl, branchName);
         this.containerId = containerId;
         this.imageId = imageId;
     }

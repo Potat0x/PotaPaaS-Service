@@ -51,7 +51,7 @@ public class AppControllerTest {
     public void shouldGetApp() {
         AppRequestDto requestDto = validAppRequestDtoBuilder().build();
         AppResponseDto facadeResponseBody = appFacade.createAndDeployApp(requestDto).get();
-        String appUrl = endpointUrl() + "/" + facadeResponseBody.getAppId();
+        String appUrl = endpointUrl() + "/" + facadeResponseBody.getAppUuid();
 
         ResponseEntity<AppResponseDto> controllerResponse = testRestTemplate.getForEntity(appUrl, AppResponseDto.class);
 
@@ -61,8 +61,8 @@ public class AppControllerTest {
 
     @Test
     public void shouldDeleteApp() {
-        String appId = appFacade.createAndDeployApp(validAppRequestDtoBuilder().build()).get().getAppId();
-        String appUrl = endpointUrl() + "/" + appId;
+        String appUuid = appFacade.createAndDeployApp(validAppRequestDtoBuilder().build()).get().getAppUuid();
+        String appUrl = endpointUrl() + "/" + appUuid;
 
         assertThat(testRestTemplate.getForEntity(appUrl, AppResponseDto.class).getStatusCode()).isEqualTo(HttpStatus.OK);
         testRestTemplate.delete(appUrl);

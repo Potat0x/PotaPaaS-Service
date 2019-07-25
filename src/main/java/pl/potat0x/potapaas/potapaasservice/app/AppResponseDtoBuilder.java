@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 final class AppResponseDtoBuilder {
 
-    private String appId;
+    private String appUuid;
     private String name;
     private String type;
     private String sourceRepoUrl;
@@ -14,11 +14,11 @@ final class AppResponseDtoBuilder {
     private int exposedPort;
 
     AppResponseDto build() {
-        return new AppResponseDto(appId, name, type, sourceRepoUrl, sourceBranchName, createdAt, status, exposedPort);
+        return new AppResponseDto(appUuid, name, type, sourceRepoUrl, sourceBranchName, createdAt, status, exposedPort);
     }
 
-    public AppResponseDtoBuilder withAppId(String appId) {
-        this.appId = appId;
+    public AppResponseDtoBuilder withAppUuid(String appUuid) {
+        this.appUuid = appUuid;
         return this;
     }
 

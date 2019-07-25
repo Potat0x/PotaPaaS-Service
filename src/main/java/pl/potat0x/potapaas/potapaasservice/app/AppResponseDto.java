@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @ToString
 @EqualsAndHashCode
 final class AppResponseDto {
-    private final String appId;
+    private final String appUuid;
     private final String name;
     private final String type;
     private final String sourceRepoUrl;
@@ -20,7 +20,7 @@ final class AppResponseDto {
     private final int exposedPort;
 
     @JsonCreator
-    public AppResponseDto(@JsonProperty("appId") String appId,
+    public AppResponseDto(@JsonProperty("appUuid") String appUuid,
                           @JsonProperty("name") String name,
                           @JsonProperty("type") String type,
                           @JsonProperty("sourceRepoUrl") String sourceRepoUrl,
@@ -28,7 +28,7 @@ final class AppResponseDto {
                           @JsonProperty("createdAt") LocalDateTime createdAt,
                           @JsonProperty("status") String status,
                           @JsonProperty("exposedPort") int exposedPort) {
-        this.appId = appId;
+        this.appUuid = appUuid;
         this.name = name;
         this.type = type;
         this.sourceRepoUrl = sourceRepoUrl;
@@ -38,8 +38,8 @@ final class AppResponseDto {
         this.exposedPort = exposedPort;
     }
 
-    public String getAppId() {
-        return appId;
+    public String getAppUuid() {
+        return appUuid;
     }
 
     public String getName() {

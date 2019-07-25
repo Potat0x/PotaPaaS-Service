@@ -61,7 +61,7 @@ class AppFacade {
         return new AppEntityBuilder()
                 .withAppInstance(new AppInstanceEntity(appManager.getContainerId(), appManager.getImageId()))
                 .withType(appManager.getAppType())
-                .withUuid(appManager.getPotapaasAppId())
+                .withUuid(appManager.getAppUuid())
                 .withName(appManager.getAppName())
                 .withSourceRepoUrl(appManager.getGitRepoUrl())
                 .withSourceBranchName(appManager.getBranchName())
@@ -89,7 +89,7 @@ class AppFacade {
 
     private AppResponseDto buildResponseDto(AppManager app, AppEntity appEntity) {
         return new AppResponseDtoBuilder()
-                .withAppId(appEntity.getUuid())
+                .withAppUuid(appEntity.getUuid())
                 .withName(appEntity.getName())
                 .withType(appEntity.getType().userFriendlyName)
                 .withSourceRepoUrl(appEntity.getSourceRepoUrl())

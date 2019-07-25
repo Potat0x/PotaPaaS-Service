@@ -12,14 +12,15 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import pl.potat0x.potapaas.potapaasservice.core.AppType;
 
-import java.time.LocalDateTime;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles(profiles = {"test"})
 public class AppControllerTest {
+
+    @Autowired
+    private AppFacade appFacade;
 
     @Autowired
     private TestRestTemplate testRestTemplate;
@@ -34,6 +35,39 @@ public class AppControllerTest {
         ResponseEntity<AppResponseDto> responseEntity = testRestTemplate.postForEntity(endpointUrl(), appRequestDto, AppResponseDto.class);
 
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+    }
+
+    @Test
+    public void shouldDetectInvalidRequestBody() {
+        AppRequestDto appRequestDto = validAppRequestDtoBuilder()
+                .withName("")
+                .build();
+
+        ResponseEntity<String> responseEntity = testRestTemplate.postForEntity(endpointUrl(), appRequestDto, String.class);
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+
+    @Test
+    public void shouldGetApp() {
+        AppRequestDto requestDto = validAppRequestDtoBuilder().build();
+        AppResponseDto facadeResponseBody = appFacade.createAndDeployApp(requestDto).get();
+        String appUrl = endpointUrl() + "/" + facadeResponseBody.getAppId();
+
+        ResponseEntity<AppResponseDto> controllerResponse = testRestTemplate.getForEntity(appUrl, AppResponseDto.class);
+
+        assertThat(controllerResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(controllerResponse.getBody()).isEqualTo(facadeResponseBody);
+    }
+
+    @Test
+    public void shouldDeleteApp() {
+        String appId = appFacade.createAndDeployApp(validAppRequestDtoBuilder().build()).get().getAppId();
+        String appUrl = endpointUrl() + "/" + appId;
+
+        assertThat(testRestTemplate.getForEntity(appUrl, AppResponseDto.class).getStatusCode()).isEqualTo(HttpStatus.OK);
+        testRestTemplate.delete(appUrl);
+
+        assertThat(testRestTemplate.getForEntity(appUrl, AppResponseDto.class).getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
     @Test
@@ -53,17 +87,6 @@ public class AppControllerTest {
                 .withType(AppType.NODEJS.toString())
                 .withSourceRepoUrl("https://github.com/Potat0x/potapaas-test-cases")
                 .withSourceBranchName("nodejs_test_ok");
-    }
-
-    private AppResponseDtoBuilder validAppResponseDtoBuilder() {
-        return new AppResponseDtoBuilder()
-                .withName("app-name-test456")
-                .withType(AppType.NODEJS.toString())
-                .withSourceRepoUrl("https://github.com/Potat0x/potapaas-test-cases")
-                .withSourceBranchName("nodejs_test_ok")
-                .withCreatedAt(LocalDateTime.now())
-                .withStatus("running")
-                .withExposedPort(32323);
     }
 
     private String endpointUrl() {

@@ -38,7 +38,7 @@ class AppFacade {
             AppManager appManager = buildAppManagerForExistingApp(appEntity);
             return Either.right(buildResponseDto(appManager, appEntity));
         } else {
-            return Either.left(message("", 404));
+            return Either.left(message("App not found", 404));
         }
     }
 
@@ -53,7 +53,7 @@ class AppFacade {
             appRepository.delete(appEntity);
             return Either.right(null);
         } else {
-            return Either.left(message("", 404));
+            return Either.left(message("App not found", 404));
         }
     }
 

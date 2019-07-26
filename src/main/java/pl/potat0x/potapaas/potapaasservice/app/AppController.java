@@ -57,6 +57,14 @@ class AppController {
         return invalidUuidResponseEntity(appUuid);
     }
 
+    @PostMapping("/{appUuid}/redeploy")
+    ResponseEntity redeployApp(@PathVariable String appUuid) {
+        if (UuidValidator.checkIfValid(appUuid)) {
+            return ResponseResolver.toResponseEntity(facade.redeployApp(appUuid), HttpStatus.NO_CONTENT);
+        }
+        return invalidUuidResponseEntity(appUuid);
+    }
+
     private ResponseEntity invalidUuidResponseEntity(String invalidUuid) {
         return ResponseResolver.toErrorResponseEntity(invalidUuid + " is not a valid UUID", HttpStatus.BAD_REQUEST);
     }

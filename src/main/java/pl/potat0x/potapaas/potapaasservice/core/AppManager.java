@@ -50,6 +50,14 @@ public final class AppManager {
                 );
     }
 
+    public Either<ErrorMessage, String> redeployApp() {
+        return stopApp().flatMap(x -> deploy());
+    }
+
+    public Either<ErrorMessage, String> stopApp() {
+        return containerManager.stopContainer(containerId, PotapaasConfig.getInt("container_stop_sec_to_wait_before_kill"));
+    }
+
     public Either<ErrorMessage, String> killApp() {
         return containerManager.killContainer(containerId);
     }

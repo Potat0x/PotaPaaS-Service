@@ -31,6 +31,17 @@ class AppFacade {
         });
     }
 
+    Either<ErrorMessage, AppResponseDto> redeployApp(String appUuid) {
+        AppEntity appEntity = appRepository.findOneByUuid(appUuid);
+
+        if (appEntity != null) {
+            buildAppManagerForExistingApp(appEntity).redeployApp();
+            return Either.right(null);
+        } else {
+            return Either.left(message("App not found", 404));
+        }
+    }//todo: duplicated code
+
     Either<ErrorMessage, AppResponseDto> getAppDetails(String appUuid) {
         AppEntity appEntity = appRepository.findOneByUuid(appUuid);
 

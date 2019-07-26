@@ -144,6 +144,9 @@ public final class AppManager {
 
         Map<String, String> labels = new HashMap<>();
         labels.put(PotapaasConfig.get("container_label_app_name"), appName);
+        labels.put(PotapaasConfig.get("container_label_app_uuid"), appUuid);
+        labels.put(PotapaasConfig.get("container_label_app_git_repo_url"), gitRepoUrl);
+        labels.put(PotapaasConfig.get("container_label_app_git_repo_branch"), branchName);
         labels.put(PotapaasConfig.get("container_label_app_type"), appType.toString());
         labels.put(PotapaasConfig.get("container_label_build_type"), buildType.toString());
 

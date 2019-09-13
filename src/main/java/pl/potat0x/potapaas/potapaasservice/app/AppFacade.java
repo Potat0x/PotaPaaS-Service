@@ -32,51 +32,46 @@ class AppFacade {
     }
 
     Either<ErrorMessage, AppResponseDto> redeployApp(String appUuid) {
-        AppEntity appEntity = appRepository.findOneByUuid(appUuid);
-
-        if (appEntity != null) {
-            buildAppManagerForExistingApp(appEntity).redeployApp();
-            return Either.right(null);
-        } else {
-            return Either.left(message("App not found", 404));
-        }
-    }//todo: duplicated code
-
-    Either<ErrorMessage, AppResponseDto> getAppDetails(String appUuid) {
-        AppEntity appEntity = appRepository.findOneByUuid(appUuid);
-
-        if (appEntity != null) {
-            AppManager appManager = buildAppManagerForExistingApp(appEntity);
-            return Either.right(buildResponseDto(appManager, appEntity));
-        } else {
-            return Either.left(message("App not found", 404));
-        }
+        return getAppManager(appUuid)
+                .peek(AppManager::redeployApp)
+                .flatMap(appManager -> Either.right(null));
     }
 
     Either<ErrorMessage, String> getAppLogs(String appUuid) {
-        AppEntity appEntity = appRepository.findOneByUuid(appUuid);
+        return getAppManager(appUuid)
+                .flatMap(AppManager::getLogs);
+    }
 
-        if (appEntity != null) {
+    Either<ErrorMessage, AppResponseDto> getAppDetails(String appUuid) {
+        return getAppEntity(appUuid).map(appEntity -> {
             AppManager appManager = buildAppManagerForExistingApp(appEntity);
-            return appManager.getLogs();
-        } else {
-            return Either.left(message("App not found", 404));
-        }
+            return buildResponseDto(appManager, appEntity);
+        });
     }
 
     Either<ErrorMessage, Object> deleteApp(String appUuid) {
+        return getAppEntity(appUuid)
+                .peek(appEntity -> {
+                    AppManager appManager = buildAppManagerForExistingApp(appEntity);
+                    appManager.killApp();
+                    appManager.removeApp();
+
+                    appRepository.delete(appEntity);
+                })
+                .flatMap(x -> Either.right(null));
+    }
+
+    private Either<ErrorMessage, AppEntity> getAppEntity(String appUuid) {
         AppEntity appEntity = appRepository.findOneByUuid(appUuid);
-
         if (appEntity != null) {
-            AppManager appManager = buildAppManagerForExistingApp(appEntity);
-            appManager.killApp();
-            appManager.removeApp();
-
-            appRepository.delete(appEntity);
-            return Either.right(null);
-        } else {
-            return Either.left(message("App not found", 404));
+            return Either.right(appEntity);
         }
+        return Either.left(message("App not found", 404));
+    }
+
+    private Either<ErrorMessage, AppManager> getAppManager(String appUuid) {
+        return getAppEntity(appUuid)
+                .map(this::buildAppManagerForExistingApp);
     }
 
     private AppEntity buildAppEntity(AppManager appManager) {

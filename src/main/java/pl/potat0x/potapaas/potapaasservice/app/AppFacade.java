@@ -53,6 +53,17 @@ class AppFacade {
         }
     }
 
+    Either<ErrorMessage, String> getAppLogs(String appUuid) {
+        AppEntity appEntity = appRepository.findOneByUuid(appUuid);
+
+        if (appEntity != null) {
+            AppManager appManager = buildAppManagerForExistingApp(appEntity);
+            return appManager.getLogs();
+        } else {
+            return Either.left(message("App not found", 404));
+        }
+    }
+
     Either<ErrorMessage, Object> deleteApp(String appUuid) {
         AppEntity appEntity = appRepository.findOneByUuid(appUuid);
 

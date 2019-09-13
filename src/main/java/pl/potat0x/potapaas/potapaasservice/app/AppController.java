@@ -49,6 +49,14 @@ class AppController {
         return invalidUuidResponseEntity(appUuid);
     }
 
+    @GetMapping("/{appUuid}/logs")
+    ResponseEntity getAppLogs(@PathVariable String appUuid) {
+        if (UuidValidator.checkIfValid(appUuid)) {
+            return ResponseResolver.toResponseEntity(facade.getAppLogs(appUuid), HttpStatus.OK);
+        }
+        return invalidUuidResponseEntity(appUuid);
+    }
+
     @DeleteMapping("/{appUuid}")
     ResponseEntity deleteApp(@PathVariable String appUuid) {
         if (UuidValidator.checkIfValid(appUuid)) {

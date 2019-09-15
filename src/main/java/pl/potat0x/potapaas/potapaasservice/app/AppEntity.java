@@ -54,10 +54,6 @@ class AppEntity {
         return uuid;
     }
 
-    public Long getId() {
-        return id;
-    }
-
     public AppInstanceEntity getAppInstance() {
         return appInstance;
     }
@@ -80,6 +76,26 @@ class AppEntity {
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
+    }
+
+    public void setAppInstance(AppInstanceEntity appInstance) {
+        this.appInstance = appInstance;
+    }
+
+    public void setType(AppType type) {
+        this.type = type;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setSourceRepoUrl(String sourceRepoUrl) {
+        this.sourceRepoUrl = sourceRepoUrl;
+    }
+
+    public void setSourceBranchName(String sourceBranchName) {
+        this.sourceBranchName = sourceBranchName;
     }
 
     @Override

@@ -15,26 +15,35 @@ class AppFacade {
 
     private final AppRepository appRepository;
     private final AppManagerFactory appManagerFactory;
+    private final AppInstanceRepository appInstanceRepository;
 
     @Autowired
-    AppFacade(AppRepository appRepository, AppManagerFactory appManagerFactory) {
+    AppFacade(AppRepository appRepository, AppManagerFactory appManagerFactory, AppInstanceRepository appInstanceRepository) {
         this.appRepository = appRepository;
         this.appManagerFactory = appManagerFactory;
+        this.appInstanceRepository = appInstanceRepository;
     }
 
     Either<ErrorMessage, AppResponseDto> createAndDeployApp(AppRequestDto requestDto) {
         AppManager appManager = buildAppManagerForNewApp(requestDto);
-        return appManager.deploy().map(x -> {
-            AppEntity appEntity = buildAppEntity(appManager);
+        return appManager.deploy().map(s -> {
+            AppEntity appEntity = buildAppEntity(appManager).build();
             appRepository.save(appEntity);
             return buildResponseDto(appManager, appEntity);
         });
     }
 
-    Either<ErrorMessage, AppResponseDto> redeployApp(String appUuid) {
-        return getAppManager(appUuid)
-                .peek(AppManager::redeployApp)
-                .flatMap(appManager -> Either.right(null));
+    Either<ErrorMessage, AppResponseDto> redeployApp(String appUuid, AppRequestDto requestDto) {
+        return getAppManagerForRedeploying(appUuid, requestDto).flatMap(appManager -> getAppEntityForRedeploying(appUuid, requestDto).flatMap(appEntity -> {
+                    Long oldAppInstanceId = appEntity.getAppInstance().getId();
+                    return appManager.redeploy().map(oldContainerId -> {
+                        appEntity.setAppInstance(new AppInstanceEntity(appManager.getContainerId(), appManager.getImageId()));
+                        appRepository.save(appEntity);
+                        appInstanceRepository.deleteById(oldAppInstanceId);
+                        return buildResponseDto(appManager, appEntity);
+                    });
+                })
+        );
     }
 
     Either<ErrorMessage, String> getAppLogs(String appUuid) {
@@ -74,15 +83,42 @@ class AppFacade {
                 .map(this::buildAppManagerForExistingApp);
     }
 
-    private AppEntity buildAppEntity(AppManager appManager) {
+    private AppEntityBuilder buildAppEntity(AppManager appManager) {
         return new AppEntityBuilder()
                 .withAppInstance(new AppInstanceEntity(appManager.getContainerId(), appManager.getImageId()))
                 .withType(appManager.getAppType())
                 .withUuid(appManager.getAppUuid())
                 .withName(appManager.getAppName())
                 .withSourceRepoUrl(appManager.getGitRepoUrl())
-                .withSourceBranchName(appManager.getBranchName())
-                .build();
+                .withSourceBranchName(appManager.getBranchName());
+    }
+
+    private Either<ErrorMessage, AppEntity> getAppEntityForRedeploying(String appUuid, AppRequestDto requestDto) {
+        return getAppEntity(appUuid).map(appEntity -> {
+            appEntity.setName(requestDto.getName());
+            appEntity.setType(AppType.valueOf(requestDto.getType()));
+            appEntity.setSourceRepoUrl(requestDto.getSourceRepoUrl());
+            appEntity.setSourceBranchName(requestDto.getSourceBranchName());
+            return appEntity;
+        });
+    }
+
+    private Either<ErrorMessage, AppManager> getAppManagerForRedeploying(String appUuid, AppRequestDto appRequestDto) {
+        return getAppEntityForRedeploying(appUuid, appRequestDto)
+                .map(appEntity -> buildAppManagerForRedeployingApp(appEntity, appRequestDto));
+    }
+
+    private AppManager buildAppManagerForRedeployingApp(AppEntity app, AppRequestDto requestDto) {
+        AppInstanceEntity instance = app.getAppInstance();
+        return appManagerFactory.forExistingApp(
+                AppType.valueOf(requestDto.getType()),
+                app.getUuid(),
+                requestDto.getName(),
+                requestDto.getSourceRepoUrl(),
+                requestDto.getSourceBranchName(),
+                instance.getContainerId(),
+                instance.getImageId()
+        );
     }
 
     private AppManager buildAppManagerForExistingApp(AppEntity app) {

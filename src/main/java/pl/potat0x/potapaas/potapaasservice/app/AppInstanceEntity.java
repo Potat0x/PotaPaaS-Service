@@ -35,8 +35,8 @@ class AppInstanceEntity {
     protected AppInstanceEntity() {
     }
 
-    public AppEntity getAppEntity() {
-        return appEntity;
+    public Long getId() {
+        return id;
     }
 
     public String getContainerId() {

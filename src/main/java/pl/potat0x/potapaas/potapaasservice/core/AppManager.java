@@ -50,12 +50,10 @@ public final class AppManager {
                 );
     }
 
-    public Either<ErrorMessage, String> redeployApp() {
-        return stopApp().flatMap(x -> deploy());
-    }
-
-    public Either<ErrorMessage, String> stopApp() {
-        return containerManager.stopContainer(containerId, PotapaasConfig.getInt("container_stop_sec_to_wait_before_kill"));
+    public Either<ErrorMessage, String> redeploy() {
+        String oldContainerId = containerId;
+        return deploy()
+                .peek(appUuid -> stopContainer(oldContainerId));
     }
 
     public Either<ErrorMessage, String> killApp() {
@@ -165,6 +163,10 @@ public final class AppManager {
                 .labels(labels);
 
         return containerManager.runContainer(config);
+    }
+
+    private Either<ErrorMessage, String> stopContainer(String containerId) {
+        return containerManager.stopContainer(containerId, PotapaasConfig.getInt("container_stop_sec_to_wait_before_kill"));
     }
 
     private Either<ErrorMessage, String> buildImage(String appSourceDir, DockerImageManager.BuildType buildType) {

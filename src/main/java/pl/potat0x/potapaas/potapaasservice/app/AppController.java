@@ -66,11 +66,17 @@ class AppController {
     }
 
     @PostMapping("/{appUuid}/redeploy")
-    ResponseEntity redeployApp(@PathVariable String appUuid) {
-        if (UuidValidator.checkIfValid(appUuid)) {
-            return ResponseResolver.toResponseEntity(facade.redeployApp(appUuid), HttpStatus.NO_CONTENT);
+    ResponseEntity redeployApp(@PathVariable String appUuid, @RequestBody AppRequestDto requestDto) {
+        if (!UuidValidator.checkIfValid(appUuid)) {
+            return invalidUuidResponseEntity(appUuid);
         }
-        return invalidUuidResponseEntity(appUuid);
+
+        Validation<Seq<String>, AppRequestDto> validation = new AppRequestDtoValidator().validate(requestDto);
+        if (!validation.isValid()) {
+            return ResponseResolver.toErrorResponseEntity(validation, HttpStatus.UNPROCESSABLE_ENTITY, validAppRequestExample());
+        }
+
+        return ResponseResolver.toResponseEntity(facade.redeployApp(appUuid, requestDto), HttpStatus.OK);
     }
 
     private ResponseEntity invalidUuidResponseEntity(String invalidUuid) {

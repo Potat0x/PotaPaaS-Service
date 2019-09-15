@@ -6,6 +6,7 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import pl.potat0x.potapaas.potapaasservice.config.AppManagerFactoryConfig;
+import pl.potat0x.potapaas.potapaasservice.system.PotapaasConfig;
 import pl.potat0x.potapaas.potapaasservice.system.errormessage.ErrorMessage;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -20,7 +21,7 @@ public class AppManagerTest {
         String appUrl = "http://127.0.0.1:" + app.getPort().get();
 
         assertThat(deploymentResult.isRight()).isTrue();
-        Thread.sleep(1000);
+        Thread.sleep(PotapaasConfig.getInt("app_startup_waiting_time_in_millis"));
         ResponseEntity<String> response = new TestRestTemplate().getForEntity(appUrl, String.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         app.killApp().get();

@@ -10,6 +10,7 @@ enum CoreErrorMessage implements ErrorMessage {
     CONTAINER_NOT_FOUND("Server error: application container not found", 500);
 
     private String text;
+    private String details;
     private int httpStatus;
 
     CoreErrorMessage(String text, int httpStatus) {
@@ -20,6 +21,16 @@ enum CoreErrorMessage implements ErrorMessage {
     @Override
     public String getText() {
         return text;
+    }
+
+    @Override
+    public String getDetails() {
+        return details;
+    }
+
+    ErrorMessage withDetails(String details) {
+        this.details = details;
+        return this;
     }
 
     @Override

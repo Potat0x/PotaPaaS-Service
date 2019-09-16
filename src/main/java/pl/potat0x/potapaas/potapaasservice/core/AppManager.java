@@ -130,9 +130,27 @@ public final class AppManager {
     }
 
     private Either<ErrorMessage, String> runAppTests(String imageId) {
-        return runContainer(imageId, DockerImageManager.BuildType.TEST)
-                .flatMap(containerManager::waitForExit)
-                .flatMap(exitCode -> exitCode == 0 ? Either.right("Tests passed!") : Either.left(CoreErrorMessage.APP_TESTS_FAIL));
+        Either<ErrorMessage, String> runContainerResult = runContainer(imageId, DockerImageManager.BuildType.TEST);
+        if (runContainerResult.isRight()) {
+            String containerId = runContainerResult.get();
+            Either<ErrorMessage, Long> waitForContainerResult = containerManager.waitForExit(containerId);
+
+            if (waitForContainerResult.isRight()) {
+                Long containerExitCode = waitForContainerResult.get();
+                if (containerExitCode == 0) {
+                    return Either.right("Tests passed!");
+                } else {
+                    Either<ErrorMessage, String> getLogs = containerManager.getLogs(containerId);
+                    if (getLogs.isRight()) {
+                        return Either.left(CoreErrorMessage.APP_TESTS_FAIL.withDetails(getLogs.get()));
+                    } else {
+                        return Either.left(getLogs.getLeft());
+                    }
+                }
+            }
+            return Either.left(waitForContainerResult.getLeft());
+        }
+        return runContainerResult;
     }
 
     private Either<ErrorMessage, String> buildReleaseImage() {

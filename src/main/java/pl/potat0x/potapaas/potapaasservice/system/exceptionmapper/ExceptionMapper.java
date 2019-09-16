@@ -10,7 +10,7 @@ import java.util.Map;
 
 public final class ExceptionMapper {
 
-    private static final CustomErrorMessage UNKNOWN_ERROR_MESSAGE = new CustomErrorMessage("Unknown error", 500);
+    private static final CustomErrorMessage UNKNOWN_ERROR_MESSAGE = CustomErrorMessage.message("Unknown error", 500);
     private final Exception exception;
 
     public <ER> Either<ErrorMessage, ER> of(Case... cases) {

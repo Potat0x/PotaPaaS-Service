@@ -30,7 +30,7 @@ public class ResponseResolver {
 
     private static ResponseEntity errorResponse(ErrorMessage errorMessage) {
         HttpStatus httpStatus = HttpStatus.resolve(errorMessage.getHttpStatus());
-        return new ResponseEntity<>(new ErrorResponseDto(errorMessage.getText()), httpStatus != null ? httpStatus : HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(new ErrorResponseDto(errorMessage.getText(), errorMessage.getDetails()), httpStatus != null ? httpStatus : HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     private ResponseResolver() {

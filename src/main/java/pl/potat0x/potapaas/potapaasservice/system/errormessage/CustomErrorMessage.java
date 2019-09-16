@@ -3,20 +3,27 @@ package pl.potat0x.potapaas.potapaasservice.system.errormessage;
 public final class CustomErrorMessage implements ErrorMessage {
 
     private final String message;
+    private final String details;
     private final int httpStatus;
 
-    public CustomErrorMessage(String message, int httpStatus) {
-        this.message = message;
-        this.httpStatus = httpStatus;
+    public static CustomErrorMessage message(String message, int httpStatus) {
+        return new CustomErrorMessage(message, null, httpStatus);
     }
 
-    public static CustomErrorMessage message(String message, int httpStatus) {
-        return new CustomErrorMessage(message, httpStatus);
+    private CustomErrorMessage(String message, String details, int httpStatus) {
+        this.message = message;
+        this.details = details;
+        this.httpStatus = httpStatus;
     }
 
     @Override
     public String getText() {
         return message;
+    }
+
+    @Override
+    public String getDetails() {
+        return details;
     }
 
     @Override

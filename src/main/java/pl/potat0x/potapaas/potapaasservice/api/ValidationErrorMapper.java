@@ -6,7 +6,7 @@ import io.vavr.control.Validation;
 final class ValidationErrorMapper {
 
     static ErrorResponseDto map(Validation<Seq<String>, ?> validation, Object validObjectExample) {
-        return new ErrorResponseDto<>(joinErrors(validation.getError(), '\n'), validObjectExample);
+        return new ErrorResponseDto<>(joinErrors(validation.getError(), '\n'), null, validObjectExample);
     }
 
     private static String joinErrors(Seq<String> errors, char separator) {

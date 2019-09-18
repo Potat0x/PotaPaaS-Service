@@ -43,7 +43,7 @@ public class TestCachingJGitCloner extends JGitCloner {
         }
 
         if (!checkIfRepoIsAlreadyCloned(targetPath)) {
-            super.clone(repositoryUri, branchName, targetPath);
+            return super.clone(repositoryUri, branchName, targetPath);
         }
 
         return Either.right(targetPath);

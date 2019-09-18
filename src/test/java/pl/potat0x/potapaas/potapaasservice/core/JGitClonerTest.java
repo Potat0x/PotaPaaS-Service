@@ -27,7 +27,7 @@ public class JGitClonerTest {
 
     @Test
     public void shouldClonePublicRepo() {
-        String repoUrl = "https://github.com/spotify/comet-core";
+        String repoUrl = "https://github.com/potat0x/potapaas-test-cases";
 
         String clonedRepoDir = cloner.cloneBranch(repoUrl, "master", temporaryReposDirectory).get();
 
@@ -40,7 +40,7 @@ public class JGitClonerTest {
 
     @Test(expected = NoSuchElementException.class)
     public void shouldGetCloneErrorDueToInvalidBranchName() {
-        String repoUrl = "https://github.com/spotify/comet-core";
+        String repoUrl = "https://github.com/potat0x/potapaas-test-cases";
 
         cloner.cloneBranch(repoUrl, "this_branch_does_not_exist", temporaryReposDirectory).get();
     }

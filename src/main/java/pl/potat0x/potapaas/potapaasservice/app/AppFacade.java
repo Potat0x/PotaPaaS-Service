@@ -8,10 +8,19 @@ import pl.potat0x.potapaas.potapaasservice.core.AppManagerFactory;
 import pl.potat0x.potapaas.potapaasservice.core.AppType;
 import pl.potat0x.potapaas.potapaasservice.system.errormessage.ErrorMessage;
 
+import java.util.Collections;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
 import static pl.potat0x.potapaas.potapaasservice.system.errormessage.CustomErrorMessage.message;
 
 @Service
 class AppFacade {
+
+    private static final Set<String> redeployLocks = Collections.newSetFromMap(new ConcurrentHashMap<>());
+    private static final Lock redeployLocksSetLock = new ReentrantLock();
 
     private final AppRepository appRepository;
     private final AppManagerFactory appManagerFactory;
@@ -34,16 +43,23 @@ class AppFacade {
     }
 
     Either<ErrorMessage, AppResponseDto> redeployApp(String appUuid, AppRequestDto requestDto) {
-        return getAppManagerForRedeploying(appUuid, requestDto).flatMap(appManager -> getAppEntityForRedeploying(appUuid, requestDto).flatMap(appEntity -> {
-                    Long oldAppInstanceId = appEntity.getAppInstance().getId();
-                    return appManager.redeploy().map(oldContainerId -> {
-                        appEntity.setAppInstance(new AppInstanceEntity(appManager.getContainerId(), appManager.getImageId()));
-                        appRepository.save(appEntity);
-                        appInstanceRepository.deleteById(oldAppInstanceId);
-                        return buildResponseDto(appManager, appEntity);
-                    });
-                })
-        );
+        boolean redeployNotRunning;
+        redeployLocksSetLock.lock();
+        try {
+            redeployNotRunning = redeployLocks.add(appUuid);
+        } finally {
+            redeployLocksSetLock.unlock();
+        }
+
+        if (redeployNotRunning) {
+            try {
+                return redeploy(appUuid, requestDto);
+            } finally {
+                redeployLocks.remove(appUuid);
+            }
+        } else {
+            return Either.left(message("Redeploy already started", 429));
+        }
     }
 
     Either<ErrorMessage, String> getAppLogs(String appUuid) {
@@ -68,6 +84,19 @@ class AppFacade {
                     appRepository.delete(appEntity);
                 })
                 .flatMap(x -> Either.right(null));
+    }
+
+    private Either<ErrorMessage, AppResponseDto> redeploy(String appUuid, AppRequestDto requestDto) {
+        return getAppManagerForRedeploying(appUuid, requestDto).flatMap(appManager -> getAppEntityForRedeploying(appUuid, requestDto).flatMap(appEntity -> {
+                    Long oldAppInstanceId = appEntity.getAppInstance().getId();
+                    return appManager.redeploy().map(oldContainerId -> {
+                        appEntity.setAppInstance(new AppInstanceEntity(appManager.getContainerId(), appManager.getImageId()));
+                        appRepository.save(appEntity);
+                        appInstanceRepository.deleteById(oldAppInstanceId);
+                        return buildResponseDto(appManager, appEntity);
+                    });
+                })
+        );
     }
 
     private Either<ErrorMessage, AppEntity> getAppEntity(String appUuid) {

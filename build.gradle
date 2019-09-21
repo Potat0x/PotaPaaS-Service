@@ -31,6 +31,7 @@ dependencies {
 
     testImplementation 'org.spockframework:spock-core:1.3-groovy-2.5'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.postgresql:postgresql:42.2.8'
 
     implementation 'org.glassfish.jersey.inject:jersey-hk2:2.27'
 }

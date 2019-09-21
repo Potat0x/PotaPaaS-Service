@@ -1,26 +1,22 @@
-package pl.potat0x.potapaas.potapaasservice.app;
+package pl.potat0x.potapaas.potapaasservice.datastore;
+
 
 import io.vavr.collection.Seq;
 import io.vavr.collection.Stream;
 import io.vavr.control.Option;
 import io.vavr.control.Validation;
-import pl.potat0x.potapaas.potapaasservice.core.AppType;
 
-
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Objects;
 
 import static io.vavr.API.*;
 
-final class AppRequestDtoValidator {
+final class DatastoreRequestDtoValidator {
 
-    Validation<Seq<String>, AppRequestDto> validate(AppRequestDto requestDto) {
-        return Validation.combine(validateName(requestDto.getName()),
-                validateType(requestDto.getType()),
-                validateUrl(requestDto.getSourceRepoUrl()),
-                validateBranchName(requestDto.getSourceBranchName())
-        ).ap(AppRequestDto::new);
+    Validation<Seq<String>, DatastoreDto> validate(DatastoreDto requestDto) {
+        return Validation.combine(
+                validateName(requestDto.getName()),
+                validateType(requestDto.getType())
+        ).ap(DatastoreDto::new);
     }
 
     private Validation<String, String> validateName(String name) {
@@ -48,33 +44,14 @@ final class AppRequestDtoValidator {
         }
 
         try {
-            AppType.valueOf(type);
+            DatastoreType.valueOf(type);
             return Validation.valid(type);
         } catch (IllegalArgumentException e) {
-            String availableTypes = Stream.of(AppType.values())
+            String availableTypes = Stream.of(DatastoreType.values())
                     .map(Enum::toString)
                     .reduce((a, b) -> a + ", " + b);
-            String message = "Invalid application type. Available types: " + availableTypes;
+            String message = "Invalid datastore type. Available types: " + availableTypes;
             return Validation.invalid(message);
         }
-    }
-
-    private Validation<String, String> validateUrl(String sourceRepoUrl) {
-        if (sourceRepoUrl == null) {
-            return Validation.invalid("sourceRepoUrl is mandatory");
-        }
-        try {
-            new URL(sourceRepoUrl);
-            return Validation.valid(sourceRepoUrl);
-        } catch (MalformedURLException e) {
-            return Validation.invalid("Invalid repository URL");
-        }
-    }
-
-    private Validation<String, String> validateBranchName(String sourceBranchName) {
-        if (sourceBranchName == null) {
-            return Validation.invalid("sourceBranchName is mandatory");
-        }
-        return !sourceBranchName.isEmpty() ? Validation.valid(sourceBranchName) : Validation.invalid("Branch name must be not empty");
     }
 }

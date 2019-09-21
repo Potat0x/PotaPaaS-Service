@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 import static pl.potat0x.potapaas.potapaasservice.system.errormessage.CustomErrorMessage.message;
 import static pl.potat0x.potapaas.potapaasservice.system.exceptionmapper.CaseBuilderStart.exception;
 
-final class DockerContainerManager {
+public final class DockerContainerManager {
 
     private final DockerClient docker;
 
@@ -39,7 +39,7 @@ final class DockerContainerManager {
         docker = new DefaultDockerClient(dockerClientUri);
     }
 
-    public Either<ErrorMessage, String> runContainer(ContainerConfig.Builder containerConfig) {
+    Either<ErrorMessage, String> runContainer(ContainerConfig.Builder containerConfig) {
         try {
             ContainerCreation containerCreation = docker.createContainer(containerConfig.build());
             docker.startContainer(containerCreation.id());
@@ -55,7 +55,11 @@ final class DockerContainerManager {
             if (ports == null || ports.isEmpty()) {
                 return Either.left(message("no port bindings found", 500));
             } else {
-                return Either.right(ports.get(PotapaasConfig.get("default_webapp_port")).get(0).hostPort());
+                if (ports.containsKey(PotapaasConfig.get("default_webapp_port"))) {
+                    return Either.right(ports.get(PotapaasConfig.get("default_webapp_port")).get(0).hostPort());
+                } else {
+                    return Either.right(ports.get(PotapaasConfig.get("default_datastore_port")).get(0).hostPort());
+                }
             }
         } catch (Exception e) {
             return ExceptionMapper.map(e).to(CoreErrorMessage.SERVER_ERROR);
@@ -157,7 +161,7 @@ final class DockerContainerManager {
         }
     }
 
-    public Either<ErrorMessage, List<String>> getContainersByLabel(String label, String value) {
+    Either<ErrorMessage, List<String>> getContainersByLabel(String label, String value) {
         try {
             List<String> containerIds = docker.listContainers(DockerClient.ListContainersParam.withLabel(label, value))
                     .stream()
@@ -169,7 +173,7 @@ final class DockerContainerManager {
         }
     }
 
-    public Either<ErrorMessage, String> getLogs(String containerId) {
+    Either<ErrorMessage, String> getLogs(String containerId) {
 
         DockerClient.LogsParam[] logsParams = new DockerClient.LogsParam[]{
                 DockerClient.LogsParam.timestamps(),
@@ -188,7 +192,7 @@ final class DockerContainerManager {
         }
     }
 
-    public Either<ErrorMessage, String> getStatus(String containerId) {
+    Either<ErrorMessage, String> getStatus(String containerId) {
         try {
             ContainerState state = docker.inspectContainer(containerId).state();
             return Either.right(state.status());
@@ -200,7 +204,7 @@ final class DockerContainerManager {
         }
     }
 
-    public Either<ErrorMessage, LocalDateTime> getCreationDate(String containerId) {
+    Either<ErrorMessage, LocalDateTime> getCreationDate(String containerId) {
         try {
             Date creationDate = docker.inspectContainer(containerId).created();
             LocalDateTime creationDateTime = LocalDateTime.ofInstant(creationDate.toInstant(), ZoneId.systemDefault());

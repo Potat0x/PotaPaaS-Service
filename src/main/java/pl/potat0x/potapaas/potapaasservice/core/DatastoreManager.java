@@ -33,6 +33,6 @@ public final class DatastoreManager {
     }
 
     public Either<ErrorMessage, String> getPort() {
-        return containerManager.getHostPort(containerId);
+        return containerManager.getHostPort(containerId, PotapaasConfig.get("default_datastore_port"));
     }
 }

@@ -49,17 +49,13 @@ public final class DockerContainerManager {
         }
     }
 
-    Either<ErrorMessage, String> getHostPort(String containerId) {
+    Either<ErrorMessage, String> getHostPort(String containerId, String containerPort) {
         try {
             ImmutableMap<String, List<PortBinding>> ports = docker.inspectContainer(containerId).networkSettings().ports();
             if (ports == null || ports.isEmpty()) {
                 return Either.left(message("no port bindings found", 500));
             } else {
-                if (ports.containsKey(PotapaasConfig.get("default_webapp_port"))) {
-                    return Either.right(ports.get(PotapaasConfig.get("default_webapp_port")).get(0).hostPort());
-                } else {
-                    return Either.right(ports.get(PotapaasConfig.get("default_datastore_port")).get(0).hostPort());
-                }
+                return Either.right(ports.get(containerPort).get(0).hostPort());
             }
         } catch (Exception e) {
             return ExceptionMapper.map(e).to(CoreErrorMessage.SERVER_ERROR);

@@ -65,7 +65,7 @@ public final class AppManager {
     }
 
     public Either<ErrorMessage, String> getPort() {
-        return containerManager.getHostPort(containerId);
+        return containerManager.getHostPort(containerId, PotapaasConfig.get("default_webapp_port"));
     }
 
     public Either<ErrorMessage, String> getLogs() {

@@ -40,17 +40,10 @@ class AppRequestDtoValidatorTest extends Specification {
         requestDto << [
                 validDto().withName(null),
                 validDto().withName(""),
-                validDto().withName(" "),
-                validDto().withName("  "),
-                validDto().withName(" a"),
-                validDto().withName("-aa"),
-                validDto().withName("aa-"),
-                validDto().withName("-aa-"),
-                validDto().withName("--"),
-                validDto().withName("aa--a"),
+                validDto().withName("a"),
+                validDto().withName("a--a"),
 
                 validDto().withType(null),
-                validDto().withType(""),
                 validDto().withType("invalid_type"),
 
                 validDto().withSourceRepoUrl(null),

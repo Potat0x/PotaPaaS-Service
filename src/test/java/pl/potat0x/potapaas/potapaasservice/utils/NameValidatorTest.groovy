@@ -6,7 +6,9 @@ class NameValidatorTest extends Specification {
 
     def "should accept valid names"() {
         expect:
-        NameValidator.validate(name).isValid()
+        NameValidator.validate(name, "app name").isValid()
+        NameValidator.validate(name, "app name", false).isValid()
+        NameValidator.validate(name, "app name", true).isValid()
 
         where:
         name << [
@@ -21,7 +23,8 @@ class NameValidatorTest extends Specification {
 
     def "should reject invalid names"() {
         expect:
-        NameValidator.validate(name).isInvalid()
+        NameValidator.validate(name, "app name").isInvalid()
+        NameValidator.validate(name, "app name", false).isInvalid()
 
         where:
         name << [
@@ -39,5 +42,13 @@ class NameValidatorTest extends Specification {
                 "--",
                 "aa--a",
         ]
+    }
+
+    def "should accept null when name is nullable"() {
+        expect:
+        NameValidator.validate(name, "app name", true).isValid()
+
+        where:
+        name = null
     }
 }

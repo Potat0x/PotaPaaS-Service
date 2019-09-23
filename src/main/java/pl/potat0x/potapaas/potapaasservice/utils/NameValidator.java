@@ -13,7 +13,15 @@ public final class NameValidator {
     private static final int minLength = 2;
     private static final int maxLength = 32;
 
-    public static Validation<String, String> validate(String name) {
+    public static Validation<String, String> validate(String name, String propertyName) {
+        return validate(name, propertyName, false);
+    }
+
+    public static Validation<String, String> validate(String name, String propertyName, boolean nullable) {
+
+        if (nullable && name == null) {
+            return Validation.valid(name);
+        }
 
         Option<String> invalidNameMessage = Match(name).option(
                 Case($(Objects::isNull), "name is mandatory"),
@@ -24,7 +32,7 @@ public final class NameValidator {
         );
 
         if (invalidNameMessage.isDefined()) {
-            return Validation.invalid(invalidNameMessage.get());
+            return Validation.invalid("invalid " + propertyName + ": " + invalidNameMessage.get());
         }
         return Validation.valid(name);
     }

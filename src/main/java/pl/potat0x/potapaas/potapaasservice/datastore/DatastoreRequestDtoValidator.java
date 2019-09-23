@@ -10,7 +10,7 @@ final class DatastoreRequestDtoValidator {
 
     Validation<Seq<String>, DatastoreDto> validate(DatastoreDto requestDto) {
         return Validation.combine(
-                NameValidator.validate(requestDto.getName()),
+                NameValidator.validate(requestDto.getName(), "datastore name"),
                 EnumValidator.checkIfEnumContainsConstant(requestDto.getType(), DatastoreType.class, "datastore type")
         ).ap(DatastoreDto::new);
     }

@@ -12,10 +12,11 @@ import java.net.URL;
 final class AppRequestDtoValidator {
 
     Validation<Seq<String>, AppRequestDto> validate(AppRequestDto requestDto) {
-        return Validation.combine(NameValidator.validate(requestDto.getName()),
+        return Validation.combine(NameValidator.validate(requestDto.getName(), "app name"),
                 EnumValidator.checkIfEnumContainsConstant(requestDto.getType(), AppType.class, "app type"),
                 validateUrl(requestDto.getSourceRepoUrl()),
-                validateBranchName(requestDto.getSourceBranchName())
+                validateBranchName(requestDto.getSourceBranchName()),
+                NameValidator.validate(requestDto.getDatastoreName(), "datastore name", true)
         ).ap(AppRequestDto::new);
     }
 

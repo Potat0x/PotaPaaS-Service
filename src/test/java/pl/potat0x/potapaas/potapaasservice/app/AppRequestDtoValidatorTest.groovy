@@ -25,7 +25,10 @@ class AppRequestDtoValidatorTest extends Specification {
 
                 validDto().withSourceRepoUrl("https://github.com/Potat0x/potapaas-test-cases"),
 
-                validDto().withSourceBranchName("master")
+                validDto().withSourceBranchName("master"),
+
+                validDto().withDatastoreName(null),
+                validDto().withDatastoreName("datastore-123"),
         ]
     }
 
@@ -52,6 +55,9 @@ class AppRequestDtoValidatorTest extends Specification {
 
                 validDto().withSourceBranchName(null),
                 validDto().withSourceBranchName(""),
+
+                validDto().withDatastoreName(""),
+                validDto().withDatastoreName("invalid_datastore_name"),
         ]
     }
 
@@ -61,5 +67,6 @@ class AppRequestDtoValidatorTest extends Specification {
                 .withType("NODEJS")
                 .withSourceRepoUrl("https://github.com/Potat0x/potapaas-test-cases")
                 .withSourceBranchName("nodejs_test_ok")
+                .withDatastoreName("datastore-name")
     }
 }

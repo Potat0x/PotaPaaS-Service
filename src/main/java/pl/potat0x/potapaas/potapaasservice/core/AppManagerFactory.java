@@ -1,14 +1,14 @@
 package pl.potat0x.potapaas.potapaasservice.core;
 
+import pl.potat0x.potapaas.potapaasservice.app.AppRequestDto;
+
+import java.util.UUID;
+
 public final class AppManagerFactory {
 
     private final String dockerApiUrl;
     private final GitCloner gitCloner;
     private final boolean imageBuildingCache;
-
-    public AppManagerFactory(GitCloner gitCloner, String dockerApiUrl) {
-        this(gitCloner, dockerApiUrl, false);
-    }
 
     public AppManagerFactory(GitCloner gitCloner, String dockerApiUrl, boolean imageBuildingCache) {
         this.gitCloner = gitCloner;
@@ -16,21 +16,15 @@ public final class AppManagerFactory {
         this.imageBuildingCache = imageBuildingCache;
     }
 
-    public AppManager createApp(AppType appType, String name, String gitRepoUrl, String repoBranchName) {
-        return AppManager.createApp(
-                gitCloner,
-                new DockerContainerManager(dockerApiUrl),
-                new DockerImageManager(dockerApiUrl, appType, imageBuildingCache),
-                name, appType, gitRepoUrl, repoBranchName
-        );
+    public AppManagerFactory(GitCloner gitCloner, String dockerApiUrl) {
+        this(gitCloner, dockerApiUrl, false);
     }
 
-    public AppManager forExistingApp(AppType appType, String appUuid, String name, String gitRepoUrl, String repoBranchName, String containerId, String imageId) {
-        return AppManager.forExistingApp(
-                gitCloner,
-                new DockerContainerManager(dockerApiUrl),
-                new DockerImageManager(dockerApiUrl, appType, imageBuildingCache),
-                appUuid, name, appType, gitRepoUrl, repoBranchName, containerId, imageId
-        );
+    public AppManager forNewApp(AppRequestDto appRequestDto) {
+        return new AppManager(new DockerContainerManager(dockerApiUrl), new DockerImageManager(dockerApiUrl, AppType.valueOf(appRequestDto.getType()), imageBuildingCache), gitCloner, appRequestDto, UUID.randomUUID().toString());
+    }
+
+    public AppManager forExistingApp(AppRequestDto requestDto, AppType appType, String appUuid, String containerId) {
+        return new AppManager(new DockerContainerManager(dockerApiUrl), new DockerImageManager(dockerApiUrl, appType, imageBuildingCache), gitCloner, requestDto, appUuid, containerId);
     }
 }

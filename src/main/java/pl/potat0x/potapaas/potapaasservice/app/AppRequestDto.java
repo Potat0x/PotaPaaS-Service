@@ -7,7 +7,7 @@ import lombok.ToString;
 
 @ToString
 @EqualsAndHashCode
-final class AppRequestDto {
+public final class AppRequestDto {
     private final String name;
     private final String type;
     private final String sourceRepoUrl;

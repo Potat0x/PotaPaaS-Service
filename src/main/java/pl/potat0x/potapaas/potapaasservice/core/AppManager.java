@@ -3,38 +3,40 @@ package pl.potat0x.potapaas.potapaasservice.core;
 import com.spotify.docker.client.messages.ContainerConfig;
 import com.spotify.docker.client.messages.HostConfig;
 import io.vavr.control.Either;
+import pl.potat0x.potapaas.potapaasservice.app.AppRequestDto;
 import pl.potat0x.potapaas.potapaasservice.system.PotapaasConfig;
 import pl.potat0x.potapaas.potapaasservice.system.errormessage.ErrorMessage;
 import pl.potat0x.potapaas.potapaasservice.system.exceptionmapper.ExceptionMapper;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 public final class AppManager {
 
     private final DockerContainerManager containerManager;
     private final DockerImageManager imageManager;
     private final GitCloner gitCloner;
+    private AppRequestDto requestDto;
 
-    private final String appName;
-    private final String gitRepoUrl;
-    private final String branchName;
-    private final AppType appType;
-    private final String appUuid;
-    private String containerId;
+    private String appUuid;
     private String imageId;
+    private String containerId;
     private String clonedRepoDir;
 
-    static AppManager createApp(GitCloner gitCloner, DockerContainerManager containerManager, DockerImageManager imageManager, String name, AppType type, String gitRepoUrl, String repoBranchName) {
-        return new AppManager(gitCloner, containerManager, imageManager, UUID.randomUUID().toString(), name, type, gitRepoUrl, repoBranchName);
+    AppManager(DockerContainerManager containerManager, DockerImageManager imageManager, GitCloner gitCloner, AppRequestDto requestDto, String appUuid) {
+        this.containerManager = containerManager;
+        this.imageManager = imageManager;
+        this.gitCloner = gitCloner;
+
+        this.requestDto = requestDto;
+        this.appUuid = appUuid;
     }
 
-    static AppManager forExistingApp(GitCloner gitCloner, DockerContainerManager containerManager, DockerImageManager imageManager, String appUuid, String name, AppType type, String gitRepoUrl, String repoBranchName, String containerId, String imageId) {
-        return new AppManager(gitCloner, containerManager, imageManager, appUuid, name, type, gitRepoUrl, repoBranchName, containerId, imageId);
+    AppManager(DockerContainerManager containerManager, DockerImageManager imageManager, GitCloner gitCloner, AppRequestDto requestDto, String appUuid, String containerId) {
+        this(containerManager, imageManager, gitCloner, requestDto, appUuid);
+        this.containerId = containerId;
     }
 
     public Either<ErrorMessage, String> deploy() {
@@ -56,12 +58,16 @@ public final class AppManager {
                 .peek(appUuid -> stopContainer(oldContainerId));
     }
 
-    public Either<ErrorMessage, String> killApp() {
-        return containerManager.killContainer(containerId);
+    public String getAppUuid() {
+        return appUuid;
     }
 
-    public Either<ErrorMessage, String> removeApp() {
-        return containerManager.deleteContainer(containerId);
+    public String getContainerId() {
+        return containerId;
+    }
+
+    public String getImageId() {
+        return imageId;
     }
 
     public Either<ErrorMessage, String> getPort() {
@@ -76,53 +82,12 @@ public final class AppManager {
         return containerManager.getStatus(containerId);
     }
 
-    public Either<ErrorMessage, LocalDateTime> getCreationDate() {
-        return containerManager.getCreationDate(containerId);
+    public Either<ErrorMessage, String> killApp() {
+        return containerManager.killContainer(containerId);
     }
 
-    public String getAppName() {
-        return appName;
-    }
-
-    public String getGitRepoUrl() {
-        return gitRepoUrl;
-    }
-
-    public String getBranchName() {
-        return branchName;
-    }
-
-    public AppType getAppType() {
-        return appType;
-    }
-
-    public String getAppUuid() {
-        return appUuid;
-    }
-
-    public String getContainerId() {
-        return containerId;
-    }
-
-    public String getImageId() {
-        return imageId;
-    }
-
-    private AppManager(GitCloner gitCloner, DockerContainerManager containerManager, DockerImageManager imageManager, String appUuid, String name, AppType type, String gitRepoUrl, String branchName) {
-        this.containerManager = containerManager;
-        this.imageManager = imageManager;
-        this.gitCloner = gitCloner;
-        this.appName = name;
-        this.gitRepoUrl = gitRepoUrl;
-        this.branchName = branchName;
-        this.appType = type;
-        this.appUuid = appUuid;
-    }
-
-    private AppManager(GitCloner gitCloner, DockerContainerManager containerManager, DockerImageManager imageManager, String appUuid, String name, AppType type, String gitRepoUrl, String branchName, String containerId, String imageId) {
-        this(gitCloner, containerManager, imageManager, appUuid, name, type, gitRepoUrl, branchName);
-        this.containerId = containerId;
-        this.imageId = imageId;
+    public Either<ErrorMessage, String> removeApp() {
+        return containerManager.deleteContainer(containerId);
     }
 
     private Either<ErrorMessage, String> runApp(String imageId) {
@@ -167,11 +132,11 @@ public final class AppManager {
                 .build();
 
         Map<String, String> labels = new HashMap<>();
-        labels.put(PotapaasConfig.get("container_label_app_name"), appName);
         labels.put(PotapaasConfig.get("container_label_app_uuid"), appUuid);
-        labels.put(PotapaasConfig.get("container_label_app_git_repo_url"), gitRepoUrl);
-        labels.put(PotapaasConfig.get("container_label_app_git_repo_branch"), branchName);
-        labels.put(PotapaasConfig.get("container_label_app_type"), appType.toString());
+        labels.put(PotapaasConfig.get("container_label_app_name"), requestDto.getName());
+        labels.put(PotapaasConfig.get("container_label_app_git_repo_url"), requestDto.getSourceRepoUrl());
+        labels.put(PotapaasConfig.get("container_label_app_git_repo_branch"), requestDto.getSourceBranchName());
+        labels.put(PotapaasConfig.get("container_label_app_type"), requestDto.getType());
         labels.put(PotapaasConfig.get("container_label_build_type"), buildType.toString());
 
         ContainerConfig.Builder config = ContainerConfig.builder()
@@ -194,7 +159,7 @@ public final class AppManager {
     private Either<ErrorMessage, String> cloneRepo() {
         try {
             Path tmpTargetDir = Files.createTempDirectory(PotapaasConfig.get("tmp_git_dir_prefix"));
-            return gitCloner.cloneBranch(gitRepoUrl, branchName, tmpTargetDir.toString());
+            return gitCloner.cloneBranch(requestDto.getSourceRepoUrl(), requestDto.getSourceBranchName(), tmpTargetDir.toString());
         } catch (Exception e) {
             return ExceptionMapper.map(e).of();
         }

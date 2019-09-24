@@ -12,19 +12,19 @@ public final class AppRequestDto {
     private final String type;
     private final String sourceRepoUrl;
     private final String sourceBranchName;
-    private final String datastoreName;
+    private final String datastoreUuid;
 
     @JsonCreator
     public AppRequestDto(@JsonProperty("name") String name,
                          @JsonProperty("type") String type,
                          @JsonProperty("sourceRepoUrl") String sourceRepoUrl,
                          @JsonProperty("sourceBranchName") String sourceBranchName,
-                         @JsonProperty("datastoreName") String datastoreName) {
+                         @JsonProperty("datastoreUuid") String datastoreUuid) {
         this.name = name;
         this.type = type;
         this.sourceRepoUrl = sourceRepoUrl;
         this.sourceBranchName = sourceBranchName;
-        this.datastoreName = datastoreName;
+        this.datastoreUuid = datastoreUuid;
     }
 
     public String getName() {
@@ -43,7 +43,7 @@ public final class AppRequestDto {
         return sourceBranchName;
     }
 
-    public String getDatastoreName() {
-        return datastoreName;
+    public String getDatastoreUuid() {
+        return datastoreUuid;
     }
 }

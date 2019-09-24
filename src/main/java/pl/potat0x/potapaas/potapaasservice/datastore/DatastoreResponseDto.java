@@ -7,14 +7,20 @@ import lombok.ToString;
 
 @ToString
 @EqualsAndHashCode
-final class DatastoreDto {
+final class DatastoreResponseDto {
+    private final String uuid;
     private final String name;
     private final String type;
 
     @JsonCreator
-    public DatastoreDto(@JsonProperty("name") String name, @JsonProperty("type") String type) {
+    public DatastoreResponseDto(@JsonProperty("uuid") String uuid, @JsonProperty("name") String name, @JsonProperty("type") String type) {
+        this.uuid = uuid;
         this.name = name;
         this.type = type;
+    }
+
+    public String getUuid() {
+        return uuid;
     }
 
     public String getName() {

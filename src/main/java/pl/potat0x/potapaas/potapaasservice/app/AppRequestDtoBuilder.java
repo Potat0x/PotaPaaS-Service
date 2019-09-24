@@ -6,10 +6,10 @@ final class AppRequestDtoBuilder {
     private String type;
     private String sourceRepoUrl;
     private String sourceBranchName;
-    private String datastoreName;
+    private String datastoreUuid;
 
     AppRequestDto build() {
-        return new AppRequestDto(name, type, sourceRepoUrl, sourceBranchName, datastoreName);
+        return new AppRequestDto(name, type, sourceRepoUrl, sourceBranchName, datastoreUuid);
     }
 
     public AppRequestDtoBuilder withName(String name) {
@@ -32,8 +32,8 @@ final class AppRequestDtoBuilder {
         return this;
     }
 
-    public AppRequestDtoBuilder withDatastoreName(String datastoreName) {
-        this.datastoreName = datastoreName;
+    public AppRequestDtoBuilder withDatastoreUuid(String datastoreUuid) {
+        this.datastoreUuid = datastoreUuid;
         return this;
     }
 }

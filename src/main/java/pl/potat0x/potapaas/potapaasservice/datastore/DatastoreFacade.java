@@ -2,7 +2,6 @@ package pl.potat0x.potapaas.potapaasservice.datastore;
 
 import io.vavr.control.Either;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import pl.potat0x.potapaas.potapaasservice.core.DatastoreManager;
 import pl.potat0x.potapaas.potapaasservice.core.DockerContainerManager;
@@ -23,15 +22,19 @@ class DatastoreFacade {
         containerManager = new DockerContainerManager(PotapaasConfig.get("docker_api_uri"));
     }
 
-    Either<ErrorMessage, DatastoreDto> createDatastore(DatastoreDto datastoreRequestDto) {
-        String name = datastoreRequestDto.getName();
-        DatastoreType type = DatastoreType.valueOf(datastoreRequestDto.getType());
+    Either<ErrorMessage, DatastoreResponseDto> createDatastore(DatastoreRequestDto requestDto) {
+        String name = requestDto.getName();
+        DatastoreType type = DatastoreType.valueOf(requestDto.getType());
 
         DatastoreManager datastoreManager = new DatastoreManager(containerManager, type);
         return datastoreManager.createAndStartDatastore()
                 .map(containerId -> new DatastoreEntity(type, name, randomUuid(), randomUuid(), containerId))
                 .peek(datastoreRepository::save)
-                .map(datastoreEntity -> datastoreRequestDto);
+                .map(this::createResponseDto);
+    }
+
+    private DatastoreResponseDto createResponseDto(DatastoreEntity datastoreEntity) {
+        return new DatastoreResponseDto(datastoreEntity.getUuid(), datastoreEntity.getName(), datastoreEntity.getType().toString());
     }
 
     private String randomUuid() {

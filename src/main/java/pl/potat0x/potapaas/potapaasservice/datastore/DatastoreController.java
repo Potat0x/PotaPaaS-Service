@@ -23,8 +23,8 @@ class DatastoreController {
     }
 
     @PostMapping
-    ResponseEntity createDatastore(@RequestBody DatastoreDto requestDto) {
-        Validation<Seq<String>, DatastoreDto> validation = new DatastoreRequestDtoValidator().validate(requestDto);
+    ResponseEntity createDatastore(@RequestBody DatastoreRequestDto requestDto) {
+        Validation<Seq<String>, DatastoreRequestDto> validation = new DatastoreRequestDtoValidator().validate(requestDto);
 
         if (!validation.isValid()) {
             return ResponseResolver.toErrorResponseEntity(validation, HttpStatus.UNPROCESSABLE_ENTITY, validDatastoreRequestExample());
@@ -33,7 +33,7 @@ class DatastoreController {
         return ResponseResolver.toResponseEntity(datastoreFacade.createDatastore(requestDto), HttpStatus.CREATED);
     }
 
-    private DatastoreDto validDatastoreRequestExample() {
-        return new DatastoreDto("my-database-123", DatastoreType.POSTGRES.toString());
+    private DatastoreRequestDto validDatastoreRequestExample() {
+        return new DatastoreRequestDto("my-database-123", DatastoreType.POSTGRES.toString());
     }
 }

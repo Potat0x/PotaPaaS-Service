@@ -3,8 +3,9 @@ package pl.potat0x.potapaas.potapaasservice.app;
 import io.vavr.collection.Seq;
 import io.vavr.control.Validation;
 import pl.potat0x.potapaas.potapaasservice.core.AppType;
-import pl.potat0x.potapaas.potapaasservice.utils.NameValidator;
 import pl.potat0x.potapaas.potapaasservice.utils.EnumValidator;
+import pl.potat0x.potapaas.potapaasservice.utils.NameValidator;
+import pl.potat0x.potapaas.potapaasservice.utils.UuidValidator;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -16,8 +17,15 @@ final class AppRequestDtoValidator {
                 EnumValidator.checkIfEnumContainsConstant(requestDto.getType(), AppType.class, "app type"),
                 validateUrl(requestDto.getSourceRepoUrl()),
                 validateBranchName(requestDto.getSourceBranchName()),
-                NameValidator.validate(requestDto.getDatastoreName(), "datastore name", true)
+                validateUuid(requestDto.getDatastoreUuid(), true, "datastore UUID")
         ).ap(AppRequestDto::new);
+    }
+
+    private Validation<String, String> validateUuid(String datastoreUuid, boolean nullable, String propertyName) {
+        if ((nullable && datastoreUuid == null) || UuidValidator.checkIfValid(datastoreUuid)) {
+            return Validation.valid(datastoreUuid);
+        }
+        return Validation.invalid("Invalid " + propertyName);
     }
 
     private Validation<String, String> validateUrl(String sourceRepoUrl) {

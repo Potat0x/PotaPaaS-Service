@@ -35,6 +35,18 @@ class DatastoreEntity {
         this.containerId = containerId;
     }
 
+    public DatastoreType getType() {
+        return type;
+    }
+
+    public String getUuid() {
+        return uuid;
+    }
+
+    public String getName() {
+        return name;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

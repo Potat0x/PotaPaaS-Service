@@ -8,6 +8,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -17,8 +18,8 @@ public class DatastoreManagerTest {
 
     @Test
     public void shouldStartPostgresDatastore() throws SQLException, InterruptedException {
-        DatastoreManager datastoreManager = new DatastoreManager(containerManager, DatastoreType.POSTGRES);
-        datastoreManager.createAndStartDatastore();
+        DatastoreManager datastoreManager = new DatastoreManager(containerManager, DatastoreType.POSTGRES, new DockerNetworkManager(PotapaasConfig.get("docker_api_uri")));
+        datastoreManager.createAndStartDatastore(UUID.randomUUID().toString());
 
         Thread.sleep(PotapaasConfig.getInt("database_startup_waiting_time_in_millis"));
         Connection connection = createPostgresConnection(datastoreManager.getPort().get());

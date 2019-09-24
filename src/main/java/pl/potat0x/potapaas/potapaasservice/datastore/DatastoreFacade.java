@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pl.potat0x.potapaas.potapaasservice.core.DatastoreManager;
 import pl.potat0x.potapaas.potapaasservice.core.DockerContainerManager;
+import pl.potat0x.potapaas.potapaasservice.core.DockerNetworkManager;
 import pl.potat0x.potapaas.potapaasservice.system.PotapaasConfig;
 import pl.potat0x.potapaas.potapaasservice.system.errormessage.ErrorMessage;
 
@@ -23,12 +24,13 @@ class DatastoreFacade {
     }
 
     Either<ErrorMessage, DatastoreResponseDto> createDatastore(DatastoreRequestDto requestDto) {
+        String datastoreUuid = UUID.randomUUID().toString();
         String name = requestDto.getName();
         DatastoreType type = DatastoreType.valueOf(requestDto.getType());
 
-        DatastoreManager datastoreManager = new DatastoreManager(containerManager, type);
-        return datastoreManager.createAndStartDatastore()
-                .map(containerId -> new DatastoreEntity(type, name, randomUuid(), randomUuid(), containerId))
+        DatastoreManager datastoreManager = new DatastoreManager(containerManager, type, new DockerNetworkManager(PotapaasConfig.get("docker_api_uri")));
+        return datastoreManager.createAndStartDatastore(datastoreUuid)
+                .map(containerId -> new DatastoreEntity(datastoreUuid, type, name, randomUuid(), randomUuid(), containerId))
                 .peek(datastoreRepository::save)
                 .map(this::createResponseDto);
     }

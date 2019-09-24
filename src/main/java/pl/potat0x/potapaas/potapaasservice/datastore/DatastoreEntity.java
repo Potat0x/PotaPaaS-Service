@@ -8,7 +8,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.util.Objects;
-import java.util.UUID;
 
 @Entity
 @Table(name = "datastore")
@@ -26,8 +25,8 @@ class DatastoreEntity {
     private String password;
     private String containerId;
 
-    public DatastoreEntity(DatastoreType type, String name, String username, String password, String containerId) {
-        this.uuid = UUID.randomUUID().toString();
+    public DatastoreEntity(String uuid, DatastoreType type, String name, String username, String password, String containerId) {
+        this.uuid = uuid;
         this.type = type;
         this.name = name;
         this.username = username;

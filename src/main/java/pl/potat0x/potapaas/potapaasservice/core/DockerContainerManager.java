@@ -40,8 +40,17 @@ public final class DockerContainerManager {
     }
 
     Either<ErrorMessage, String> runContainer(ContainerConfig.Builder containerConfig) {
+        return runContainer(containerConfig, null);
+    }
+
+    Either<ErrorMessage, String> runContainer(ContainerConfig.Builder containerConfig, String containerName) {
         try {
-            ContainerCreation containerCreation = docker.createContainer(containerConfig.build());
+            ContainerCreation containerCreation;
+            if (containerName != null) {
+                containerCreation = docker.createContainer(containerConfig.build(), containerName);
+            } else {
+                containerCreation = docker.createContainer(containerConfig.build());
+            }
             docker.startContainer(containerCreation.id());
             return Either.right(containerCreation.id());
         } catch (Exception e) {

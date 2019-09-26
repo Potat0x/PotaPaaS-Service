@@ -35,7 +35,7 @@ class AppFacade {
 
     Either<ErrorMessage, AppResponseDto> createAndDeployApp(AppRequestDto requestDto) {
         AppManager appManager = buildAppManagerForNewApp(requestDto);
-        return appManager.deploy().map(s -> {
+        return appManager.deploy().map(appUuid -> {
             AppEntity appEntity = buildAppEntity(appManager, requestDto).build();
             appRepository.save(appEntity);
             return buildResponseDto(appManager, appEntity);

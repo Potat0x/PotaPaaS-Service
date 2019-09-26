@@ -48,8 +48,15 @@ public final class AppManager {
                 .map(imageId -> this.imageId = imageId)
                 .flatMap(imageId -> runApp(imageId)
                         .map(containerId -> this.containerId = containerId)
-                        .map(containerId -> appUuid)
-                );
+                ).flatMap(containerId -> connectAppToDatastoreNetwork())
+                .map(containerId -> appUuid);
+    }
+
+    private Either<ErrorMessage, String> connectAppToDatastoreNetwork() {
+        if (requestDto.getDatastoreUuid() != null) {
+            return containerManager.connectContainerToNetwork(containerId, requestDto.getDatastoreUuid());
+        }
+        return Either.right("datastoreUuid == null");
     }
 
     public Either<ErrorMessage, String> redeploy() {
@@ -144,6 +151,10 @@ public final class AppManager {
                 .exposedPorts(PotapaasConfig.get("default_webapp_port"))
                 .hostConfig(hostConfig)
                 .labels(labels);
+
+        if (requestDto.getDatastoreUuid() != null && buildType == DockerImageManager.BuildType.RELEASE) {
+            config.env("POSTGRES_PORT=5432", "POSTGRES_HOST=" + requestDto.getDatastoreUuid(), "POSTGRES_PASSWORD=docker");
+        }
 
         return containerManager.runContainer(config);
     }

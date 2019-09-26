@@ -11,6 +11,7 @@ import com.spotify.docker.client.messages.Container;
 import com.spotify.docker.client.messages.ContainerConfig;
 import com.spotify.docker.client.messages.ContainerCreation;
 import com.spotify.docker.client.messages.ContainerState;
+import com.spotify.docker.client.messages.Network;
 import com.spotify.docker.client.messages.NetworkConfig;
 import com.spotify.docker.client.messages.PortBinding;
 import io.vavr.control.Either;
@@ -130,6 +131,19 @@ public final class DockerContainerManager {
             docker.connectToNetwork(containerId1, networkId);
             docker.connectToNetwork(containerId2, networkId);
             return Either.right(networkId);
+        } catch (Exception e) {
+            return ExceptionMapper.map(e).to(CoreErrorMessage.SERVER_ERROR);
+        }
+    }
+
+    Either<ErrorMessage, String> connectContainerToNetwork(String containerId, String networkName) {
+        try {
+            List<Network> networks = docker.listNetworks(DockerClient.ListNetworksParam.byNetworkName(networkName));
+            if (networks.isEmpty()) {
+                return Either.left(message("Datastore not found ", 424));
+            }
+            docker.connectToNetwork(containerId, networks.get(0).id());
+            return Either.right(networkName);
         } catch (Exception e) {
             return ExceptionMapper.map(e).to(CoreErrorMessage.SERVER_ERROR);
         }

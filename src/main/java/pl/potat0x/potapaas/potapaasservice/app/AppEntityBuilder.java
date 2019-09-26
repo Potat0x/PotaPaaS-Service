@@ -10,9 +10,10 @@ final class AppEntityBuilder {
     private String name;
     private String sourceRepoUrl;
     private String sourceBranchName;
+    private String datastoreUuid;
 
     AppEntity build() {
-        return new AppEntity(appInstance, type, uuid, name, sourceRepoUrl, sourceBranchName);
+        return new AppEntity(appInstance, type, uuid, name, sourceRepoUrl, sourceBranchName, datastoreUuid);
     }
 
     AppEntityBuilder withAppInstance(AppInstanceEntity appInstance) {
@@ -42,6 +43,11 @@ final class AppEntityBuilder {
 
     AppEntityBuilder withSourceBranchName(String sourceBranchName) {
         this.sourceBranchName = sourceBranchName;
+        return this;
+    }
+
+    AppEntityBuilder withDatastoreUuid(String datastoreUuid) {
+        this.datastoreUuid = datastoreUuid;
         return this;
     }
 }

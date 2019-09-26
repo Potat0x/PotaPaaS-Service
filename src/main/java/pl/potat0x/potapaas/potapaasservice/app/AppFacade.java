@@ -119,7 +119,8 @@ class AppFacade {
                 .withUuid(appManager.getAppUuid())
                 .withName(requestDto.getName())
                 .withSourceRepoUrl(requestDto.getSourceRepoUrl())
-                .withSourceBranchName(requestDto.getSourceBranchName());
+                .withSourceBranchName(requestDto.getSourceBranchName())
+                .withDatastoreUuid(requestDto.getDatastoreUuid());
     }
 
     private Either<ErrorMessage, AppEntity> getAppEntityForRedeploying(String appUuid, AppRequestDto requestDto) {
@@ -128,6 +129,7 @@ class AppFacade {
             appEntity.setType(AppType.valueOf(requestDto.getType()));
             appEntity.setSourceRepoUrl(requestDto.getSourceRepoUrl());
             appEntity.setSourceBranchName(requestDto.getSourceBranchName());
+            appEntity.setDatastoreUuid(requestDto.getDatastoreUuid());
             return appEntity;
         });
     }
@@ -161,6 +163,7 @@ class AppFacade {
                 .withCreatedAt(appEntity.getCreatedAt())
                 .withStatus(app.getStatus().getOrElse("not deployed"))
                 .withExposedPort(app.getPort().map(Integer::parseInt).getOrElse(-1))
+                .withDatastoreUuid(appEntity.getDatastoreUuid())
                 .build();
     }
 }

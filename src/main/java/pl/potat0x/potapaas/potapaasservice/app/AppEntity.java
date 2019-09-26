@@ -35,15 +35,17 @@ class AppEntity {
     private String name;
     private String sourceRepoUrl;
     private String sourceBranchName;
+    private String datastoreUuid;
     private LocalDateTime createdAt;
 
-    public AppEntity(AppInstanceEntity appInstance, AppType type, String uuid, String name, String sourceRepoUrl, String sourceBranchName) {
+    public AppEntity(AppInstanceEntity appInstance, AppType type, String uuid, String name, String sourceRepoUrl, String sourceBranchName, String datastoreUuid) {
         this.appInstance = appInstance;
         this.type = type;
         this.uuid = uuid;
         this.name = name;
         this.sourceRepoUrl = sourceRepoUrl;
         this.sourceBranchName = sourceBranchName;
+        this.datastoreUuid = datastoreUuid;
         this.createdAt = LocalDateTime.now();
     }
 
@@ -74,6 +76,10 @@ class AppEntity {
         return sourceBranchName;
     }
 
+    public String getDatastoreUuid() {
+        return datastoreUuid;
+    }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -96,6 +102,10 @@ class AppEntity {
 
     public void setSourceBranchName(String sourceBranchName) {
         this.sourceBranchName = sourceBranchName;
+    }
+
+    public void setDatastoreUuid(String datastoreUuid) {
+        this.datastoreUuid = datastoreUuid;
     }
 
     @Override

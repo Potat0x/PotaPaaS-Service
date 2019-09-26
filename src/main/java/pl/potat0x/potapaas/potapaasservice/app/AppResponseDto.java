@@ -18,6 +18,7 @@ final class AppResponseDto {
     private final LocalDateTime createdAt;
     private final String status;
     private final int exposedPort;
+    private final String datastoreUuid;
 
     @JsonCreator
     public AppResponseDto(@JsonProperty("appUuid") String appUuid,
@@ -27,7 +28,8 @@ final class AppResponseDto {
                           @JsonProperty("sourceBranchName") String sourceBranchName,
                           @JsonProperty("createdAt") LocalDateTime createdAt,
                           @JsonProperty("status") String status,
-                          @JsonProperty("exposedPort") int exposedPort) {
+                          @JsonProperty("exposedPort") int exposedPort,
+                          @JsonProperty("datastoreUuid") String datastoreUuid) {
         this.appUuid = appUuid;
         this.name = name;
         this.type = type;
@@ -36,6 +38,7 @@ final class AppResponseDto {
         this.createdAt = createdAt;
         this.status = status;
         this.exposedPort = exposedPort;
+        this.datastoreUuid = datastoreUuid;
     }
 
     public String getAppUuid() {
@@ -68,5 +71,9 @@ final class AppResponseDto {
 
     public int getExposedPort() {
         return exposedPort;
+    }
+
+    public String getDatastoreUuid() {
+        return datastoreUuid;
     }
 }

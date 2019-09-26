@@ -96,6 +96,7 @@ public class AppControllerTest {
         final String appUuid = responseEntity.getBody().getAppUuid();
 
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertThat(responseEntity.getBody().getDatastoreUuid()).isEqualTo(datastoreUuid);
         checkIfAppIsWorkingWithDatastore(responseEntity.getBody().getExposedPort());
 
 
@@ -108,6 +109,7 @@ public class AppControllerTest {
         responseEntity = testRestTemplate.postForEntity(redeployAppUrl(appUuid), appRequestDtoWithNewDatastore, AppResponseDto.class);
 
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(responseEntity.getBody().getDatastoreUuid()).isEqualTo(newDatastoreUuid);
         checkIfAppIsWorkingWithDatastore(responseEntity.getBody().getExposedPort());
     }
 

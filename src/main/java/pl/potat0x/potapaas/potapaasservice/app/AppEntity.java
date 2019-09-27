@@ -18,7 +18,7 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "app")
-class AppEntity {
+public class AppEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;

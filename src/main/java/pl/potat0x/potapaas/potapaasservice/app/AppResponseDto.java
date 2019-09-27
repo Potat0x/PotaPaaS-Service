@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 
 @ToString
 @EqualsAndHashCode
-final class AppResponseDto {
+public final class AppResponseDto {
     private final String appUuid;
     private final String name;
     private final String type;

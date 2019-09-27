@@ -17,7 +17,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import static pl.potat0x.potapaas.potapaasservice.system.errormessage.CustomErrorMessage.message;
 
 @Service
-class AppFacade {
+public class AppFacade {
 
     private static final Set<String> redeployLocks = Collections.newSetFromMap(new ConcurrentHashMap<>());
     private static final Lock redeployLocksSetLock = new ReentrantLock();
@@ -33,7 +33,7 @@ class AppFacade {
         this.appManagerFactory = appManagerFactory;
     }
 
-    Either<ErrorMessage, AppResponseDto> createAndDeployApp(AppRequestDto requestDto) {
+    public Either<ErrorMessage, AppResponseDto> createAndDeployApp(AppRequestDto requestDto) {
         AppManager appManager = buildAppManagerForNewApp(requestDto);
         return appManager.deploy().map(appUuid -> {
             AppEntity appEntity = buildAppEntity(appManager, requestDto).build();

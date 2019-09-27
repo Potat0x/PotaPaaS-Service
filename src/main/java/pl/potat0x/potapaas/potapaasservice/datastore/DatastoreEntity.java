@@ -25,6 +25,9 @@ class DatastoreEntity {
     private String password;
     private String containerId;
 
+    protected DatastoreEntity() {
+    }
+
     public DatastoreEntity(String uuid, DatastoreType type, String name, String username, String password, String containerId) {
         this.uuid = uuid;
         this.type = type;
@@ -44,6 +47,10 @@ class DatastoreEntity {
 
     public String getName() {
         return name;
+    }
+
+    public String getContainerId() {
+        return containerId;
     }
 
     @Override

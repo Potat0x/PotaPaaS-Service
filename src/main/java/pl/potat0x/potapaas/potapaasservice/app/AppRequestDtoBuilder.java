@@ -1,6 +1,6 @@
 package pl.potat0x.potapaas.potapaasservice.app;
 
-final class AppRequestDtoBuilder {
+public final class AppRequestDtoBuilder {
 
     private String name;
     private String type;
@@ -8,7 +8,7 @@ final class AppRequestDtoBuilder {
     private String sourceBranchName;
     private String datastoreUuid;
 
-    AppRequestDto build() {
+    public AppRequestDto build() {
         return new AppRequestDto(name, type, sourceRepoUrl, sourceBranchName, datastoreUuid);
     }
 

@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
-import java.util.List;
+import java.util.Set;
 
 @ToString
 @EqualsAndHashCode
@@ -13,10 +13,10 @@ public final class DatastoreResponseDto {
     private final String uuid;
     private final String name;
     private final String type;
-    private final List<String> attachedApps;
+    private final Set<String> attachedApps;
 
     @JsonCreator
-    public DatastoreResponseDto(@JsonProperty("uuid") String uuid, @JsonProperty("name") String name, @JsonProperty("type") String type, @JsonProperty("attachedApps") List<String> attachedApps) {
+    public DatastoreResponseDto(@JsonProperty("uuid") String uuid, @JsonProperty("name") String name, @JsonProperty("type") String type, @JsonProperty("attachedApps") Set<String> attachedApps) {
         this.uuid = uuid;
         this.name = name;
         this.type = type;
@@ -35,7 +35,7 @@ public final class DatastoreResponseDto {
         return type;
     }
 
-    public List<String> getAttachedApps() {
+    public Set<String> getAttachedApps() {
         return attachedApps;
     }
 }

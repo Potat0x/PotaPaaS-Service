@@ -3,8 +3,6 @@ package pl.potat0x.potapaas.potapaasservice.datastore;
 import io.vavr.control.Either;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import pl.potat0x.potapaas.potapaasservice.app.AppEntity;
-import pl.potat0x.potapaas.potapaasservice.app.AppRepository;
 import pl.potat0x.potapaas.potapaasservice.core.DatastoreManager;
 import pl.potat0x.potapaas.potapaasservice.core.DockerContainerManager;
 import pl.potat0x.potapaas.potapaasservice.core.DockerNetworkManager;
@@ -12,9 +10,8 @@ import pl.potat0x.potapaas.potapaasservice.system.PotapaasConfig;
 import pl.potat0x.potapaas.potapaasservice.system.errormessage.ErrorMessage;
 
 import java.util.Collections;
-import java.util.List;
+import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static pl.potat0x.potapaas.potapaasservice.system.errormessage.CustomErrorMessage.message;
 
@@ -23,12 +20,10 @@ class DatastoreFacade {
 
     private final DatastoreRepository datastoreRepository;
     private final DockerContainerManager containerManager;
-    private final AppRepository appRepository;
 
     @Autowired
-    public DatastoreFacade(DatastoreRepository datastoreRepository, AppRepository appRepository) {
+    public DatastoreFacade(DatastoreRepository datastoreRepository) {
         this.datastoreRepository = datastoreRepository;
-        this.appRepository = appRepository;
         containerManager = new DockerContainerManager(PotapaasConfig.get("docker_api_uri"));
     }
 
@@ -50,18 +45,15 @@ class DatastoreFacade {
             return Either.left(message("Datastore not found", 404));
         }
 
-        List<String> attachedApps = appRepository.findAllByDatastoreUuid(datastoreUuid)
-                .stream()
-                .map(AppEntity::getUuid)
-                .collect(Collectors.toList());
+        Set<String> attachedApps = datastoreRepository.findAllAppsConnectedToDatastore(datastoreUuid);
         return Either.right(createResponseDto(datastoreEntity, attachedApps));
     }
 
     private DatastoreResponseDto createResponseDto(DatastoreEntity datastoreEntity) {
-        return createResponseDto(datastoreEntity, Collections.emptyList());
+        return createResponseDto(datastoreEntity, Collections.emptySet());
     }
 
-    private DatastoreResponseDto createResponseDto(DatastoreEntity datastoreEntity, List<String> attachedApps) {
+    private DatastoreResponseDto createResponseDto(DatastoreEntity datastoreEntity, Set<String> attachedApps) {
         return new DatastoreResponseDto(datastoreEntity.getUuid(), datastoreEntity.getName(), datastoreEntity.getType().toString(), attachedApps);
     }
 

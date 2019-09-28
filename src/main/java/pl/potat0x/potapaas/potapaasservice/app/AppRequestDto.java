@@ -12,6 +12,7 @@ public final class AppRequestDto {
     private final String type;
     private final String sourceRepoUrl;
     private final String sourceBranchName;
+    private final String commitHash;
     private final String datastoreUuid;
 
     @JsonCreator
@@ -19,11 +20,13 @@ public final class AppRequestDto {
                          @JsonProperty("type") String type,
                          @JsonProperty("sourceRepoUrl") String sourceRepoUrl,
                          @JsonProperty("sourceBranchName") String sourceBranchName,
+                         @JsonProperty("commitHash") String commitHash,
                          @JsonProperty("datastoreUuid") String datastoreUuid) {
         this.name = name;
         this.type = type;
         this.sourceRepoUrl = sourceRepoUrl;
         this.sourceBranchName = sourceBranchName;
+        this.commitHash = commitHash;
         this.datastoreUuid = datastoreUuid;
     }
 
@@ -41,6 +44,10 @@ public final class AppRequestDto {
 
     public String getSourceBranchName() {
         return sourceBranchName;
+    }
+
+    public String getCommitHash() {
+        return commitHash;
     }
 
     public String getDatastoreUuid() {

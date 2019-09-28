@@ -120,6 +120,7 @@ public class AppFacade {
                 .withName(requestDto.getName())
                 .withSourceRepoUrl(requestDto.getSourceRepoUrl())
                 .withSourceBranchName(requestDto.getSourceBranchName())
+                .withCommitHash(requestDto.getCommitHash())
                 .withDatastoreUuid(requestDto.getDatastoreUuid());
     }
 
@@ -129,6 +130,7 @@ public class AppFacade {
             appEntity.setType(AppType.valueOf(requestDto.getType()));
             appEntity.setSourceRepoUrl(requestDto.getSourceRepoUrl());
             appEntity.setSourceBranchName(requestDto.getSourceBranchName());
+            appEntity.setCommitHash(requestDto.getCommitHash());
             appEntity.setDatastoreUuid(requestDto.getDatastoreUuid());
             return appEntity;
         });
@@ -163,6 +165,7 @@ public class AppFacade {
                 .withCreatedAt(appEntity.getCreatedAt())
                 .withStatus(app.getStatus().getOrElse("not deployed"))
                 .withExposedPort(app.getPort().map(Integer::parseInt).getOrElse(-1))
+                .withCommitHash(appEntity.getCommitHash())
                 .withDatastoreUuid(appEntity.getDatastoreUuid())
                 .build();
     }

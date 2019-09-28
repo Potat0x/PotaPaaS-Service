@@ -6,10 +6,11 @@ public final class AppRequestDtoBuilder {
     private String type;
     private String sourceRepoUrl;
     private String sourceBranchName;
+    private String commitHash;
     private String datastoreUuid;
 
     public AppRequestDto build() {
-        return new AppRequestDto(name, type, sourceRepoUrl, sourceBranchName, datastoreUuid);
+        return new AppRequestDto(name, type, sourceRepoUrl, sourceBranchName, commitHash, datastoreUuid);
     }
 
     public AppRequestDtoBuilder withName(String name) {
@@ -29,6 +30,11 @@ public final class AppRequestDtoBuilder {
 
     public AppRequestDtoBuilder withSourceBranchName(String sourceBranchName) {
         this.sourceBranchName = sourceBranchName;
+        return this;
+    }
+
+    public AppRequestDtoBuilder withCommitHash(String commitHash) {
+        this.commitHash = commitHash;
         return this;
     }
 

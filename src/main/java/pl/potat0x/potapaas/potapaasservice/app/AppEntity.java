@@ -35,16 +35,18 @@ class AppEntity {
     private String name;
     private String sourceRepoUrl;
     private String sourceBranchName;
+    private String commitHash;
     private String datastoreUuid;
     private LocalDateTime createdAt;
 
-    public AppEntity(AppInstanceEntity appInstance, AppType type, String uuid, String name, String sourceRepoUrl, String sourceBranchName, String datastoreUuid) {
+    public AppEntity(AppInstanceEntity appInstance, AppType type, String uuid, String name, String sourceRepoUrl, String sourceBranchName, String commitHash, String datastoreUuid) {
         this.appInstance = appInstance;
         this.type = type;
         this.uuid = uuid;
         this.name = name;
         this.sourceRepoUrl = sourceRepoUrl;
         this.sourceBranchName = sourceBranchName;
+        this.commitHash = commitHash;
         this.datastoreUuid = datastoreUuid;
         this.createdAt = LocalDateTime.now();
     }
@@ -76,6 +78,10 @@ class AppEntity {
         return sourceBranchName;
     }
 
+    public String getCommitHash() {
+        return commitHash;
+    }
+
     public String getDatastoreUuid() {
         return datastoreUuid;
     }
@@ -102,6 +108,10 @@ class AppEntity {
 
     public void setSourceBranchName(String sourceBranchName) {
         this.sourceBranchName = sourceBranchName;
+    }
+
+    public void setCommitHash(String commitHash) {
+        this.commitHash = commitHash;
     }
 
     public void setDatastoreUuid(String datastoreUuid) {

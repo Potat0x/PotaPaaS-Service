@@ -3,6 +3,7 @@ package pl.potat0x.potapaas.potapaasservice.app;
 import io.vavr.collection.Seq;
 import io.vavr.control.Validation;
 import pl.potat0x.potapaas.potapaasservice.core.AppType;
+import pl.potat0x.potapaas.potapaasservice.utils.CommitHashValidator;
 import pl.potat0x.potapaas.potapaasservice.utils.EnumValidator;
 import pl.potat0x.potapaas.potapaasservice.utils.NameValidator;
 import pl.potat0x.potapaas.potapaasservice.utils.UuidValidator;
@@ -17,6 +18,7 @@ final class AppRequestDtoValidator {
                 EnumValidator.checkIfEnumContainsConstant(requestDto.getType(), AppType.class, "app type"),
                 validateUrl(requestDto.getSourceRepoUrl()),
                 validateBranchName(requestDto.getSourceBranchName()),
+                CommitHashValidator.validate(requestDto.getCommitHash(), true),
                 validateUuid(requestDto.getDatastoreUuid(), true, "datastore UUID")
         ).ap(AppRequestDto::new);
     }

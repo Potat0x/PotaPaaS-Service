@@ -23,6 +23,16 @@ public class JGitCloner implements GitCloner {
         return clone(repositoryUri, branchName, clonedRepoDirectory);
     }
 
+    @Override
+    public Either<ErrorMessage, String> checkout(String repositoryDir, String commitHash) {
+        try {
+            Git.open(new File(repositoryDir)).checkout().setName(commitHash).call();
+            return Either.right(repositoryDir);
+        } catch (Exception e) {
+            return ExceptionMapper.map(e).to(message("Cant checkout to commit \"" + commitHash + "\"", 424));
+        }
+    }
+
     protected Either<ErrorMessage, String> clone(String repositoryUri, String branchName, String clonedRepoDirectory) {
         try (Git gitRepository = Git.cloneRepository()
                 .setURI(repositoryUri)

@@ -13,6 +13,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import pl.potat0x.potapaas.potapaasservice.core.AppType;
 import pl.potat0x.potapaas.potapaasservice.datastore.DatastoreRequestDto;
 import pl.potat0x.potapaas.potapaasservice.datastore.DatastoreResponseDto;
+import pl.potat0x.potapaas.potapaasservice.system.PotapaasConfig;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -84,7 +85,7 @@ public class AppControllerTest {
     }
 
     @Test
-    public void shouldDeployNewAppConnectedToDatastoreAndConnectItToAnotherDatastore() {
+    public void shouldDeployNewAppConnectedToDatastoreAndConnectItToAnotherDatastore() throws InterruptedException {
         String datastoreUuid = createDatastoreAndGetUuid();
 
         AppRequestDto appRequestDto = validAppRequestDtoBuilder()
@@ -97,6 +98,7 @@ public class AppControllerTest {
 
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(responseEntity.getBody().getDatastoreUuid()).isEqualTo(datastoreUuid);
+        waitForAppStart();
         checkIfAppIsWorkingWithDatastore(responseEntity.getBody().getExposedPort());
 
 
@@ -110,6 +112,7 @@ public class AppControllerTest {
 
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(responseEntity.getBody().getDatastoreUuid()).isEqualTo(newDatastoreUuid);
+        waitForAppStart();
         checkIfAppIsWorkingWithDatastore(responseEntity.getBody().getExposedPort());
     }
 
@@ -175,5 +178,9 @@ public class AppControllerTest {
 
     private String datastoreUrl() {
         return "http://127.0.0.1:" + port + "/datastore";
+    }
+
+    private void waitForAppStart() throws InterruptedException {
+        Thread.sleep(PotapaasConfig.getInt("app_startup_waiting_time_in_millis"));
     }
 }

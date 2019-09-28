@@ -39,7 +39,7 @@ public class AppManagerTest {
 
     private AppManager appManagerFromTestGithubRepo(String branchName, AppType appType) {
         AppManagerFactory appManagerFactory = new AppManagerFactoryConfig().defaultAppManagerFactory();
-        AppRequestDto appRequestDto = new AppRequestDto("depl-test-app-name", appType.toString(), "https://github.com/Potat0x/potapaas-test-cases", branchName, null);
+        AppRequestDto appRequestDto = new AppRequestDto("depl-test-app-name", appType.toString(), "https://github.com/Potat0x/potapaas-test-cases", branchName, null, null);
         return appManagerFactory.forNewApp(appRequestDto);
     }
 }

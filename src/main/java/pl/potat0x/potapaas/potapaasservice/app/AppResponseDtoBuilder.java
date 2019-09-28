@@ -12,10 +12,11 @@ final class AppResponseDtoBuilder {
     private LocalDateTime createdAt;
     private String status;
     private int exposedPort;
+    private String commitHash;
     private String datastoreUuid;
 
     AppResponseDto build() {
-        return new AppResponseDto(appUuid, name, type, sourceRepoUrl, sourceBranchName, createdAt, status, exposedPort, datastoreUuid);
+        return new AppResponseDto(appUuid, name, type, sourceRepoUrl, sourceBranchName, createdAt, status, exposedPort, commitHash, datastoreUuid);
     }
 
     public AppResponseDtoBuilder withAppUuid(String appUuid) {
@@ -55,6 +56,11 @@ final class AppResponseDtoBuilder {
 
     public AppResponseDtoBuilder withExposedPort(int exposedPort) {
         this.exposedPort = exposedPort;
+        return this;
+    }
+
+    public AppResponseDtoBuilder withCommitHash(String commitHash) {
+        this.commitHash = commitHash;
         return this;
     }
 

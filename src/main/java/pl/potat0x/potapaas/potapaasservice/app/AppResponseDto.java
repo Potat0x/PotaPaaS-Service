@@ -18,6 +18,7 @@ public final class AppResponseDto {
     private final LocalDateTime createdAt;
     private final String status;
     private final int exposedPort;
+    private final String commitHash;
     private final String datastoreUuid;
 
     @JsonCreator
@@ -29,6 +30,7 @@ public final class AppResponseDto {
                           @JsonProperty("createdAt") LocalDateTime createdAt,
                           @JsonProperty("status") String status,
                           @JsonProperty("exposedPort") int exposedPort,
+                          @JsonProperty("commitHash") String commitHash,
                           @JsonProperty("datastoreUuid") String datastoreUuid) {
         this.appUuid = appUuid;
         this.name = name;
@@ -38,6 +40,7 @@ public final class AppResponseDto {
         this.createdAt = createdAt;
         this.status = status;
         this.exposedPort = exposedPort;
+        this.commitHash = commitHash;
         this.datastoreUuid = datastoreUuid;
     }
 
@@ -71,6 +74,10 @@ public final class AppResponseDto {
 
     public int getExposedPort() {
         return exposedPort;
+    }
+
+    public String getCommitHash() {
+        return commitHash;
     }
 
     public String getDatastoreUuid() {

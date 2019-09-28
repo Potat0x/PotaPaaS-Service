@@ -42,6 +42,7 @@ public final class AppManager {
     public Either<ErrorMessage, String> deploy() {
         return cloneRepo()
                 .map(clonedRepoDir -> this.clonedRepoDir = clonedRepoDir)
+                .flatMap(this::switchCommit)
                 .flatMap(clonedRepoDir -> buildTestImage())
                 .flatMap(this::runAppTests)
                 .flatMap(testResults -> buildReleaseImage())
@@ -50,6 +51,13 @@ public final class AppManager {
                         .map(containerId -> this.containerId = containerId)
                 ).flatMap(containerId -> connectAppToDatastoreNetwork())
                 .map(containerId -> appUuid);
+    }
+
+    private Either<ErrorMessage, String> switchCommit(String clonedRepoDir) {
+        if (requestDto.getCommitHash() != null) {
+            return gitCloner.checkout(clonedRepoDir, requestDto.getCommitHash());
+        }
+        return gitCloner.checkout(clonedRepoDir, requestDto.getSourceBranchName());
     }
 
     private Either<ErrorMessage, String> connectAppToDatastoreNetwork() {

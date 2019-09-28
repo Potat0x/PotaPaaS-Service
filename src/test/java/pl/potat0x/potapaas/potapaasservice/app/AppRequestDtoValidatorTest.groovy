@@ -27,6 +27,10 @@ class AppRequestDtoValidatorTest extends Specification {
 
                 validDto().withSourceBranchName("master"),
 
+                validDto().withCommitHash(null),
+                validDto().withCommitHash("0123def"),
+                validDto().withCommitHash("d501e921c6764a516101a32cda3f0ccebe5946cc"),
+
                 validDto().withDatastoreUuid(null),
                 validDto().withDatastoreUuid(UUID.randomUUID().toString()),
         ]
@@ -55,6 +59,9 @@ class AppRequestDtoValidatorTest extends Specification {
 
                 validDto().withSourceBranchName(null),
                 validDto().withSourceBranchName(""),
+
+                validDto().withCommitHash("a"),
+                validDto().withCommitHash("d501e921c6764a516101a32cda3f0ccebe5946cca"),
 
                 validDto().withDatastoreUuid(""),
                 validDto().withDatastoreUuid("invalid_datastore_name"),

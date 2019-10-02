@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+import pl.potat0x.potapaas.potapaasservice.core.AppType;
 
 import java.time.LocalDateTime;
 
@@ -12,7 +13,7 @@ import java.time.LocalDateTime;
 public final class AppResponseDto {
     private final String appUuid;
     private final String name;
-    private final String type;
+    private final AppType type;
     private final String sourceRepoUrl;
     private final String sourceBranchName;
     private final LocalDateTime createdAt;
@@ -24,7 +25,7 @@ public final class AppResponseDto {
     @JsonCreator
     public AppResponseDto(@JsonProperty("appUuid") String appUuid,
                           @JsonProperty("name") String name,
-                          @JsonProperty("type") String type,
+                          @JsonProperty("type") AppType type,
                           @JsonProperty("sourceRepoUrl") String sourceRepoUrl,
                           @JsonProperty("sourceBranchName") String sourceBranchName,
                           @JsonProperty("createdAt") LocalDateTime createdAt,
@@ -52,7 +53,7 @@ public final class AppResponseDto {
         return name;
     }
 
-    public String getType() {
+    public AppType getType() {
         return type;
     }
 

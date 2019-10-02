@@ -1,12 +1,14 @@
 package pl.potat0x.potapaas.potapaasservice.app;
 
+import pl.potat0x.potapaas.potapaasservice.core.AppType;
+
 import java.time.LocalDateTime;
 
 final class AppResponseDtoBuilder {
 
     private String appUuid;
     private String name;
-    private String type;
+    private AppType type;
     private String sourceRepoUrl;
     private String sourceBranchName;
     private LocalDateTime createdAt;
@@ -29,7 +31,7 @@ final class AppResponseDtoBuilder {
         return this;
     }
 
-    public AppResponseDtoBuilder withType(String type) {
+    public AppResponseDtoBuilder withType(AppType type) {
         this.type = type;
         return this;
     }

@@ -12,11 +12,11 @@ import java.util.Set;
 public final class DatastoreResponseDto {
     private final String uuid;
     private final String name;
-    private final String type;
+    private final DatastoreType type;
     private final Set<String> attachedApps;
 
     @JsonCreator
-    public DatastoreResponseDto(@JsonProperty("uuid") String uuid, @JsonProperty("name") String name, @JsonProperty("type") String type, @JsonProperty("attachedApps") Set<String> attachedApps) {
+    public DatastoreResponseDto(@JsonProperty("uuid") String uuid, @JsonProperty("name") String name, @JsonProperty("type") DatastoreType type, @JsonProperty("attachedApps") Set<String> attachedApps) {
         this.uuid = uuid;
         this.name = name;
         this.type = type;
@@ -31,7 +31,7 @@ public final class DatastoreResponseDto {
         return name;
     }
 
-    public String getType() {
+    public DatastoreType getType() {
         return type;
     }
 

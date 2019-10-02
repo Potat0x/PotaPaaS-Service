@@ -41,7 +41,7 @@ public class DatastoreFacadeTest {
         String datastoreUuid = datastoreResponseDto.getUuid();
 
         //then
-        DatastoreResponseDto expectedDatastoreResponseDto = new DatastoreResponseDto("uuid not known yet", datastoreName, datastoreType, Set.of());
+        DatastoreResponseDto expectedDatastoreResponseDto = new DatastoreResponseDto("uuid not known yet", datastoreName, DatastoreType.valueOf(datastoreType), Set.of());
         assertTrue(UuidValidator.checkIfValid(datastoreUuid));
         assertThat(datastoreResponseDto).isEqualToIgnoringGivenFields(expectedDatastoreResponseDto, "uuid");
 
@@ -52,7 +52,7 @@ public class DatastoreFacadeTest {
 
         //then
         String attachedAppUuid = appResponseDto.getAppUuid();
-        expectedDatastoreResponseDto = new DatastoreResponseDto(datastoreUuid, datastoreName, datastoreType, Set.of(attachedAppUuid));
+        expectedDatastoreResponseDto = new DatastoreResponseDto(datastoreUuid, datastoreName, DatastoreType.valueOf(datastoreType), Set.of(attachedAppUuid));
         assertThat(datastoreResponseDtoAfterAttachingApp).isEqualTo(expectedDatastoreResponseDto);
         assertThat(datastoreUuid).isEqualTo(appResponseDto.getDatastoreUuid());
     }

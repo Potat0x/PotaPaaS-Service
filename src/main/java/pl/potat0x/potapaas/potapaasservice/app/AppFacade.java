@@ -159,7 +159,7 @@ public class AppFacade {
         return new AppResponseDtoBuilder()
                 .withAppUuid(appEntity.getUuid())
                 .withName(appEntity.getName())
-                .withType(appEntity.getType().userFriendlyName)
+                .withType(appEntity.getType())
                 .withSourceRepoUrl(appEntity.getSourceRepoUrl())
                 .withSourceBranchName(appEntity.getSourceBranchName())
                 .withCreatedAt(appEntity.getCreatedAt())

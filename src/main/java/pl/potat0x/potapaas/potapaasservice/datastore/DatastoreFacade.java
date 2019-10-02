@@ -54,7 +54,7 @@ class DatastoreFacade {
     }
 
     private DatastoreResponseDto createResponseDto(DatastoreEntity datastoreEntity, Set<String> attachedApps) {
-        return new DatastoreResponseDto(datastoreEntity.getUuid(), datastoreEntity.getName(), datastoreEntity.getType().toString(), attachedApps);
+        return new DatastoreResponseDto(datastoreEntity.getUuid(), datastoreEntity.getName(), datastoreEntity.getType(), attachedApps);
     }
 
     private String randomUuid() {

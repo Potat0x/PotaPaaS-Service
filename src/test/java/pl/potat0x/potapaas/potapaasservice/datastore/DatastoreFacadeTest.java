@@ -13,6 +13,7 @@ import pl.potat0x.potapaas.potapaasservice.app.AppResponseDto;
 import pl.potat0x.potapaas.potapaasservice.core.AppType;
 import pl.potat0x.potapaas.potapaasservice.validator.UuidValidator;
 
+import java.time.LocalDateTime;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -41,9 +42,10 @@ public class DatastoreFacadeTest {
         String datastoreUuid = datastoreResponseDto.getUuid();
 
         //then
-        DatastoreResponseDto expectedDatastoreResponseDto = new DatastoreResponseDto("uuid not known yet", datastoreName, DatastoreType.valueOf(datastoreType), Set.of());
+        DatastoreResponseDto expectedDatastoreResponseDto = new DatastoreResponseDto("uuid not known yet", datastoreName, DatastoreType.valueOf(datastoreType), null, "running", Set.of());
         assertTrue(UuidValidator.checkIfValid(datastoreUuid));
-        assertThat(datastoreResponseDto).isEqualToIgnoringGivenFields(expectedDatastoreResponseDto, "uuid");
+        assertThat(datastoreResponseDto.getCreatedAt()).isBefore(LocalDateTime.now());
+        assertThat(datastoreResponseDto).isEqualToIgnoringGivenFields(expectedDatastoreResponseDto, "uuid", "createdAt");
 
 
         //when
@@ -52,7 +54,7 @@ public class DatastoreFacadeTest {
 
         //then
         String attachedAppUuid = appResponseDto.getAppUuid();
-        expectedDatastoreResponseDto = new DatastoreResponseDto(datastoreUuid, datastoreName, DatastoreType.valueOf(datastoreType), Set.of(attachedAppUuid));
+        expectedDatastoreResponseDto = new DatastoreResponseDto(datastoreUuid, datastoreName, DatastoreType.valueOf(datastoreType), datastoreResponseDto.getCreatedAt(), "running", Set.of(attachedAppUuid));
         assertThat(datastoreResponseDtoAfterAttachingApp).isEqualTo(expectedDatastoreResponseDto);
         assertThat(datastoreUuid).isEqualTo(appResponseDto.getDatastoreUuid());
     }

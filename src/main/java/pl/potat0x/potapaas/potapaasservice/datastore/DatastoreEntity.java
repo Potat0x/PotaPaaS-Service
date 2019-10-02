@@ -7,6 +7,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Entity
@@ -24,6 +25,7 @@ class DatastoreEntity {
     private String username;
     private String password;
     private String containerId;
+    private LocalDateTime createdAt;
 
     protected DatastoreEntity() {
     }
@@ -35,6 +37,7 @@ class DatastoreEntity {
         this.username = username;
         this.password = password;
         this.containerId = containerId;
+        this.createdAt = LocalDateTime.now();
     }
 
     public DatastoreType getType() {
@@ -51,6 +54,10 @@ class DatastoreEntity {
 
     public String getContainerId() {
         return containerId;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
     @Override

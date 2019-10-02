@@ -41,6 +41,10 @@ public final class DatastoreManager {
         return containerManager.getHostPort(containerId, PotapaasConfig.get("default_datastore_port"));
     }
 
+    public Either<ErrorMessage, String> getStatus(String containerId) {
+        return containerManager.getStatus(containerId);
+    }
+
     private Either<ErrorMessage, String> prepareDatastoreNetwork(String networkName) {
         return networkManager.createNetwork(networkName);
     }

@@ -32,7 +32,7 @@ class DatastoreFacade {
         String name = requestDto.getName();
         DatastoreType type = DatastoreType.valueOf(requestDto.getType());
 
-        DatastoreManager datastoreManager = new DatastoreManager(containerManager, type, new DockerNetworkManager(PotapaasConfig.get("docker_api_uri")));
+        DatastoreManager datastoreManager = createDatastoreManager(type);
         return datastoreManager.createAndStartDatastore(datastoreUuid)
                 .map(containerId -> new DatastoreEntity(datastoreUuid, type, name, randomUuid(), randomUuid(), containerId))
                 .peek(datastoreRepository::save)
@@ -49,12 +49,19 @@ class DatastoreFacade {
         return Either.right(createResponseDto(datastoreEntity, attachedApps));
     }
 
+    private DatastoreManager createDatastoreManager(DatastoreType type) {
+        return new DatastoreManager(containerManager, type, new DockerNetworkManager(PotapaasConfig.get("docker_api_uri")));
+    }
+
     private DatastoreResponseDto createResponseDto(DatastoreEntity datastoreEntity) {
         return createResponseDto(datastoreEntity, Collections.emptySet());
     }
 
     private DatastoreResponseDto createResponseDto(DatastoreEntity datastoreEntity, Set<String> attachedApps) {
-        return new DatastoreResponseDto(datastoreEntity.getUuid(), datastoreEntity.getName(), datastoreEntity.getType(), attachedApps);
+        DatastoreManager datastoreManager = createDatastoreManager(datastoreEntity.getType());
+        String status = datastoreManager.getStatus(datastoreEntity.getContainerId())
+                .getOrElseGet(errorMessage -> "Unknown datastore status: " + errorMessage.getText() + ": " + errorMessage.getDetails());
+        return new DatastoreResponseDto(datastoreEntity.getUuid(), datastoreEntity.getName(), datastoreEntity.getType(), datastoreEntity.getCreatedAt(), status, attachedApps);
     }
 
     private String randomUuid() {

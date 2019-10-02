@@ -1,4 +1,4 @@
-package pl.potat0x.potapaas.potapaasservice.utils;
+package pl.potat0x.potapaas.potapaasservice.validator;
 
 import io.vavr.collection.Stream;
 import io.vavr.control.Validation;

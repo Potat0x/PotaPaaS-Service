@@ -3,10 +3,10 @@ package pl.potat0x.potapaas.potapaasservice.app;
 import io.vavr.collection.Seq;
 import io.vavr.control.Validation;
 import pl.potat0x.potapaas.potapaasservice.core.AppType;
-import pl.potat0x.potapaas.potapaasservice.utils.CommitHashValidator;
-import pl.potat0x.potapaas.potapaasservice.utils.EnumValidator;
-import pl.potat0x.potapaas.potapaasservice.utils.NameValidator;
-import pl.potat0x.potapaas.potapaasservice.utils.UuidValidator;
+import pl.potat0x.potapaas.potapaasservice.validator.CommitHashValidator;
+import pl.potat0x.potapaas.potapaasservice.validator.EnumValidator;
+import pl.potat0x.potapaas.potapaasservice.validator.NameValidator;
+import pl.potat0x.potapaas.potapaasservice.validator.UuidValidator;
 
 import java.net.MalformedURLException;
 import java.net.URL;

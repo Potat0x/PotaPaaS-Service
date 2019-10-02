@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import pl.potat0x.potapaas.potapaasservice.api.ResponseResolver;
-import pl.potat0x.potapaas.potapaasservice.utils.UuidValidator;
+import pl.potat0x.potapaas.potapaasservice.validator.UuidValidator;
 
 @RestController
 @RequestMapping("/datastore")

@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import pl.potat0x.potapaas.potapaasservice.api.ResponseResolver;
 import pl.potat0x.potapaas.potapaasservice.core.AppType;
 import pl.potat0x.potapaas.potapaasservice.system.errormessage.ErrorMessage;
-import pl.potat0x.potapaas.potapaasservice.utils.UuidValidator;
+import pl.potat0x.potapaas.potapaasservice.validator.UuidValidator;
 
 @RestController
 @RequestMapping("/app")

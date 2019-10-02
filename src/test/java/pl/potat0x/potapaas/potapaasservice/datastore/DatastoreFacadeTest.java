@@ -11,7 +11,7 @@ import pl.potat0x.potapaas.potapaasservice.app.AppRequestDto;
 import pl.potat0x.potapaas.potapaasservice.app.AppRequestDtoBuilder;
 import pl.potat0x.potapaas.potapaasservice.app.AppResponseDto;
 import pl.potat0x.potapaas.potapaasservice.core.AppType;
-import pl.potat0x.potapaas.potapaasservice.utils.UuidValidator;
+import pl.potat0x.potapaas.potapaasservice.validator.UuidValidator;
 
 import java.util.Set;
 

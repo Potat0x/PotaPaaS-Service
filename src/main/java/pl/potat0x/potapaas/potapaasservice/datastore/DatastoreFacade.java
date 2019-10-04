@@ -3,7 +3,6 @@ package pl.potat0x.potapaas.potapaasservice.datastore;
 import io.vavr.control.Either;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import pl.potat0x.potapaas.potapaasservice.core.DatastoreManager;
 import pl.potat0x.potapaas.potapaasservice.core.DockerContainerManager;
 import pl.potat0x.potapaas.potapaasservice.core.DockerNetworkManager;
 import pl.potat0x.potapaas.potapaasservice.system.PotapaasConfig;
@@ -12,7 +11,9 @@ import pl.potat0x.potapaas.potapaasservice.system.errormessage.ErrorMessage;
 import java.util.Collections;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Supplier;
 
+import static io.vavr.API.*;
 import static pl.potat0x.potapaas.potapaasservice.system.errormessage.CustomErrorMessage.message;
 
 @Service
@@ -50,7 +51,13 @@ class DatastoreFacade {
     }
 
     private DatastoreManager createDatastoreManager(DatastoreType type) {
-        return new DatastoreManager(containerManager, type, new DockerNetworkManager(PotapaasConfig.get("docker_api_uri")));
+        return new DatastoreManager(containerManager, type, new DockerNetworkManager(PotapaasConfig.get("docker_api_uri")), getDatastoreReadinessWaiter(type));
+    }
+
+    private DatastoreReadinessWaiter getDatastoreReadinessWaiter(DatastoreType datastoreType) {
+        return Match(datastoreType).of(
+                Case($(DatastoreType.POSTGRES), (Supplier<DatastoreReadinessWaiter>) () -> new PostgresReadinessWaiter(PotapaasConfig.getInt("datastore_startup_timeout_in_millis")))
+        );
     }
 
     private DatastoreResponseDto createResponseDto(DatastoreEntity datastoreEntity) {

@@ -44,7 +44,7 @@ public final class DockerContainerManager {
         return runContainer(containerConfig, null);
     }
 
-    Either<ErrorMessage, String> runContainer(ContainerConfig.Builder containerConfig, String containerName) {
+    public Either<ErrorMessage, String> runContainer(ContainerConfig.Builder containerConfig, String containerName) {
         try {
             ContainerCreation containerCreation;
             if (containerName != null) {
@@ -59,7 +59,7 @@ public final class DockerContainerManager {
         }
     }
 
-    Either<ErrorMessage, String> getHostPort(String containerId, String containerPort) {
+    public Either<ErrorMessage, String> getHostPort(String containerId, String containerPort) {
         try {
             ImmutableMap<String, List<PortBinding>> ports = docker.inspectContainer(containerId).networkSettings().ports();
             if (ports == null || ports.isEmpty()) {
@@ -211,7 +211,7 @@ public final class DockerContainerManager {
         }
     }
 
-    Either<ErrorMessage, String> getStatus(String containerId) {
+    public Either<ErrorMessage, String> getStatus(String containerId) {
         try {
             ContainerState state = docker.inspectContainer(containerId).state();
             return Either.right(state.status());

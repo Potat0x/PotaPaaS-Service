@@ -1,7 +1,8 @@
-package pl.potat0x.potapaas.potapaasservice.core;
+package pl.potat0x.potapaas.potapaasservice.datastore;
 
 import org.junit.Test;
-import pl.potat0x.potapaas.potapaasservice.datastore.DatastoreType;
+import pl.potat0x.potapaas.potapaasservice.core.DockerContainerManager;
+import pl.potat0x.potapaas.potapaasservice.core.DockerNetworkManager;
 import pl.potat0x.potapaas.potapaasservice.system.PotapaasConfig;
 
 import java.sql.Connection;
@@ -18,10 +19,12 @@ public class DatastoreManagerTest {
 
     @Test
     public void shouldStartPostgresDatastore() throws SQLException, InterruptedException {
-        DatastoreManager datastoreManager = new DatastoreManager(containerManager, DatastoreType.POSTGRES, new DockerNetworkManager(PotapaasConfig.get("docker_api_uri")));
-        datastoreManager.createAndStartDatastore(UUID.randomUUID().toString());
+        PostgresReadinessWaiter datastoreReadinessWaiter = new PostgresReadinessWaiter(PotapaasConfig.getInt("datastore_startup_timeout_in_millis"));
+        DockerNetworkManager networkManager = new DockerNetworkManager(PotapaasConfig.get("docker_api_uri"));
+        DatastoreManager datastoreManager = new DatastoreManager(containerManager, DatastoreType.POSTGRES, networkManager, datastoreReadinessWaiter);
+        String newDatastoreUuid = UUID.randomUUID().toString();
 
-        Thread.sleep(PotapaasConfig.getInt("database_startup_waiting_time_in_millis"));
+        datastoreManager.createAndStartDatastore(newDatastoreUuid);
         Connection connection = createPostgresConnection(datastoreManager.getPort().get());
         ResultSet resultSet = connection.createStatement().executeQuery("select 1234;");
 

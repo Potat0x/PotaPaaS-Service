@@ -1,5 +1,6 @@
 package pl.potat0x.potapaas.potapaasservice.datastore;
 
+import io.vavr.control.Either;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,7 @@ import pl.potat0x.potapaas.potapaasservice.app.AppRequestDto;
 import pl.potat0x.potapaas.potapaasservice.app.AppRequestDtoBuilder;
 import pl.potat0x.potapaas.potapaasservice.app.AppResponseDto;
 import pl.potat0x.potapaas.potapaasservice.core.AppType;
+import pl.potat0x.potapaas.potapaasservice.system.errormessage.ErrorMessage;
 import pl.potat0x.potapaas.potapaasservice.validator.UuidValidator;
 
 import java.time.LocalDateTime;
@@ -57,6 +59,31 @@ public class DatastoreFacadeTest {
         expectedDatastoreResponseDto = new DatastoreResponseDto(datastoreUuid, datastoreName, DatastoreType.valueOf(datastoreType), datastoreResponseDto.getCreatedAt(), "running", Set.of(attachedAppUuid));
         assertThat(datastoreResponseDtoAfterAttachingApp).isEqualTo(expectedDatastoreResponseDto);
         assertThat(datastoreUuid).isEqualTo(appResponseDto.getDatastoreUuid());
+    }
+
+    @Test
+    public void shouldDeleteDatastoreOnlyWhenNoAppsAttached() {
+        //given
+        DatastoreRequestDto datastoreRequestDto = new DatastoreRequestDto("datastore-name", DatastoreType.POSTGRESQL.toString());
+        DatastoreResponseDto datastoreResponseDto = datastoreFacade.createDatastore(datastoreRequestDto).get();
+        String datastoreUuid = datastoreResponseDto.getUuid();
+
+        //when
+        String attachedAppUuid = createAppAndAttachItToDatastore(datastoreUuid).getAppUuid();
+        Either<ErrorMessage, String> deleteResult = datastoreFacade.deleteDatastore(datastoreUuid);
+
+        //then
+        assertThat(deleteResult.isLeft()).isTrue();
+        assertThat(datastoreFacade.getDatastoreDetails(datastoreUuid).isRight()).isTrue();
+
+
+        //when
+        appFacade.deleteApp(attachedAppUuid).get();
+        deleteResult = datastoreFacade.deleteDatastore(datastoreUuid);
+
+        //then
+        assertThat(deleteResult.isRight()).isTrue();
+        assertThat(datastoreFacade.getDatastoreDetails(datastoreUuid).isLeft()).isTrue();
     }
 
     private AppResponseDto createAppAndAttachItToDatastore(String datastoreUuid) {

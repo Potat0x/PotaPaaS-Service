@@ -92,7 +92,7 @@ public final class DockerContainerManager {
         }
     }
 
-    Either<ErrorMessage, String> stopContainer(String containerId, int secondsToWaitBeforeKilling) {
+    public Either<ErrorMessage, String> stopContainer(String containerId, int secondsToWaitBeforeKilling) {
         try {
             docker.stopContainer(containerId, secondsToWaitBeforeKilling);
             return Either.right(containerId);

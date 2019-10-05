@@ -5,6 +5,7 @@ import com.spotify.docker.client.messages.HostConfig;
 import io.vavr.control.Either;
 import pl.potat0x.potapaas.potapaasservice.core.DockerContainerManager;
 import pl.potat0x.potapaas.potapaasservice.core.DockerNetworkManager;
+import pl.potat0x.potapaas.potapaasservice.system.PotapaasConfig;
 import pl.potat0x.potapaas.potapaasservice.system.errormessage.ErrorMessage;
 
 public final class DatastoreManager {
@@ -42,6 +43,10 @@ public final class DatastoreManager {
                 .flatMap(datastoreWaitMessage -> prepareDatastoreNetwork(datastoreUuid))
                 .flatMap(networkId -> connectDatastoreToNetwork(this.containerId, networkId))
                 .map(networkId -> containerId);
+    }
+
+    public Either<ErrorMessage, String> stopDatastore(String containerId) {
+        return containerManager.stopContainer(containerId, PotapaasConfig.getInt("datastore_stop_sec_to_wait_before_kill"));
     }
 
     public Either<ErrorMessage, String> getPort() {

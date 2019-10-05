@@ -74,7 +74,7 @@ public class AppFacade {
         });
     }
 
-    Either<ErrorMessage, String> deleteApp(String appUuid) {
+    public Either<ErrorMessage, String> deleteApp(String appUuid) {
         return getAppEntity(appUuid)
                 .flatMap(appEntity -> {
                     AppManager appManager = buildAppManagerForExistingApp(appEntity);

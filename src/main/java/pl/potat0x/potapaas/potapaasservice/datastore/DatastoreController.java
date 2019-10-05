@@ -5,6 +5,7 @@ import io.vavr.control.Validation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -40,8 +41,15 @@ class DatastoreController {
         if (!validation.isValid()) {
             return ResponseResolver.toErrorResponseEntity(validation, HttpStatus.UNPROCESSABLE_ENTITY, validDatastoreRequestExample());
         }
-
         return ResponseResolver.toResponseEntity(datastoreFacade.createDatastore(requestDto), HttpStatus.CREATED);
+    }
+
+    @DeleteMapping("/{datastoreUuid}")
+    ResponseEntity deleteDatastore(@PathVariable String datastoreUuid) {
+        if (!UuidValidator.checkIfValid(datastoreUuid)) {
+            return ResponseResolver.toErrorResponseEntity("Invalid datastore UUID", HttpStatus.BAD_REQUEST);
+        }
+        return ResponseResolver.toResponseEntity(datastoreFacade.deleteDatastore(datastoreUuid), HttpStatus.NO_CONTENT);
     }
 
     private DatastoreRequestDto validDatastoreRequestExample() {

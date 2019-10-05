@@ -42,13 +42,32 @@ class DatastoreFacade {
     }
 
     Either<ErrorMessage, DatastoreResponseDto> getDatastoreDetails(String datastoreUuid) {
+        return getDatastoreEntityByUuid(datastoreUuid)
+                .map(datastoreEntity -> {
+                    Set<String> attachedApps = datastoreRepository.findAllAppsConnectedToDatastore(datastoreUuid);
+                    return createResponseDto(datastoreEntity, attachedApps);
+                });
+    }
+
+    Either<ErrorMessage, String> deleteDatastore(String datastoreUuid) {
+        return getDatastoreEntityByUuid(datastoreUuid)
+                .flatMap(datastoreEntity -> {
+                    if (datastoreRepository.findAllAppsConnectedToDatastore(datastoreUuid).isEmpty()) {
+                        DatastoreManager datastoreManager = createDatastoreManager(datastoreEntity.getType());
+                        datastoreManager.stopDatastore(datastoreEntity.getContainerId())
+                                .peek(containerId -> datastoreRepository.delete(datastoreEntity));
+                        return Either.right(datastoreUuid);
+                    }
+                    return Either.left(message("Datastore cant be deleted: there are apps attached to it", 409));
+                });
+    }
+
+    private Either<ErrorMessage, DatastoreEntity> getDatastoreEntityByUuid(String datastoreUuid) {
         DatastoreEntity datastoreEntity = datastoreRepository.findOneByUuid(datastoreUuid);
         if (datastoreEntity == null) {
             return Either.left(message("Datastore not found", 404));
         }
-
-        Set<String> attachedApps = datastoreRepository.findAllAppsConnectedToDatastore(datastoreUuid);
-        return Either.right(createResponseDto(datastoreEntity, attachedApps));
+        return Either.right(datastoreEntity);
     }
 
     private DatastoreManager createDatastoreManager(DatastoreType type) {

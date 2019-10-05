@@ -13,6 +13,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import pl.potat0x.potapaas.potapaasservice.core.AppType;
 import pl.potat0x.potapaas.potapaasservice.datastore.DatastoreRequestDto;
 import pl.potat0x.potapaas.potapaasservice.datastore.DatastoreResponseDto;
+import pl.potat0x.potapaas.potapaasservice.datastore.DatastoreType;
 import pl.potat0x.potapaas.potapaasservice.system.PotapaasConfig;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -85,9 +86,8 @@ public class AppControllerTest {
     }
 
     @Test
-    public void shouldDeployNewAppConnectedToDatastoreAndConnectItToAnotherDatastore() throws InterruptedException {
-        String datastoreUuid = createDatastoreAndGetUuid();
-
+    public void shouldDeployNewAppConnectedToPostgresDatastoreAndConnectItToAnotherPostgresDatastore() throws InterruptedException {
+        String datastoreUuid = createDatastoreAndGetUuid(DatastoreType.POSTGRESQL);
         AppRequestDto appRequestDto = validAppRequestDtoBuilder()
                 .withSourceBranchName("nodejs_postgres")
                 .withDatastoreUuid(datastoreUuid)
@@ -102,7 +102,7 @@ public class AppControllerTest {
         checkIfAppIsWorkingWithDatastore(responseEntity.getBody().getExposedPort());
 
 
-        String newDatastoreUuid = createDatastoreAndGetUuid();
+        String newDatastoreUuid = createDatastoreAndGetUuid(DatastoreType.POSTGRESQL);
         AppRequestDto appRequestDtoWithNewDatastore = validAppRequestDtoBuilder()
                 .withSourceBranchName("nodejs_postgres")
                 .withDatastoreUuid(newDatastoreUuid)
@@ -112,6 +112,22 @@ public class AppControllerTest {
 
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(responseEntity.getBody().getDatastoreUuid()).isEqualTo(newDatastoreUuid);
+        waitForAppStart();
+        checkIfAppIsWorkingWithDatastore(responseEntity.getBody().getExposedPort());
+    }
+
+    @Test
+    public void shouldDeployNewAppConnectedToMysqlDatastore() throws InterruptedException {
+        String datastoreUuid = createDatastoreAndGetUuid(DatastoreType.MYSQL);
+        AppRequestDto appRequestDto = validAppRequestDtoBuilder()
+                .withSourceBranchName("nodejs_mysql")
+                .withDatastoreUuid(datastoreUuid)
+                .build();
+
+        ResponseEntity<AppResponseDto> responseEntity = testRestTemplate.postForEntity(appUrl(), appRequestDto, AppResponseDto.class);
+
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertThat(responseEntity.getBody().getDatastoreUuid()).isEqualTo(datastoreUuid);
         waitForAppStart();
         checkIfAppIsWorkingWithDatastore(responseEntity.getBody().getExposedPort());
     }
@@ -138,8 +154,8 @@ public class AppControllerTest {
         assertThat(readIterResponse.getBody()).isEqualTo("2");
     }
 
-    private String createDatastoreAndGetUuid() {
-        DatastoreRequestDto datastoreRequestDto = new DatastoreRequestDto("test-datastore", "POSTGRES");
+    private String createDatastoreAndGetUuid(DatastoreType datastoreType) {
+        DatastoreRequestDto datastoreRequestDto = new DatastoreRequestDto("test-datastore", datastoreType.toString());
         ResponseEntity<DatastoreResponseDto> datastoreResponseDtoResponseEntity = testRestTemplate.postForEntity(datastoreUrl(), datastoreRequestDto, DatastoreResponseDto.class);
         return datastoreResponseDtoResponseEntity.getBody().getUuid();
     }
@@ -153,15 +169,15 @@ public class AppControllerTest {
     }
 
     private ResponseEntity<String> readIterValueFromTestApp(int appPort) {
-        return httpGetString(appPort, "/postgres-read-iter");
+        return httpGetString(appPort, "/read-iter");
     }
 
     private ResponseEntity<String> incrementIterValueInTestApp(int appPort) {
-        return httpGetString(appPort, "/postgres-increment-iter");
+        return httpGetString(appPort, "/increment-iter");
     }
 
     private ResponseEntity<String> initIterValueInTestApp(int appPort) {
-        return httpGetString(appPort, "/postgres-init-iter");
+        return httpGetString(appPort, "/init-iter");
     }
 
     private ResponseEntity<String> httpGetString(int appPort, String endpointUrl) {

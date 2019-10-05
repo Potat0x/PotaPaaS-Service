@@ -4,6 +4,7 @@ import com.spotify.docker.client.messages.ContainerConfig;
 import com.spotify.docker.client.messages.HostConfig;
 import io.vavr.control.Either;
 import pl.potat0x.potapaas.potapaasservice.app.AppRequestDto;
+import pl.potat0x.potapaas.potapaasservice.datastore.DatastoreType;
 import pl.potat0x.potapaas.potapaasservice.system.PotapaasConfig;
 import pl.potat0x.potapaas.potapaasservice.system.errormessage.ErrorMessage;
 import pl.potat0x.potapaas.potapaasservice.system.exceptionmapper.ExceptionMapper;
@@ -161,7 +162,8 @@ public final class AppManager {
                 .labels(labels);
 
         if (requestDto.getDatastoreUuid() != null && buildType == DockerImageManager.BuildType.RELEASE) {
-            config.env("POSTGRES_PORT=5432", "POSTGRES_HOST=" + requestDto.getDatastoreUuid(), "POSTGRES_PASSWORD=docker");
+            config.env("MYSQL_PORT=" + DatastoreType.MYSQL.defaultPort, "MYSQL_HOST=" + requestDto.getDatastoreUuid(), "MYSQL_PASSWORD=docker",
+                    "POSTGRES_PORT=" + DatastoreType.POSTGRESQL.defaultPort, "POSTGRES_HOST=" + requestDto.getDatastoreUuid(), "POSTGRES_PASSWORD=docker");
         }
 
         return containerManager.runContainer(config);

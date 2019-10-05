@@ -5,7 +5,6 @@ import com.spotify.docker.client.messages.HostConfig;
 import io.vavr.control.Either;
 import pl.potat0x.potapaas.potapaasservice.core.DockerContainerManager;
 import pl.potat0x.potapaas.potapaasservice.core.DockerNetworkManager;
-import pl.potat0x.potapaas.potapaasservice.system.PotapaasConfig;
 import pl.potat0x.potapaas.potapaasservice.system.errormessage.ErrorMessage;
 
 public final class DatastoreManager {
@@ -30,19 +29,23 @@ public final class DatastoreManager {
         ContainerConfig.Builder config = ContainerConfig.builder()
                 .hostConfig(hostConfig)
                 .image(datastoreType.dockerRepository)
-                .exposedPorts(PotapaasConfig.get("default_datastore_port"))
-                .env("POSTGRES_PASSWORD=docker");
+                .exposedPorts(datastoreType.defaultPortAndProtocol)
+                .env("POSTGRES_PASSWORD=docker", "MYSQL_ROOT_PASSWORD=docker");
+
+        if (datastoreType == DatastoreType.MYSQL) {
+            config.cmd("--default-authentication-plugin=mysql_native_password");
+        }
 
         return containerManager.runContainer(config, datastoreUuid)
                 .peek(containerId -> this.containerId = containerId)
                 .flatMap(this::waitForDatastore)
                 .flatMap(datastoreWaitMessage -> prepareDatastoreNetwork(datastoreUuid))
-                .peek(networkId -> connectDatastoreToNetwork(this.containerId, networkId))
+                .flatMap(networkId -> connectDatastoreToNetwork(this.containerId, networkId))
                 .map(networkId -> containerId);
     }
 
     public Either<ErrorMessage, String> getPort() {
-        return containerManager.getHostPort(containerId, PotapaasConfig.get("default_datastore_port"));
+        return containerManager.getHostPort(containerId, datastoreType.defaultPortAndProtocol);
     }
 
     public Either<ErrorMessage, String> getStatus(String containerId) {
@@ -58,8 +61,8 @@ public final class DatastoreManager {
     }
 
     private Either<ErrorMessage, String> waitForDatastore(String containerId) {
-        return containerManager.getHostPort(containerId, PotapaasConfig.get("default_datastore_port"))
+        return containerManager.getHostPort(containerId, datastoreType.defaultPortAndProtocol)
                 .map(Integer::parseInt)
-                .flatMap(datastorePort -> datastoreReadinessWaiter.waitUntilDatastoreIsAvailable("127.0.0.1", datastorePort, "postgres", "docker"));
+                .flatMap(datastoreHostPort -> datastoreReadinessWaiter.waitUntilDatastoreIsAvailable("127.0.0.1", datastoreHostPort, datastoreType.defaultUsername, "docker"));
     }
 }

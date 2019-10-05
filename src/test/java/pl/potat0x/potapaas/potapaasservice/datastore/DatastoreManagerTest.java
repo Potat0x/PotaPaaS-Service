@@ -19,9 +19,9 @@ public class DatastoreManagerTest {
 
     @Test
     public void shouldStartPostgresDatastore() throws SQLException, InterruptedException {
-        PostgresReadinessWaiter datastoreReadinessWaiter = new PostgresReadinessWaiter(PotapaasConfig.getInt("datastore_startup_timeout_in_millis"));
+        PostgresReadinessWaiter datastoreReadinessWaiter = new PostgresReadinessWaiter(DatastoreType.POSTGRESQL, PotapaasConfig.getInt("datastore_startup_timeout_in_millis"));
         DockerNetworkManager networkManager = new DockerNetworkManager(PotapaasConfig.get("docker_api_uri"));
-        DatastoreManager datastoreManager = new DatastoreManager(containerManager, DatastoreType.POSTGRES, networkManager, datastoreReadinessWaiter);
+        DatastoreManager datastoreManager = new DatastoreManager(containerManager, DatastoreType.POSTGRESQL, networkManager, datastoreReadinessWaiter);
         String newDatastoreUuid = UUID.randomUUID().toString();
 
         datastoreManager.createAndStartDatastore(newDatastoreUuid);

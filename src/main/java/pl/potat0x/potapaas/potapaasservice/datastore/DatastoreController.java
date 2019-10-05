@@ -45,6 +45,6 @@ class DatastoreController {
     }
 
     private DatastoreRequestDto validDatastoreRequestExample() {
-        return new DatastoreRequestDto("my-database-123", DatastoreType.POSTGRES.toString());
+        return new DatastoreRequestDto("my-database-123", DatastoreType.POSTGRESQL.toString());
     }
 }

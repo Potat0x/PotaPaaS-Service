@@ -33,7 +33,7 @@ public class DatastoreFacadeTest {
     @Test
     public void shouldGetDatastoreDetailsIncludingListOfAttachedApps() {
         //given
-        String datastoreType = DatastoreType.POSTGRES.toString();
+        String datastoreType = DatastoreType.POSTGRESQL.toString();
         String datastoreName = "test-datastore";
         DatastoreRequestDto datastoreRequestDto = new DatastoreRequestDto(datastoreName, datastoreType);
 

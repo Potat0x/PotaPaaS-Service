@@ -25,12 +25,14 @@ public abstract class DatastoreReadinessWaiter {
             try {
                 Thread.sleep(PotapaasConfig.getInt("datastore_readiness_waiter_sleep_time_in_millis"));
                 if (checkIfTestRequestWorking(address, port, username, password)) {
+                    System.out.println("Datastore ready, time: " + timeoutClock.getElapsedTime() + " ms");
                     return Either.right("Datastore is ready");
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();
                 return Either.left(message("Waiting for datastore has been interrupted", 500));
             } catch (SQLException e) {
+                System.out.print(".");
                 //database is not yet ready: ignore exception and try again
             }
         } while (timeoutClock.getElapsedTime() < timeoutInMilliseconds);

@@ -11,8 +11,11 @@ import java.util.concurrent.TimeoutException;
 
 final class PostgresReadinessWaiter extends DatastoreReadinessWaiter {
 
-    PostgresReadinessWaiter(long timeoutInMilliseconds) {
+    private final DatastoreType datastoreType;
+
+    PostgresReadinessWaiter(DatastoreType datastoreType, long timeoutInMilliseconds) {
         super(timeoutInMilliseconds);
+        this.datastoreType = datastoreType;
     }
 
     @Override
@@ -28,8 +31,12 @@ final class PostgresReadinessWaiter extends DatastoreReadinessWaiter {
 
     private Connection createConnection(String address, int port, String username, String password) throws TimeoutException, SQLException {
         return Future
-                .of(() -> DriverManager.getConnection("jdbc:postgresql://" + address + ":" + port + "/postgres", username, password))
+                .of(() -> DriverManager.getConnection(getJdbcUrl(address, port), username, password))
                 .await(timeoutInMilliseconds, TimeUnit.MILLISECONDS)
                 .get();
+    }
+
+    private String getJdbcUrl(String address, int port) {
+        return "jdbc:" + datastoreType.toString().toLowerCase() + "://" + address + ":" + port + "/" + datastoreType.databaseName;
     }
 }

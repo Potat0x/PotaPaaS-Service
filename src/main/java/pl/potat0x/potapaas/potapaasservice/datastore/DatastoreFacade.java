@@ -14,6 +14,7 @@ import java.util.UUID;
 import java.util.function.Supplier;
 
 import static io.vavr.API.*;
+import static io.vavr.Predicates.isIn;
 import static pl.potat0x.potapaas.potapaasservice.system.errormessage.CustomErrorMessage.message;
 
 @Service
@@ -56,7 +57,7 @@ class DatastoreFacade {
 
     private DatastoreReadinessWaiter getDatastoreReadinessWaiter(DatastoreType datastoreType) {
         return Match(datastoreType).of(
-                Case($(DatastoreType.POSTGRES), (Supplier<DatastoreReadinessWaiter>) () -> new PostgresReadinessWaiter(PotapaasConfig.getInt("datastore_startup_timeout_in_millis")))
+                Case($(isIn(DatastoreType.POSTGRESQL, DatastoreType.MYSQL)), (Supplier<DatastoreReadinessWaiter>) () -> new PostgresReadinessWaiter(datastoreType, PotapaasConfig.getInt("datastore_startup_timeout_in_millis")))
         );
     }
 

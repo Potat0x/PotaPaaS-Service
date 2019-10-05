@@ -15,7 +15,7 @@ class PostgresReadinessWaiterTest extends Specification {
     def "should get timeout error while connecting to nonexistent database"() {
         given:
         int testTimeout = 100
-        PostgresReadinessWaiter postgresReadinessWaiter = new PostgresReadinessWaiter(testTimeout)
+        PostgresReadinessWaiter postgresReadinessWaiter = new PostgresReadinessWaiter(DatastoreType.POSTGRESQL, testTimeout)
 
         when:
         Either<ErrorMessage, String> waitingResult = postgresReadinessWaiter.waitUntilDatastoreIsAvailable("127.0.0.1", port, "postgres", "docker")

@@ -1,9 +1,9 @@
 package pl.potat0x.potapaas.potapaasservice.datastore;
 
 public enum DatastoreType {
-    POSTGRESQL("PostgreSQL", "postgres", "5432/tcp", "postgres", "postgres"),
-    MYSQL("MySQL", "mysql", "3306/tcp", "root", "mysql"),
-    MARIADB("MariaDB", "mariadb", "3306/tcp", "root", "mysql");
+    POSTGRESQL("PostgreSQL", "postgres:12.0", "5432/tcp", "postgres", "postgres"),
+    MYSQL("MySQL", "mysql:8.0", "3306/tcp", "root", "mysql"),
+    MARIADB("MariaDB", "bitnami/mariadb:10.3.18", "3306/tcp", "root", "mysql");
 
     public final String userFriendlyName;
     public final String dockerRepository;

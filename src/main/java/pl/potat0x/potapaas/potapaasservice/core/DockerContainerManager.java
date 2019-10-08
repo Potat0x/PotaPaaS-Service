@@ -59,6 +59,17 @@ public final class DockerContainerManager {
         }
     }
 
+    public Either<ErrorMessage, String> pullImageIfNotFoundOnHost(String image) {
+        try {
+            if (!isImageAlreadyPulled(image)) {
+                docker.pull(image);
+            }
+            return Either.right(image);
+        } catch (Exception e) {
+            return ExceptionMapper.map(e).to(CoreErrorMessage.SERVER_ERROR);
+        }
+    }
+
     public Either<ErrorMessage, String> getHostPort(String containerId, String containerPort) {
         try {
             ImmutableMap<String, List<PortBinding>> ports = docker.inspectContainer(containerId).networkSettings().ports();
@@ -234,6 +245,10 @@ public final class DockerContainerManager {
                     exception(DockerException.class).to(CoreErrorMessage.SERVER_ERROR)
             );
         }
+    }
+
+    private boolean isImageAlreadyPulled(String image) throws DockerException, InterruptedException {
+        return docker.listImages(DockerClient.ListImagesParam.byName(image)).size() > 0;
     }
 
     private Set<String> getNetworkIds(String containerId) throws DockerException, InterruptedException {

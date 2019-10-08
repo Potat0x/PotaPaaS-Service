@@ -37,7 +37,8 @@ public final class DatastoreManager {
             config.cmd("--default-authentication-plugin=mysql_native_password");
         }
 
-        return containerManager.runContainer(config, datastoreUuid)
+        return containerManager.pullImageIfNotFoundOnHost(datastoreType.dockerRepository)
+                .flatMap(image -> containerManager.runContainer(config, datastoreUuid))
                 .peek(containerId -> this.containerId = containerId)
                 .flatMap(this::waitForDatastore)
                 .flatMap(datastoreWaitMessage -> prepareDatastoreNetwork(datastoreUuid))

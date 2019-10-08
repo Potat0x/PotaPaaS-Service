@@ -76,7 +76,7 @@ class DatastoreFacade {
 
     private DatastoreReadinessWaiter getDatastoreReadinessWaiter(DatastoreType datastoreType) {
         return Match(datastoreType).of(
-                Case($(isIn(DatastoreType.POSTGRESQL, DatastoreType.MYSQL)), (Supplier<DatastoreReadinessWaiter>) () -> new PostgresReadinessWaiter(datastoreType, PotapaasConfig.getInt("datastore_startup_timeout_in_millis")))
+                Case($(isIn(DatastoreType.POSTGRESQL, DatastoreType.MYSQL, DatastoreType.MARIADB)), (Supplier<DatastoreReadinessWaiter>) () -> new PostgresReadinessWaiter(datastoreType, PotapaasConfig.getInt("datastore_startup_timeout_in_millis")))
         );
     }
 

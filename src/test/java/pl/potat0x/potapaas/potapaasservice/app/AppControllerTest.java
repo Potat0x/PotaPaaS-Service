@@ -16,6 +16,8 @@ import pl.potat0x.potapaas.potapaasservice.datastore.DatastoreResponseDto;
 import pl.potat0x.potapaas.potapaasservice.datastore.DatastoreType;
 import pl.potat0x.potapaas.potapaasservice.system.PotapaasConfig;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringRunner.class)
@@ -117,19 +119,21 @@ public class AppControllerTest {
     }
 
     @Test
-    public void shouldDeployNewAppConnectedToMysqlDatastore() throws InterruptedException {
-        String datastoreUuid = createDatastoreAndGetUuid(DatastoreType.MYSQL);
-        AppRequestDto appRequestDto = validAppRequestDtoBuilder()
-                .withSourceBranchName("nodejs_mysql")
-                .withDatastoreUuid(datastoreUuid)
-                .build();
+    public void shouldDeployNewAppConnectedToDatastore() throws InterruptedException {
+        for (DatastoreType datastoreType : List.of(DatastoreType.MYSQL, DatastoreType.MARIADB)) {
+            String datastoreUuid = createDatastoreAndGetUuid(datastoreType);
+            AppRequestDto appRequestDto = validAppRequestDtoBuilder()
+                    .withSourceBranchName("nodejs_mysql")
+                    .withDatastoreUuid(datastoreUuid)
+                    .build();
 
-        ResponseEntity<AppResponseDto> responseEntity = testRestTemplate.postForEntity(appUrl(), appRequestDto, AppResponseDto.class);
+            ResponseEntity<AppResponseDto> responseEntity = testRestTemplate.postForEntity(appUrl(), appRequestDto, AppResponseDto.class);
 
-        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-        assertThat(responseEntity.getBody().getDatastoreUuid()).isEqualTo(datastoreUuid);
-        waitForAppStart();
-        checkIfAppIsWorkingWithDatastore(responseEntity.getBody().getExposedPort());
+            assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+            assertThat(responseEntity.getBody().getDatastoreUuid()).isEqualTo(datastoreUuid);
+            waitForAppStart();
+            checkIfAppIsWorkingWithDatastore(responseEntity.getBody().getExposedPort());
+        }
     }
 
     private void checkIfAppIsWorkingWithDatastore(int appPort) {

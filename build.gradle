@@ -29,6 +29,7 @@ dependencies {
 
     implementation 'org.postgresql:postgresql'
     implementation 'mysql:mysql-connector-java:8.0.17'
+    implementation 'org.mariadb.jdbc:mariadb-java-client:2.5.0'
 
     testImplementation 'org.spockframework:spock-core:1.3-groovy-2.5'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'

@@ -31,7 +31,7 @@ public final class DatastoreManager {
                 .hostConfig(hostConfig)
                 .image(datastoreType.dockerRepository)
                 .exposedPorts(datastoreType.defaultPortAndProtocol)
-                .env("POSTGRES_PASSWORD=docker", "MYSQL_ROOT_PASSWORD=docker");
+                .env("POSTGRES_PASSWORD=docker", "MYSQL_ROOT_PASSWORD=docker", "MARIADB_ROOT_PASSWORD=docker");
 
         if (datastoreType == DatastoreType.MYSQL) {
             config.cmd("--default-authentication-plugin=mysql_native_password");

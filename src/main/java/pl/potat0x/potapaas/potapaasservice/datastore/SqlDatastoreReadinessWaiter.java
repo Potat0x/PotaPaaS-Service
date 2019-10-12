@@ -9,11 +9,11 @@ import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-final class PostgresReadinessWaiter extends DatastoreReadinessWaiter {
+final class SqlDatastoreReadinessWaiter extends DatastoreReadinessWaiter {
 
     private final DatastoreType datastoreType;
 
-    PostgresReadinessWaiter(DatastoreType datastoreType, long timeoutInMilliseconds) {
+    SqlDatastoreReadinessWaiter(DatastoreType datastoreType, long timeoutInMilliseconds) {
         super(timeoutInMilliseconds);
         this.datastoreType = datastoreType;
     }

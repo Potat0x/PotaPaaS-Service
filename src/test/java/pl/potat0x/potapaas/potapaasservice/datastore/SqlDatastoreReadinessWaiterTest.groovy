@@ -6,7 +6,7 @@ import spock.lang.Specification
 
 import static org.assertj.core.api.Assertions.assertThat
 
-class PostgresReadinessWaiterTest extends Specification {
+class SqlDatastoreReadinessWaiterTest extends Specification {
 
     private static int invalidUnusedPort
     private static int invalidPortUsedByAnotherApp
@@ -15,10 +15,10 @@ class PostgresReadinessWaiterTest extends Specification {
     def "should get timeout error while connecting to nonexistent database"() {
         given:
         int testTimeout = 100
-        PostgresReadinessWaiter postgresReadinessWaiter = new PostgresReadinessWaiter(DatastoreType.POSTGRESQL, testTimeout)
+        DatastoreReadinessWaiter readinessWaiter = new SqlDatastoreReadinessWaiter(DatastoreType.POSTGRESQL, testTimeout)
 
         when:
-        Either<ErrorMessage, String> waitingResult = postgresReadinessWaiter.waitUntilDatastoreIsAvailable("127.0.0.1", port, "postgres", "docker")
+        Either<ErrorMessage, String> waitingResult = readinessWaiter.waitUntilDatastoreIsAvailable("127.0.0.1", port, "postgres", "docker")
 
         then:
         assertThat(waitingResult.isLeft()).isTrue()

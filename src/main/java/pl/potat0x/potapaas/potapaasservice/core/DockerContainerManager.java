@@ -85,7 +85,7 @@ public final class DockerContainerManager {
 
     Either<ErrorMessage, Boolean> checkIfContainerIsRunning(String containerId) {
         try {
-            return Either.right(docker.inspectContainer(containerId).state().running());
+            return Either.right(isContainerRunning(containerId));
         } catch (Exception e) {
             return ExceptionMapper.map(e).of(
                     exception(ContainerNotFoundException.class).to(CoreErrorMessage.CONTAINER_NOT_FOUND),
@@ -96,7 +96,9 @@ public final class DockerContainerManager {
 
     Either<ErrorMessage, String> killContainer(String containerId) {
         try {
-            docker.killContainer(containerId);
+            if (isContainerRunning(containerId)) {
+                docker.killContainer(containerId);
+            }
             return Either.right(containerId);
         } catch (Exception e) {
             return ExceptionMapper.map(e).to(CoreErrorMessage.SERVER_ERROR);
@@ -105,7 +107,9 @@ public final class DockerContainerManager {
 
     public Either<ErrorMessage, String> stopContainer(String containerId, int secondsToWaitBeforeKilling) {
         try {
-            docker.stopContainer(containerId, secondsToWaitBeforeKilling);
+            if (isContainerRunning(containerId)) {
+                docker.stopContainer(containerId, secondsToWaitBeforeKilling);
+            }
             return Either.right(containerId);
         } catch (Exception e) {
             return ExceptionMapper.map(e).to(CoreErrorMessage.SERVER_ERROR);
@@ -234,17 +238,8 @@ public final class DockerContainerManager {
         }
     }
 
-    Either<ErrorMessage, LocalDateTime> getCreationDate(String containerId) {
-        try {
-            Date creationDate = docker.inspectContainer(containerId).created();
-            LocalDateTime creationDateTime = LocalDateTime.ofInstant(creationDate.toInstant(), ZoneId.systemDefault());
-            return Either.right(creationDateTime);
-        } catch (Exception e) {
-            return ExceptionMapper.map(e).of(
-                    exception(ContainerNotFoundException.class).to(CoreErrorMessage.CONTAINER_NOT_FOUND),
-                    exception(DockerException.class).to(CoreErrorMessage.SERVER_ERROR)
-            );
-        }
+    private boolean isContainerRunning(String containerId) throws DockerException, InterruptedException {
+        return docker.inspectContainer(containerId).state().running();
     }
 
     private boolean isImageAlreadyPulled(String image) throws DockerException, InterruptedException {

@@ -77,6 +77,19 @@ public class AppControllerTest {
     }
 
     @Test
+    public void shouldDeleteCrashedApp() {
+        AppRequestDtoBuilder requestDto = validAppRequestDtoBuilder()
+                .withSourceBranchName("nodejs_test_ok_start_fail");
+        String appUuid = appFacade.createAndDeployApp(requestDto.build()).get().getAppUuid();
+        String appUrl = appUrl() + "/" + appUuid;
+
+        assertThat(testRestTemplate.getForEntity(appUrl, AppResponseDto.class).getStatusCode()).isEqualTo(HttpStatus.OK);
+        testRestTemplate.delete(appUrl);
+
+        assertThat(testRestTemplate.getForEntity(appUrl, AppResponseDto.class).getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
     public void shouldNotCreateAppDueToInvalidUrl() {
         AppRequestDto appRequestDto = validAppRequestDtoBuilder()
                 .withSourceRepoUrl("this is invalid url")

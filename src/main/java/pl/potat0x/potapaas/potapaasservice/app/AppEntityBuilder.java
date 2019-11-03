@@ -10,11 +10,12 @@ final class AppEntityBuilder {
     private String name;
     private String sourceRepoUrl;
     private String sourceBranchName;
+    private boolean autodeployEnabled;
     private String commitHash;
     private String datastoreUuid;
 
     AppEntity build() {
-        return new AppEntity(appInstance, type, uuid, name, sourceRepoUrl, sourceBranchName, commitHash, datastoreUuid);
+        return new AppEntity(appInstance, type, uuid, name, sourceRepoUrl, sourceBranchName, autodeployEnabled, commitHash, datastoreUuid);
     }
 
     AppEntityBuilder withAppInstance(AppInstanceEntity appInstance) {
@@ -44,6 +45,11 @@ final class AppEntityBuilder {
 
     AppEntityBuilder withSourceBranchName(String sourceBranchName) {
         this.sourceBranchName = sourceBranchName;
+        return this;
+    }
+
+    AppEntityBuilder withAutodeployEnabled(boolean autodeployEnabled) {
+        this.autodeployEnabled = autodeployEnabled;
         return this;
     }
 

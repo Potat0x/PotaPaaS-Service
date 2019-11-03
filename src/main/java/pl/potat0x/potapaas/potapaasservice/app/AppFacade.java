@@ -42,7 +42,7 @@ public class AppFacade {
         });
     }
 
-    Either<ErrorMessage, AppResponseDto> redeployApp(String appUuid, AppRequestDto requestDto) {
+    public Either<ErrorMessage, AppResponseDto> redeployApp(String appUuid, AppRequestDto requestDto) {
         boolean redeployNotRunning;
         redeployLocksSetLock.lock();
         try {
@@ -67,7 +67,7 @@ public class AppFacade {
                 .flatMap(AppManager::getLogs);
     }
 
-    Either<ErrorMessage, AppResponseDto> getAppDetails(String appUuid) {
+    public Either<ErrorMessage, AppResponseDto> getAppDetails(String appUuid) {
         return getAppEntity(appUuid).map(appEntity -> {
             AppManager appManager = buildAppManagerForExistingApp(appEntity);
             return buildResponseDto(appManager, appEntity);
@@ -120,16 +120,21 @@ public class AppFacade {
                 .withName(requestDto.getName())
                 .withSourceRepoUrl(requestDto.getSourceRepoUrl())
                 .withSourceBranchName(requestDto.getSourceBranchName())
+                .withAutodeployEnabled(requestDto.isAutodeployEnabled())
                 .withCommitHash(requestDto.getCommitHash())
                 .withDatastoreUuid(requestDto.getDatastoreUuid());
     }
 
     private Either<ErrorMessage, AppEntity> getAppEntityForRedeploying(String appUuid, AppRequestDto requestDto) {
+        if (requestDto == null) {
+            return getAppEntity(appUuid);
+        }
         return getAppEntity(appUuid).map(appEntity -> {
             appEntity.setName(requestDto.getName());
             appEntity.setType(AppType.valueOf(requestDto.getType()));
             appEntity.setSourceRepoUrl(requestDto.getSourceRepoUrl());
             appEntity.setSourceBranchName(requestDto.getSourceBranchName());
+            appEntity.setAutodeployEnabled(requestDto.isAutodeployEnabled());
             appEntity.setCommitHash(requestDto.getCommitHash());
             appEntity.setDatastoreUuid(requestDto.getDatastoreUuid());
             return appEntity;
@@ -162,6 +167,7 @@ public class AppFacade {
                 .withType(appEntity.getType())
                 .withSourceRepoUrl(appEntity.getSourceRepoUrl())
                 .withSourceBranchName(appEntity.getSourceBranchName())
+                .withAutodeployEnabled(appEntity.isAutodeployEnabled())
                 .withCreatedAt(appEntity.getCreatedAt())
                 .withStatus(app.getStatus().getOrElse("not deployed"))
                 .withExposedPort(app.getPort().map(Integer::parseInt).getOrElse(-1))

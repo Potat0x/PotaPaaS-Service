@@ -18,6 +18,7 @@ final class AppRequestDtoValidator {
                 EnumValidator.checkIfEnumContainsConstant(requestDto.getType(), AppType.class, "app type"),
                 validateUrl(requestDto.getSourceRepoUrl()),
                 validateBranchName(requestDto.getSourceBranchName()),
+                Validation.valid(requestDto.isAutodeployEnabled()),
                 CommitHashValidator.validate(requestDto.getCommitHash(), true),
                 validateUuid(requestDto.getDatastoreUuid(), true, "datastore UUID")
         ).ap(AppRequestDto::new);

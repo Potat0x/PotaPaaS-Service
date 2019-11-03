@@ -16,6 +16,7 @@ public final class AppResponseDto {
     private final AppType type;
     private final String sourceRepoUrl;
     private final String sourceBranchName;
+    private final boolean autodeployEnabled;
     private final LocalDateTime createdAt;
     private final String status;
     private final int exposedPort;
@@ -28,6 +29,7 @@ public final class AppResponseDto {
                           @JsonProperty("type") AppType type,
                           @JsonProperty("sourceRepoUrl") String sourceRepoUrl,
                           @JsonProperty("sourceBranchName") String sourceBranchName,
+                          @JsonProperty("autodeployEnabled") boolean autodeployEnabled,
                           @JsonProperty("createdAt") LocalDateTime createdAt,
                           @JsonProperty("status") String status,
                           @JsonProperty("exposedPort") int exposedPort,
@@ -38,6 +40,7 @@ public final class AppResponseDto {
         this.type = type;
         this.sourceRepoUrl = sourceRepoUrl;
         this.sourceBranchName = sourceBranchName;
+        this.autodeployEnabled = autodeployEnabled;
         this.createdAt = createdAt;
         this.status = status;
         this.exposedPort = exposedPort;
@@ -63,6 +66,10 @@ public final class AppResponseDto {
 
     public String getSourceBranchName() {
         return sourceBranchName;
+    }
+
+    public boolean isAutodeployEnabled() {
+        return autodeployEnabled;
     }
 
     public LocalDateTime getCreatedAt() {

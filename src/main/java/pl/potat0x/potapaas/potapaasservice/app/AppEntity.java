@@ -35,17 +35,19 @@ class AppEntity {
     private String name;
     private String sourceRepoUrl;
     private String sourceBranchName;
+    private boolean autodeployEnabled;
     private String commitHash;
     private String datastoreUuid;
     private LocalDateTime createdAt;
 
-    public AppEntity(AppInstanceEntity appInstance, AppType type, String uuid, String name, String sourceRepoUrl, String sourceBranchName, String commitHash, String datastoreUuid) {
+    public AppEntity(AppInstanceEntity appInstance, AppType type, String uuid, String name, String sourceRepoUrl, String sourceBranchName, boolean autodeployEnabled, String commitHash, String datastoreUuid) {
         this.appInstance = appInstance;
         this.type = type;
         this.uuid = uuid;
         this.name = name;
         this.sourceRepoUrl = sourceRepoUrl;
         this.sourceBranchName = sourceBranchName;
+        this.autodeployEnabled = autodeployEnabled;
         this.commitHash = commitHash;
         this.datastoreUuid = datastoreUuid;
         this.createdAt = LocalDateTime.now();
@@ -78,6 +80,10 @@ class AppEntity {
         return sourceBranchName;
     }
 
+    public boolean isAutodeployEnabled() {
+        return autodeployEnabled;
+    }
+
     public String getCommitHash() {
         return commitHash;
     }
@@ -108,6 +114,10 @@ class AppEntity {
 
     public void setSourceBranchName(String sourceBranchName) {
         this.sourceBranchName = sourceBranchName;
+    }
+
+    public void setAutodeployEnabled(boolean autodeployEnabled) {
+        this.autodeployEnabled = autodeployEnabled;
     }
 
     public void setCommitHash(String commitHash) {

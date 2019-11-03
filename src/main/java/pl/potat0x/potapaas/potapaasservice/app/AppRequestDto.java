@@ -12,6 +12,7 @@ public final class AppRequestDto {
     private final String type;
     private final String sourceRepoUrl;
     private final String sourceBranchName;
+    private final boolean autodeployEnabled;
     private final String commitHash;
     private final String datastoreUuid;
 
@@ -20,6 +21,7 @@ public final class AppRequestDto {
                          @JsonProperty("type") String type,
                          @JsonProperty("sourceRepoUrl") String sourceRepoUrl,
                          @JsonProperty("sourceBranchName") String sourceBranchName,
+                         @JsonProperty("autodeployEnabled") boolean autodeployEnabled,
                          @JsonProperty("commitHash") String commitHash,
                          @JsonProperty("datastoreUuid") String datastoreUuid) {
         this.name = name;
@@ -28,6 +30,7 @@ public final class AppRequestDto {
         this.sourceBranchName = sourceBranchName;
         this.commitHash = commitHash;
         this.datastoreUuid = datastoreUuid;
+        this.autodeployEnabled = autodeployEnabled;
     }
 
     public String getName() {
@@ -44,6 +47,10 @@ public final class AppRequestDto {
 
     public String getSourceBranchName() {
         return sourceBranchName;
+    }
+
+    public boolean isAutodeployEnabled() {
+        return autodeployEnabled;
     }
 
     public String getCommitHash() {

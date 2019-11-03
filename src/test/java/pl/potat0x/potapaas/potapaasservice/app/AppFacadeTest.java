@@ -38,11 +38,13 @@ public class AppFacadeTest {
         //when
         AppRequestDtoBuilder validRedeployAppRequestDto = validAppRequestDtoBuilder()
                 .withName("toupper-app")
-                .withSourceBranchName("nodejs_toupper");
+                .withSourceBranchName("nodejs_toupper")
+                .withAutodeployEnabled(true);
 
         AppResponseDto expectedResponseAfterRedeployment = expectedResponse
                 .withName("toupper-app")
                 .withSourceBranchName("nodejs_toupper")
+                .withAutodeployEnabled(true)
                 .build();
 
         AppResponseDto appRedeploymentResponseDto = appFacade.redeployApp(appUuid, validRedeployAppRequestDto.build()).get();
@@ -182,6 +184,7 @@ public class AppFacadeTest {
                 .withName("app-name")
                 .withType(AppType.NODEJS.toString())
                 .withSourceRepoUrl("https://github.com/Potat0x/potapaas-test-cases")
-                .withSourceBranchName("nodejs_test_ok");
+                .withSourceBranchName("nodejs_test_ok")
+                .withAutodeployEnabled(false);
     }
 }

@@ -6,6 +6,7 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import pl.potat0x.potapaas.potapaasservice.app.AppRequestDto;
+import pl.potat0x.potapaas.potapaasservice.app.AppRequestDtoBuilder;
 import pl.potat0x.potapaas.potapaasservice.config.AppManagerFactoryConfig;
 import pl.potat0x.potapaas.potapaasservice.system.PotapaasConfig;
 import pl.potat0x.potapaas.potapaasservice.system.errormessage.ErrorMessage;
@@ -39,7 +40,14 @@ public class AppManagerTest {
 
     private AppManager appManagerFromTestGithubRepo(String branchName, AppType appType) {
         AppManagerFactory appManagerFactory = new AppManagerFactoryConfig().defaultAppManagerFactory();
-        AppRequestDto appRequestDto = new AppRequestDto("depl-test-app-name", appType.toString(), "https://github.com/Potat0x/potapaas-test-cases", branchName, null, null);
+        AppRequestDto appRequestDto = new AppRequestDtoBuilder()
+                .withName("depl-test-app-name")
+                .withType(appType.name())
+                .withSourceRepoUrl("https://github.com/Potat0x/potapaas-test-cases")
+                .withSourceBranchName(branchName)
+                .withAutodeployEnabled(false)
+                .build();
+
         return appManagerFactory.forNewApp(appRequestDto);
     }
 }

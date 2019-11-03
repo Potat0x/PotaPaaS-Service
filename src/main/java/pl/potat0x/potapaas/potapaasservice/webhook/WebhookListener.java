@@ -30,10 +30,17 @@ class WebhookListener {
     }
 
     @PostMapping("/{appUuid}")
-    ResponseEntity redeployApp(HttpEntity<String> httpEntity, @PathVariable String appUuid) throws IOException {
+    ResponseEntity redeployApp(HttpEntity<String> httpEntity, @PathVariable String appUuid) {
         System.out.println("Received webhook: " + appUuid + "\nheaders: " + httpEntity.getHeaders() + "\npayload" + httpEntity.getBody());
 
-        String eventSourceBranch = readEventSourceBranch(httpEntity);
+        String eventSourceBranch;
+        try {
+            eventSourceBranch = readEventSourceBranch(httpEntity);
+        } catch (Exception e) {
+            System.out.println("Invalid payload JSON: " + e.getMessage());
+            return ResponseResolver.toErrorResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+
         System.out.println("Webhook source branch: " + eventSourceBranch + " (" + eventSourceBranch + ")");
 
         Either<ErrorMessage, AppResponseDto> redeploymentResult = webhookFacade.handleWebhook(appUuid, eventSourceBranch);

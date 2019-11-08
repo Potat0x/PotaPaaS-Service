@@ -21,6 +21,7 @@ public class AppFacadeTest {
 
     @Autowired
     private AppFacade appFacade;
+
     @Autowired
     private TestRestTemplate testRestTemplate;
 
@@ -32,7 +33,8 @@ public class AppFacadeTest {
         AppResponseDto initialDeployment = deployTolowerApp();
         String appUuid = initialDeployment.getAppUuid();
         AppResponseDtoBuilder expectedResponse = appResponseDtoToBuilder(initialDeployment);
-        assertThat(expectedResponse.build()).isEqualTo(initialDeployment);
+        assertThat(expectedResponse.build()).isEqualToIgnoringGivenFields(initialDeployment, "webhookSecret");
+        assertThat(initialDeployment.getWebhookSecret()).isNotBlank();
         assertThat(checkIfLowercaseAppWorking(initialDeployment.getExposedPort())).isTrue();
 
         //when
@@ -45,6 +47,7 @@ public class AppFacadeTest {
                 .withName("toupper-app")
                 .withSourceBranchName("nodejs_toupper")
                 .withAutodeployEnabled(true)
+                .withWebhookSecret(initialDeployment.getWebhookSecret())
                 .build();
 
         AppResponseDto appRedeploymentResponseDto = appFacade.redeployApp(appUuid, validRedeployAppRequestDto.build()).get();
@@ -80,7 +83,6 @@ public class AppFacadeTest {
         assertThat(appFacade.getAppLogs(appUuid).get()).contains(logExpectedInTest1);
         assertThat(appFacade.getAppLogs(appUuid).get()).doesNotContain(logExpectedInTest2);
         assertThat(appFacade.getAppLogs(appUuid).get()).doesNotContain(logExpectedInTest3);
-
 
         //when
         AppRequestDtoBuilder redeployRequestDto = validAppRequestDtoBuilder()
@@ -120,7 +122,7 @@ public class AppFacadeTest {
         AppResponseDto initialDeployment = deployTolowerApp();
         String appUuid = initialDeployment.getAppUuid();
         AppResponseDtoBuilder expectedResponse = appResponseDtoToBuilder(initialDeployment);
-        assertThat(expectedResponse.build()).isEqualTo(initialDeployment);
+        assertThat(expectedResponse.build()).isEqualToIgnoringGivenFields(initialDeployment, "webhookSecret");
         assertThat(checkIfLowercaseAppWorking(initialDeployment.getExposedPort())).isTrue();
 
         //when

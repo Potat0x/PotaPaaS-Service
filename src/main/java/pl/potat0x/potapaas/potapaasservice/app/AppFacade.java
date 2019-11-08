@@ -10,6 +10,7 @@ import pl.potat0x.potapaas.potapaasservice.system.errormessage.ErrorMessage;
 
 import java.util.Collections;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -86,6 +87,15 @@ public class AppFacade {
                 });
     }
 
+    Either<ErrorMessage, AppResponseDto> resetWebhookSecret(String appUuid) {
+        return getAppEntity(appUuid)
+                .flatMap(appEntity -> {
+                    appEntity.setWebhookSecret(generateRandomWebhookSecret());
+                    appRepository.save(appEntity);
+                    return getAppDetails(appUuid);
+                });
+    }
+
     private Either<ErrorMessage, AppResponseDto> redeploy(String appUuid, AppRequestDto requestDto) {
         return getAppManagerForRedeploying(appUuid, requestDto).flatMap(appManager -> getAppEntityForRedeploying(appUuid, requestDto).flatMap(appEntity -> {
                     Long oldAppInstanceId = appEntity.getAppInstance().getId();
@@ -121,8 +131,13 @@ public class AppFacade {
                 .withSourceRepoUrl(requestDto.getSourceRepoUrl())
                 .withSourceBranchName(requestDto.getSourceBranchName())
                 .withAutodeployEnabled(requestDto.isAutodeployEnabled())
+                .withWebhookSecret(generateRandomWebhookSecret())
                 .withCommitHash(requestDto.getCommitHash())
                 .withDatastoreUuid(requestDto.getDatastoreUuid());
+    }
+
+    private String generateRandomWebhookSecret() {
+        return "secret_" + UUID.randomUUID();
     }
 
     private Either<ErrorMessage, AppEntity> getAppEntityForRedeploying(String appUuid, AppRequestDto requestDto) {
@@ -168,6 +183,7 @@ public class AppFacade {
                 .withSourceRepoUrl(appEntity.getSourceRepoUrl())
                 .withSourceBranchName(appEntity.getSourceBranchName())
                 .withAutodeployEnabled(appEntity.isAutodeployEnabled())
+                .withWebhookSecret(appEntity.getWebhookSecret())
                 .withCreatedAt(appEntity.getCreatedAt())
                 .withStatus(app.getStatus().getOrElse("not deployed"))
                 .withExposedPort(app.getPort().map(Integer::parseInt).getOrElse(-1))

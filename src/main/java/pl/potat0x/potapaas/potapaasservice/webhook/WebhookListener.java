@@ -3,6 +3,7 @@ package pl.potat0x.potapaas.potapaasservice.webhook;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vavr.control.Either;
+import io.vavr.control.Option;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
@@ -16,6 +17,9 @@ import pl.potat0x.potapaas.potapaasservice.app.AppResponseDto;
 import pl.potat0x.potapaas.potapaasservice.system.errormessage.ErrorMessage;
 
 import java.io.IOException;
+import java.util.List;
+
+import static pl.potat0x.potapaas.potapaasservice.system.errormessage.CustomErrorMessage.message;
 
 @RestController
 @RequestMapping("/potapaas-push-event-listener")
@@ -43,8 +47,21 @@ class WebhookListener {
 
         System.out.println("Webhook source branch: " + eventSourceBranch + " (" + eventSourceBranch + ")");
 
-        Either<ErrorMessage, AppResponseDto> redeploymentResult = webhookFacade.handleWebhook(appUuid, eventSourceBranch);
-        return ResponseResolver.toResponseEntity(redeploymentResult, HttpStatus.OK);
+        Either<ErrorMessage, String> hexDigest = readHmacDigestHeader(httpEntity)
+                .toEither(message("X-Hub-Signature header not specified. See https://developer.github.com/webhooks/#delivery-headers", 403));
+
+        Either<ErrorMessage, AppResponseDto> appResponseDto = hexDigest.map(digestX -> new HmacVerifier(httpEntity.getBody(), digestX))
+                .flatMap(hmacVerifier -> webhookFacade.handleWebhook(appUuid, eventSourceBranch, hmacVerifier));
+
+        return ResponseResolver.toResponseEntity(appResponseDto, HttpStatus.OK);
+    }
+
+    private Option<String> readHmacDigestHeader(HttpEntity<String> httpEntity) {
+        List<String> responseHmacDigest = httpEntity.getHeaders().get("X-Hub-Signature");
+        if (responseHmacDigest == null || responseHmacDigest.isEmpty()) {
+            return Option.none();
+        }
+        return Option.of(responseHmacDigest.get(0));
     }
 
     private String readEventSourceBranch(HttpEntity<String> httpEntity) throws IOException {

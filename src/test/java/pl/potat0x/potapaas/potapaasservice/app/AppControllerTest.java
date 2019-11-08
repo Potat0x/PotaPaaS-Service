@@ -90,6 +90,29 @@ public class AppControllerTest {
     }
 
     @Test
+    public void shouldResetWebhookSecret() {
+        //given
+        AppRequestDtoBuilder requestDto = validAppRequestDtoBuilder()
+                .withName("tolower-app")
+                .withSourceBranchName("nodejs_tolower");
+        AppResponseDto initialDeployment = appFacade.createAndDeployApp(requestDto.build()).get();
+        String initialWebhookSecret = initialDeployment.getWebhookSecret();
+        String urlToResetSecret = appUrl() + "/" + initialDeployment.getAppUuid() + "/reset-webhook-secret";
+
+        //when
+        ResponseEntity<AppResponseDto> resetResponse = testRestTemplate.postForEntity(urlToResetSecret, null, AppResponseDto.class);
+        AppResponseDto appWithNewWebhookSecret = resetResponse.getBody();
+        String newWebhookSecret = appWithNewWebhookSecret.getWebhookSecret();
+
+        //then
+        assertThat(initialWebhookSecret).isNotBlank();
+        assertThat(resetResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(appWithNewWebhookSecret).isEqualToIgnoringGivenFields(initialDeployment, "webhookSecret");
+        assertThat(newWebhookSecret).isNotBlank();
+        assertThat(newWebhookSecret).isNotEqualTo(initialWebhookSecret);
+    }
+
+    @Test
     public void shouldNotCreateAppDueToInvalidUrl() {
         AppRequestDto appRequestDto = validAppRequestDtoBuilder()
                 .withSourceRepoUrl("this is invalid url")

@@ -9,6 +9,7 @@ import pl.potat0x.potapaas.potapaasservice.app.AppRequestDto;
 import pl.potat0x.potapaas.potapaasservice.app.AppRequestDtoBuilder;
 import pl.potat0x.potapaas.potapaasservice.app.AppResponseDto;
 import pl.potat0x.potapaas.potapaasservice.system.errormessage.ErrorMessage;
+import pl.potat0x.potapaas.potapaasservice.system.exceptionmapper.ExceptionMapper;
 import pl.potat0x.potapaas.potapaasservice.validator.UuidValidator;
 
 import static io.vavr.API.*;
@@ -25,7 +26,7 @@ class WebhookFacade {
         this.appFacade = appFacade;
     }
 
-    Either<ErrorMessage, AppResponseDto> handleWebhook(String appUuid, String eventSourceBranch) {
+    Either<ErrorMessage, AppResponseDto> handleWebhook(String appUuid, String eventSourceBranch, HmacVerifier hmacVerifier) {
 
         if (!UuidValidator.checkIfValid(appUuid)) {
             return Either.left(message(appUuid + " is not a valid UUID", 400));
@@ -41,6 +42,14 @@ class WebhookFacade {
         }
 
         AppResponseDto appResponseDto = appDetailsEither.get();
+        try {
+            if (!hmacVerifier.isMessageAuthentic(appResponseDto.getWebhookSecret())) {
+                return Either.left(message("Invalid secret", 401));
+            }
+        } catch (Exception e) {
+            return ExceptionMapper.map(e).to(message("Error while request verification", 500));
+        }
+
         Option<String> appCannotBeAutoredeployed = Match(appResponseDto).option(
                 Case($(app -> !app.isAutodeployEnabled()), "Autodeploy is disabled"),
                 Case($(app -> !app.getSourceBranchName().equals(eventSourceBranch)), "Event source branch is different than app source branch")

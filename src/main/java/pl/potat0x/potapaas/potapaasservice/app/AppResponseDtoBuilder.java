@@ -12,6 +12,7 @@ final class AppResponseDtoBuilder {
     private String sourceRepoUrl;
     private String sourceBranchName;
     private boolean autodeployEnabled;
+    private String webhookSecret;
     private LocalDateTime createdAt;
     private String status;
     private int exposedPort;
@@ -19,7 +20,7 @@ final class AppResponseDtoBuilder {
     private String datastoreUuid;
 
     AppResponseDto build() {
-        return new AppResponseDto(appUuid, name, type, sourceRepoUrl, sourceBranchName, autodeployEnabled, createdAt, status, exposedPort, commitHash, datastoreUuid);
+        return new AppResponseDto(appUuid, name, type, sourceRepoUrl, sourceBranchName, autodeployEnabled, webhookSecret, createdAt, status, exposedPort, commitHash, datastoreUuid);
     }
 
     public AppResponseDtoBuilder withAppUuid(String appUuid) {
@@ -49,6 +50,11 @@ final class AppResponseDtoBuilder {
 
     public AppResponseDtoBuilder withAutodeployEnabled(boolean autodeployEnabled) {
         this.autodeployEnabled = autodeployEnabled;
+        return this;
+    }
+
+    public AppResponseDtoBuilder withWebhookSecret(String webhookSecret) {
+        this.webhookSecret = webhookSecret;
         return this;
     }
 

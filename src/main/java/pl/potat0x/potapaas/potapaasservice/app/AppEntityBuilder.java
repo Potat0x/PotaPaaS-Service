@@ -11,11 +11,12 @@ final class AppEntityBuilder {
     private String sourceRepoUrl;
     private String sourceBranchName;
     private boolean autodeployEnabled;
+    private String webhookSecret;
     private String commitHash;
     private String datastoreUuid;
 
     AppEntity build() {
-        return new AppEntity(appInstance, type, uuid, name, sourceRepoUrl, sourceBranchName, autodeployEnabled, commitHash, datastoreUuid);
+        return new AppEntity(appInstance, type, uuid, name, sourceRepoUrl, sourceBranchName, autodeployEnabled, webhookSecret, commitHash, datastoreUuid);
     }
 
     AppEntityBuilder withAppInstance(AppInstanceEntity appInstance) {
@@ -50,6 +51,11 @@ final class AppEntityBuilder {
 
     AppEntityBuilder withAutodeployEnabled(boolean autodeployEnabled) {
         this.autodeployEnabled = autodeployEnabled;
+        return this;
+    }
+
+    public AppEntityBuilder withWebhookSecret(String webhookSecret) {
+        this.webhookSecret = webhookSecret;
         return this;
     }
 

@@ -36,11 +36,12 @@ class AppEntity {
     private String sourceRepoUrl;
     private String sourceBranchName;
     private boolean autodeployEnabled;
+    private String webhookSecret;
     private String commitHash;
     private String datastoreUuid;
     private LocalDateTime createdAt;
 
-    public AppEntity(AppInstanceEntity appInstance, AppType type, String uuid, String name, String sourceRepoUrl, String sourceBranchName, boolean autodeployEnabled, String commitHash, String datastoreUuid) {
+    public AppEntity(AppInstanceEntity appInstance, AppType type, String uuid, String name, String sourceRepoUrl, String sourceBranchName, boolean autodeployEnabled, String webhookSecret, String commitHash, String datastoreUuid) {
         this.appInstance = appInstance;
         this.type = type;
         this.uuid = uuid;
@@ -48,6 +49,7 @@ class AppEntity {
         this.sourceRepoUrl = sourceRepoUrl;
         this.sourceBranchName = sourceBranchName;
         this.autodeployEnabled = autodeployEnabled;
+        this.webhookSecret = webhookSecret;
         this.commitHash = commitHash;
         this.datastoreUuid = datastoreUuid;
         this.createdAt = LocalDateTime.now();
@@ -84,6 +86,10 @@ class AppEntity {
         return autodeployEnabled;
     }
 
+    public String getWebhookSecret() {
+        return webhookSecret;
+    }
+
     public String getCommitHash() {
         return commitHash;
     }
@@ -118,6 +124,10 @@ class AppEntity {
 
     public void setAutodeployEnabled(boolean autodeployEnabled) {
         this.autodeployEnabled = autodeployEnabled;
+    }
+
+    public void setWebhookSecret(String webhookSecret) {
+        this.webhookSecret = webhookSecret;
     }
 
     public void setCommitHash(String commitHash) {

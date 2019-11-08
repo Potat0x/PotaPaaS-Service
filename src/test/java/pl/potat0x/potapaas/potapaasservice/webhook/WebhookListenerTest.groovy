@@ -4,8 +4,12 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.boot.web.server.LocalServerPort
+import org.springframework.http.HttpEntity
+import org.springframework.http.HttpMethod
+import org.springframework.http.ResponseEntity
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.ContextConfiguration
+import org.springframework.util.LinkedMultiValueMap
 import pl.potat0x.potapaas.potapaasservice.PotapaasServiceApplication
 import pl.potat0x.potapaas.potapaasservice.app.AppFacade
 import pl.potat0x.potapaas.potapaasservice.app.AppRequestDto
@@ -15,6 +19,10 @@ import pl.potat0x.potapaas.potapaasservice.core.AppType
 import pl.potat0x.potapaas.potapaasservice.system.PotapaasConfig
 import spock.lang.Specification
 
+import javax.crypto.Mac
+import javax.crypto.spec.SecretKeySpec
+
+import static org.apache.commons.codec.binary.Hex.encodeHexString
 import static org.assertj.core.api.Assertions.assertThat
 
 @ContextConfiguration
@@ -42,7 +50,8 @@ class WebhookListenerTest extends Specification {
         assertThat(testRestTemplate.getForEntity(appUrl, String.class).getBody()).isEqualTo("Commit 1")
 
         when: "webhook payload is received"
-        assertThat(testRestTemplate.postForEntity(webhookListenerUrl(appUuid), webhookPayload, String.class).getStatusCode().value()).isEqualTo(expectedWebhookStatusCode)
+        def webhookSecret = appResponseDto.webhookSecret + (!useInvalidSecret ? "" : "_invalid_secret")
+        assertThat(webhookRequest(appUuid, webhookPayload, webhookSecret).getStatusCodeValue()).isEqualTo(expectedWebhookStatusCode)
 
         then: "latest commit should be deployed (commit 4) if autodeploy is enabled and app branch name is the same as in payload"
         waitForAppStart()
@@ -50,22 +59,44 @@ class WebhookListenerTest extends Specification {
         assertThat(testRestTemplate.getForEntity(currentAppUrl, String.class).getBody()).isEqualTo(expectedAppResponse)
 
         where:
-        autodeployEnabled | webhookPayload                                      | expectedWebhookStatusCode | expectedAppResponse
-        true              | '{ "ref": "refs/heads/webhook_push_event_nodejs" }' | 200                       | "Commit 4"
-        false             | '{ "ref": "refs/heads/webhook_push_event_nodejs" }' | 409                       | "Commit 1"
-        true              | '{ "ref": "refs/heads/nodejs_test_ok" }'            | 409                       | "Commit 1"
+        autodeployEnabled | webhookPayload                                      | useInvalidSecret | expectedWebhookStatusCode | expectedAppResponse
+        true              | '{ "ref": "refs/heads/webhook_push_event_nodejs" }' | false            | 200                       | "Commit 4"
+        true              | '{ "ref": "refs/heads/webhook_push_event_nodejs" }' | true             | 401                       | "Commit 1"
+        false             | '{ "ref": "refs/heads/webhook_push_event_nodejs" }' | false            | 409                       | "Commit 1"
+        true              | '{ "ref": "refs/heads/nodejs_test_ok" }'            | false            | 409                       | "Commit 1"
     }
 
-    def "should return bad request"() {
+    def "should return 400 error when request body or URL is invalid"() {
         expect: "webhook payload is received"
-        assertThat(testRestTemplate.postForEntity(webhookListenerUrl(appUuid), webhookPayload, String.class).getStatusCode().value()).isEqualTo(expectedWebhookStatusCode)
+        webhookRequest(appUuid, webhookPayload, "dummy secret").getStatusCode().value() == expectedWebhookStatusCode
 
         where:
         appUuid        | webhookPayload                                      | expectedWebhookStatusCode
         validUuid      | '{}'                                                | 400
-        validUuid      | 'asd'                                               | 400
+        validUuid      | '{ invalid json'                                    | 400
         validUuid      | ''                                                  | 400
         "invalid uuid" | '{ "ref": "refs/heads/webhook_push_event_nodejs" }' | 400
+    }
+
+    def "should return 403 when HMAC header not found"() {
+        given:
+        def webhookPayload = '{ "ref": "refs/heads/webhook_push_event_nodejs" }'
+
+        expect:
+        testRestTemplate.postForEntity(webhookListenerUrl(validUuid), webhookPayload, String.class).getStatusCode().value() == 403
+    }
+
+    private ResponseEntity webhookRequest(String appUuid, String body, String webhookSecret) {
+        def headers = new LinkedMultiValueMap<String, String>()
+        headers.add("X-Hub-Signature", calcHmacSha1HexDigest(body, webhookSecret))
+        return testRestTemplate.exchange(webhookListenerUrl(appUuid), HttpMethod.POST, new HttpEntity<String>(body, headers), AppResponseDto.class)
+    }
+
+    private static String calcHmacSha1HexDigest(String message, String secret) {
+        SecretKeySpec keySpec = new SecretKeySpec(secret.getBytes(), "HmacSHA1")
+        Mac mac = Mac.getInstance("HmacSHA1")
+        mac.init(keySpec)
+        return encodeHexString(mac.doFinal(message.getBytes()))
     }
 
     private AppResponseDto createAppWithAutoDeployEnabled(boolean autodeployEnabled) {

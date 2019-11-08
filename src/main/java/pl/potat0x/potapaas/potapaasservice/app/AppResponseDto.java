@@ -17,6 +17,7 @@ public final class AppResponseDto {
     private final String sourceRepoUrl;
     private final String sourceBranchName;
     private final boolean autodeployEnabled;
+    private final String webhookSecret;
     private final LocalDateTime createdAt;
     private final String status;
     private final int exposedPort;
@@ -30,6 +31,7 @@ public final class AppResponseDto {
                           @JsonProperty("sourceRepoUrl") String sourceRepoUrl,
                           @JsonProperty("sourceBranchName") String sourceBranchName,
                           @JsonProperty("autodeployEnabled") boolean autodeployEnabled,
+                          @JsonProperty("webhookSecret") String webhookSecret,
                           @JsonProperty("createdAt") LocalDateTime createdAt,
                           @JsonProperty("status") String status,
                           @JsonProperty("exposedPort") int exposedPort,
@@ -41,6 +43,7 @@ public final class AppResponseDto {
         this.sourceRepoUrl = sourceRepoUrl;
         this.sourceBranchName = sourceBranchName;
         this.autodeployEnabled = autodeployEnabled;
+        this.webhookSecret = webhookSecret;
         this.createdAt = createdAt;
         this.status = status;
         this.exposedPort = exposedPort;
@@ -70,6 +73,10 @@ public final class AppResponseDto {
 
     public boolean isAutodeployEnabled() {
         return autodeployEnabled;
+    }
+
+    public String getWebhookSecret() {
+        return webhookSecret;
     }
 
     public LocalDateTime getCreatedAt() {

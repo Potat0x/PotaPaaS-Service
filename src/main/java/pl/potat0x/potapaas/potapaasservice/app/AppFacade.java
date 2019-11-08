@@ -87,13 +87,18 @@ public class AppFacade {
                 });
     }
 
-    Either<ErrorMessage, AppResponseDto> resetWebhookSecret(String appUuid) {
-        return getAppEntity(appUuid)
-                .flatMap(appEntity -> {
-                    appEntity.setWebhookSecret(generateRandomWebhookSecret());
-                    appRepository.save(appEntity);
-                    return getAppDetails(appUuid);
-                });
+    Either<ErrorMessage, AppResponseDto> changeWebhookSecret(String appUuid, WebhookSecretRequestDto secretRequestDto) {
+        if (isNotNullAndEmpty(secretRequestDto.getSecret())) {
+            return Either.left(message("Secret cannot be empty", 400));
+        } else {
+            return getAppEntity(appUuid)
+                    .flatMap(appEntity -> {
+                        String newSecret = getSecretFromRequestIfNotNullElseCreateRandom(secretRequestDto);
+                        appEntity.setWebhookSecret(newSecret);
+                        appRepository.save(appEntity);
+                        return getAppDetails(appUuid);
+                    });
+        }
     }
 
     private Either<ErrorMessage, AppResponseDto> redeploy(String appUuid, AppRequestDto requestDto) {
@@ -134,6 +139,14 @@ public class AppFacade {
                 .withWebhookSecret(generateRandomWebhookSecret())
                 .withCommitHash(requestDto.getCommitHash())
                 .withDatastoreUuid(requestDto.getDatastoreUuid());
+    }
+
+    private String getSecretFromRequestIfNotNullElseCreateRandom(WebhookSecretRequestDto secretRequestDto) {
+        return secretRequestDto.getSecret() != null ? secretRequestDto.getSecret() : generateRandomWebhookSecret();
+    }
+
+    private boolean isNotNullAndEmpty(String secret) {
+        return secret != null && secret.isEmpty();
     }
 
     private String generateRandomWebhookSecret() {

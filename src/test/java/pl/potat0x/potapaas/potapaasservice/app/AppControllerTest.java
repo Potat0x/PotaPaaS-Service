@@ -90,26 +90,46 @@ public class AppControllerTest {
     }
 
     @Test
-    public void shouldResetWebhookSecret() {
+    public void shouldChangeWebhookSecret() {
         //given
         AppRequestDtoBuilder requestDto = validAppRequestDtoBuilder()
                 .withName("tolower-app")
                 .withSourceBranchName("nodejs_tolower");
         AppResponseDto initialDeployment = appFacade.createAndDeployApp(requestDto.build()).get();
         String initialWebhookSecret = initialDeployment.getWebhookSecret();
-        String urlToResetSecret = appUrl() + "/" + initialDeployment.getAppUuid() + "/reset-webhook-secret";
+        String urlToChangeSecret = appUrl() + "/" + initialDeployment.getAppUuid() + "/change-webhook-secret";
 
-        //when
-        ResponseEntity<AppResponseDto> resetResponse = testRestTemplate.postForEntity(urlToResetSecret, null, AppResponseDto.class);
-        AppResponseDto appWithNewWebhookSecret = resetResponse.getBody();
-        String newWebhookSecret = appWithNewWebhookSecret.getWebhookSecret();
+        //when secret is empty -> error should be returned
+        String newSecret = "";
+        ResponseEntity<AppResponseDto> changeSecretResponse = testRestTemplate.postForEntity(urlToChangeSecret, new WebhookSecretRequestDto(newSecret), AppResponseDto.class);
+
+        //then
+        assertThat(changeSecretResponse.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(appFacade.getAppDetails(initialDeployment.getAppUuid()).get()).isEqualTo(initialDeployment);
+
+        //when secret is not specified in request -> random secret should be set
+        newSecret = null;
+        changeSecretResponse = testRestTemplate.postForEntity(urlToChangeSecret, new WebhookSecretRequestDto(newSecret), AppResponseDto.class);
+        AppResponseDto appWithNewWebhookSecret = changeSecretResponse.getBody();
+        String webhookSecret = appWithNewWebhookSecret.getWebhookSecret();
 
         //then
         assertThat(initialWebhookSecret).isNotBlank();
-        assertThat(resetResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(changeSecretResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(appWithNewWebhookSecret).isEqualToIgnoringGivenFields(initialDeployment, "webhookSecret");
-        assertThat(newWebhookSecret).isNotBlank();
-        assertThat(newWebhookSecret).isNotEqualTo(initialWebhookSecret);
+        assertThat(webhookSecret).isNotBlank();
+        assertThat(webhookSecret).isNotEqualTo(initialWebhookSecret);
+
+        //when secret is specified in request -> set it
+        newSecret = "new-secret";
+        changeSecretResponse = testRestTemplate.postForEntity(urlToChangeSecret, new WebhookSecretRequestDto(newSecret), AppResponseDto.class);
+        appWithNewWebhookSecret = changeSecretResponse.getBody();
+        webhookSecret = appWithNewWebhookSecret.getWebhookSecret();
+
+        //then
+        assertThat(webhookSecret).isEqualTo("new-secret");
+        assertThat(changeSecretResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(appWithNewWebhookSecret).isEqualToIgnoringGivenFields(initialDeployment, "webhookSecret");
     }
 
     @Test

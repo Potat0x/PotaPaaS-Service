@@ -79,12 +79,12 @@ class AppController {
         return ResponseResolver.toResponseEntity(facade.redeployApp(appUuid, requestDto), HttpStatus.OK);
     }
 
-    @PostMapping("/{appUuid}/reset-webhook-secret")
-    ResponseEntity resetWebhookSecret(@PathVariable String appUuid) {
+    @PostMapping("/{appUuid}/change-webhook-secret")
+    ResponseEntity changeWebhookSecret(@PathVariable String appUuid, @RequestBody WebhookSecretRequestDto newSecret) {
         if (!UuidValidator.checkIfValid(appUuid)) {
             return invalidUuidResponseEntity(appUuid);
         }
-        return ResponseResolver.toResponseEntity(facade.resetWebhookSecret(appUuid), HttpStatus.OK);
+        return ResponseResolver.toResponseEntity(facade.changeWebhookSecret(appUuid, newSecret), HttpStatus.OK);
     }
 
     private ResponseEntity invalidUuidResponseEntity(String invalidUuid) {

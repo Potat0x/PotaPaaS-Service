@@ -50,7 +50,7 @@ class WebhookListener {
         Either<ErrorMessage, String> hexDigest = readHmacDigestHeader(httpEntity)
                 .toEither(message("X-Hub-Signature header not specified. See https://developer.github.com/webhooks/#delivery-headers", 403));
 
-        Either<ErrorMessage, AppResponseDto> appResponseDto = hexDigest.map(digestX -> new HmacVerifier(httpEntity.getBody(), digestX))
+        Either<ErrorMessage, AppResponseDto> appResponseDto = hexDigest.map(sha1HexDigest -> new Sha1HmacVerifier(httpEntity.getBody(), sha1HexDigest))
                 .flatMap(hmacVerifier -> webhookFacade.handleWebhook(appUuid, eventSourceBranch, hmacVerifier));
 
         return ResponseResolver.toResponseEntity(appResponseDto, HttpStatus.OK);

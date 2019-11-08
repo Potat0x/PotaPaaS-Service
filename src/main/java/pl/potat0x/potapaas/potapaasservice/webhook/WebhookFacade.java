@@ -26,7 +26,7 @@ class WebhookFacade {
         this.appFacade = appFacade;
     }
 
-    Either<ErrorMessage, AppResponseDto> handleWebhook(String appUuid, String eventSourceBranch, HmacVerifier hmacVerifier) {
+    Either<ErrorMessage, AppResponseDto> handleWebhook(String appUuid, String eventSourceBranch, Sha1HmacVerifier hmacVerifier) {
 
         if (!UuidValidator.checkIfValid(appUuid)) {
             return Either.left(message(appUuid + " is not a valid UUID", 400));

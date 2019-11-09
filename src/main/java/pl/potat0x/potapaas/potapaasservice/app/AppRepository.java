@@ -4,4 +4,8 @@ import org.springframework.data.repository.CrudRepository;
 
 interface AppRepository extends CrudRepository<AppEntity, Long> {
     AppEntity findOneByUuid(String uuid);
+
+    long countByName(String name);
+
+    long countByUuidAndName(String uuid, String name);
 }

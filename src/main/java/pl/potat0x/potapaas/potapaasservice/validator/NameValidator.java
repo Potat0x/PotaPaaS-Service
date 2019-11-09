@@ -11,7 +11,7 @@ import static io.vavr.API.*;
 public final class NameValidator {
     private static final Pattern namePattern = Pattern.compile("[a-z0-9][a-z0-9\\-]*[a-z0-9]");
     private static final int minLength = 2;
-    private static final int maxLength = 32;
+    private static final int maxLength = 63;
 
     public static Validation<String, String> validate(String name, String propertyName) {
         return validate(name, propertyName, false);

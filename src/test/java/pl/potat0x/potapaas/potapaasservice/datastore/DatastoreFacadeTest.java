@@ -17,6 +17,7 @@ import pl.potat0x.potapaas.potapaasservice.validator.UuidValidator;
 
 import java.time.LocalDateTime;
 import java.util.Set;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -88,7 +89,7 @@ public class DatastoreFacadeTest {
 
     private AppResponseDto createAppAndAttachItToDatastore(String datastoreUuid) {
         AppRequestDto appRequestDto = new AppRequestDtoBuilder()
-                .withName("test-app")
+                .withName("test-app" + UUID.randomUUID())
                 .withType(AppType.NODEJS.toString())
                 .withSourceRepoUrl("https://github.com/Potat0x/potapaas-test-cases")
                 .withSourceBranchName("nodejs_test_ok")

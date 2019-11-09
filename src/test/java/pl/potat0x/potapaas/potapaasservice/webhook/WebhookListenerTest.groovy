@@ -117,7 +117,7 @@ class WebhookListenerTest extends Specification {
 
     private static AppRequestDtoBuilder validAppRequestDtoBuilder() {
         return new AppRequestDtoBuilder()
-                .withName("webhook-test-app")
+                .withName("webhook-test-app" + UUID.randomUUID())
                 .withType(AppType.NODEJS.toString())
                 .withSourceRepoUrl("https://github.com/Potat0x/potapaas-test-cases")
                 .withSourceBranchName("webhook_push_event_nodejs")

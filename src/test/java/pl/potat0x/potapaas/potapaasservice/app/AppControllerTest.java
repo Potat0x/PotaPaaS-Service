@@ -17,6 +17,7 @@ import pl.potat0x.potapaas.potapaasservice.datastore.DatastoreType;
 import pl.potat0x.potapaas.potapaasservice.system.PotapaasConfig;
 
 import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -93,7 +94,7 @@ public class AppControllerTest {
     public void shouldChangeWebhookSecret() {
         //given
         AppRequestDtoBuilder requestDto = validAppRequestDtoBuilder()
-                .withName("tolower-app")
+                .withName("tolower-app" + UUID.randomUUID())
                 .withSourceBranchName("nodejs_tolower");
         AppResponseDto initialDeployment = appFacade.createAndDeployApp(requestDto.build()).get();
         String initialWebhookSecret = initialDeployment.getWebhookSecret();
@@ -222,7 +223,7 @@ public class AppControllerTest {
 
     private AppRequestDtoBuilder validAppRequestDtoBuilder() {
         return new AppRequestDtoBuilder()
-                .withName("app-name-test123")
+                .withName("app-name-test123" + UUID.randomUUID())
                 .withType(AppType.NODEJS.toString())
                 .withSourceRepoUrl("https://github.com/Potat0x/potapaas-test-cases")
                 .withSourceBranchName("nodejs_test_ok");

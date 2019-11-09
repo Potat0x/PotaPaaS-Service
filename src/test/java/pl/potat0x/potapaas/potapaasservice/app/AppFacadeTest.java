@@ -1,5 +1,6 @@
 package pl.potat0x.potapaas.potapaasservice.app;
 
+import io.vavr.control.Either;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 import pl.potat0x.potapaas.potapaasservice.core.AppType;
 import pl.potat0x.potapaas.potapaasservice.system.PotapaasConfig;
 import pl.potat0x.potapaas.potapaasservice.system.errormessage.ErrorMessage;
+
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -142,6 +145,31 @@ public class AppFacadeTest {
         assertThat(checkIfLowercaseAppWorking(initialDeployment.getExposedPort())).isTrue();
     }
 
+    @Test
+    public void shouldNotAllowToDeployTwoAppsWithSameName() {
+        //given
+        AppResponseDto app1 = deployExampleApp();
+        AppResponseDto app2 = deployExampleApp();
+        AppRequestDto redeployRequestDtoWithNameOfApp1 = validAppRequestDtoBuilder()
+                .withName(app1.getName())
+                .build();
+
+        //when: deploy new app with same name as app1
+        Either<ErrorMessage, AppResponseDto> deployNewAppResponse = appFacade.createAndDeployApp(redeployRequestDtoWithNameOfApp1);
+        //then
+        assertThat(deployNewAppResponse.getLeft().getHttpStatus()).isEqualTo(409);
+
+        //when: redeploy app2 with name same as app1
+        Either<ErrorMessage, AppResponseDto> app2redeployResponse = appFacade.redeployApp(app2.getAppUuid(), redeployRequestDtoWithNameOfApp1);
+        //then
+        assertThat(app2redeployResponse.getLeft().getHttpStatus()).isEqualTo(409);
+
+        //when: redeploy app1 without changing name
+        Either<ErrorMessage, AppResponseDto> app1RedeployResponse = appFacade.redeployApp(app1.getAppUuid(), redeployRequestDtoWithNameOfApp1);
+        //then
+        assertThat(app1RedeployResponse.get()).isEqualToIgnoringGivenFields(app1, "exposedPort");
+    }
+
     private void waitForAppStart() throws InterruptedException {
         Thread.sleep(PotapaasConfig.getInt("app_startup_waiting_time_in_millis"));
     }
@@ -167,9 +195,15 @@ public class AppFacadeTest {
 
     private AppResponseDto deployTolowerApp() {
         AppRequestDtoBuilder requestDto = validAppRequestDtoBuilder()
-                .withName("tolower-app")
+                .withName("tolower-app" + UUID.randomUUID())
                 .withSourceBranchName("nodejs_tolower")
                 .withCommitHash("016a9fb7a6165d693aaafa1d3164474b564b46e9");
+        return appFacade.createAndDeployApp(requestDto.build()).get();
+    }
+
+    private AppResponseDto deployExampleApp() {
+        AppRequestDtoBuilder requestDto = validAppRequestDtoBuilder()
+                .withName("facade-test-app" + UUID.randomUUID());
         return appFacade.createAndDeployApp(requestDto.build()).get();
     }
 

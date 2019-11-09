@@ -35,6 +35,10 @@ public class AppFacade {
     }
 
     public Either<ErrorMessage, AppResponseDto> createAndDeployApp(AppRequestDto requestDto) {
+        if (!isAppNameAvailable(requestDto.getName())) {
+            return Either.left(appNameNotAvailableMessage(requestDto.getName()));
+        }
+
         AppManager appManager = buildAppManagerForNewApp(requestDto);
         return appManager.deploy().map(appUuid -> {
             AppEntity appEntity = buildAppEntity(appManager, requestDto).build();
@@ -102,6 +106,10 @@ public class AppFacade {
     }
 
     private Either<ErrorMessage, AppResponseDto> redeploy(String appUuid, AppRequestDto requestDto) {
+        if (checkIfAppCanBeRedeployedWithGivenName(appUuid, requestDto.getName())) {
+            return Either.left(appNameNotAvailableMessage(requestDto.getName()));
+        }
+
         return getAppManagerForRedeploying(appUuid, requestDto).flatMap(appManager -> getAppEntityForRedeploying(appUuid, requestDto).flatMap(appEntity -> {
                     Long oldAppInstanceId = appEntity.getAppInstance().getId();
                     return appManager.redeploy().map(oldContainerId -> {
@@ -168,6 +176,22 @@ public class AppFacade {
             appEntity.setDatastoreUuid(requestDto.getDatastoreUuid());
             return appEntity;
         });
+    }
+
+    private boolean isAppNameAvailable(String name) {
+        return appRepository.countByName(name) == 0;
+    }
+
+    private boolean checkIfAppIsOwnerOfGivenName(String appUuid, String name) {
+        return appRepository.countByUuidAndName(appUuid, name) == 1;
+    }
+
+    private ErrorMessage appNameNotAvailableMessage(String name) {
+        return message("App name \"" + name + "\" is not available", 409);
+    }
+
+    private boolean checkIfAppCanBeRedeployedWithGivenName(String appUuid, String name) {
+        return !isAppNameAvailable(name) && !checkIfAppIsOwnerOfGivenName(appUuid, name);
     }
 
     private Either<ErrorMessage, AppManager> getAppManagerForRedeploying(String appUuid, AppRequestDto appRequestDto) {

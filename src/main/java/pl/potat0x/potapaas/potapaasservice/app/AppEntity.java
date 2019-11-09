@@ -3,6 +3,7 @@ package pl.potat0x.potapaas.potapaasservice.app;
 import pl.potat0x.potapaas.potapaasservice.core.AppType;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -13,6 +14,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -32,6 +34,7 @@ class AppEntity {
 
     private String uuid;
 
+    @Column(unique = true)
     private String name;
     private String sourceRepoUrl;
     private String sourceBranchName;

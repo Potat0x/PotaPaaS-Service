@@ -46,6 +46,7 @@ public class AppFacadeTest {
         AppResponseDto expectedResponseAfterRedeployment = expectedResponse
                 .withName("toupper-app")
                 .withSourceBranchName("nodejs_toupper")
+                .withCommitHash("558a76caf4b6bd1f9ccd65043423930dc54ca3d2")
                 .withAutodeployEnabled(true)
                 .withWebhookSecret(initialDeployment.getWebhookSecret())
                 .build();
@@ -66,6 +67,7 @@ public class AppFacadeTest {
         String commitToDeploy2 = "50df21e";
         String logExpectedInTest2 = "DEPLOY_COMMIT_TEST_2";
         final String commitToDeploy3 = null;
+        final String commitToDeploy3ExpectedHash = "8b887b23ad79f23c288b20b338de5b8b08e7acce";
         String logExpectedInTest3 = "DEPLOY_COMMIT_TEST_3";
 
         //when
@@ -78,11 +80,12 @@ public class AppFacadeTest {
         waitForAppStart();
 
         //then
-        assertThat(appResponseDto.getCommitHash()).isEqualTo(commitToDeploy1);
-        assertThat(appFacade.getAppDetails(appUuid).get().getCommitHash()).isEqualTo(commitToDeploy1);
+        assertThat(appResponseDto.getCommitHash()).startsWith(commitToDeploy1);
+        assertThat(appFacade.getAppDetails(appUuid).get().getCommitHash()).startsWith(commitToDeploy1);
         assertThat(appFacade.getAppLogs(appUuid).get()).contains(logExpectedInTest1);
         assertThat(appFacade.getAppLogs(appUuid).get()).doesNotContain(logExpectedInTest2);
         assertThat(appFacade.getAppLogs(appUuid).get()).doesNotContain(logExpectedInTest3);
+
 
         //when
         AppRequestDtoBuilder redeployRequestDto = validAppRequestDtoBuilder()
@@ -93,8 +96,8 @@ public class AppFacadeTest {
         waitForAppStart();
 
         //then
-        assertThat(redeployResponseDto.getCommitHash()).isEqualTo(commitToDeploy2);
-        assertThat(appFacade.getAppDetails(appUuid).get().getCommitHash()).isEqualTo(commitToDeploy2);
+        assertThat(redeployResponseDto.getCommitHash()).startsWith(commitToDeploy2);
+        assertThat(appFacade.getAppDetails(appUuid).get().getCommitHash()).startsWith(commitToDeploy2);
         assertThat(appFacade.getAppLogs(appUuid).get()).contains(logExpectedInTest2);
         assertThat(appFacade.getAppLogs(appUuid).get()).doesNotContain(logExpectedInTest1);
         assertThat(appFacade.getAppLogs(appUuid).get()).doesNotContain(logExpectedInTest3);
@@ -109,8 +112,8 @@ public class AppFacadeTest {
         waitForAppStart();
 
         //then
-        assertThat(redeployWithNoCommitSpecifiedResponseDto.getCommitHash()).isEqualTo(commitToDeploy3);
-        assertThat(appFacade.getAppDetails(appUuid).get().getCommitHash()).isEqualTo(commitToDeploy3);
+        assertThat(redeployWithNoCommitSpecifiedResponseDto.getCommitHash()).isEqualTo(commitToDeploy3ExpectedHash);
+        assertThat(appFacade.getAppDetails(appUuid).get().getCommitHash()).isEqualTo(commitToDeploy3ExpectedHash);
         assertThat(appFacade.getAppLogs(appUuid).get()).contains(logExpectedInTest3);
         assertThat(appFacade.getAppLogs(appUuid).get()).doesNotContain(logExpectedInTest1);
         assertThat(appFacade.getAppLogs(appUuid).get()).doesNotContain(logExpectedInTest2);
@@ -165,7 +168,8 @@ public class AppFacadeTest {
     private AppResponseDto deployTolowerApp() {
         AppRequestDtoBuilder requestDto = validAppRequestDtoBuilder()
                 .withName("tolower-app")
-                .withSourceBranchName("nodejs_tolower");
+                .withSourceBranchName("nodejs_tolower")
+                .withCommitHash("016a9fb7a6165d693aaafa1d3164474b564b46e9");
         return appFacade.createAndDeployApp(requestDto.build()).get();
     }
 
@@ -176,6 +180,7 @@ public class AppFacadeTest {
                 .withType(responseDto.getType())
                 .withSourceRepoUrl(responseDto.getSourceRepoUrl())
                 .withSourceBranchName(responseDto.getSourceBranchName())
+                .withCommitHash(responseDto.getCommitHash())
                 .withCreatedAt(responseDto.getCreatedAt())
                 .withStatus(responseDto.getStatus())
                 .withExposedPort(responseDto.getExposedPort());

@@ -185,4 +185,8 @@ public final class AppManager {
             return ExceptionMapper.map(e).of();
         }
     }
+
+    public String getCommitHash() {
+        return gitCloner.getHashOfCurrentCommit(clonedRepoDir).getOrElse("");
+    }
 }

@@ -7,4 +7,6 @@ public interface GitCloner {
     Either<ErrorMessage, String> cloneBranch(String repositoryUri, String branchName, String targetPath);
 
     Either<ErrorMessage, String> checkout(String repositoryDir, String commitHash);
+
+    Either<ErrorMessage, String> getHashOfCurrentCommit(String repositoryDir);
 }

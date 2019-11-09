@@ -26,16 +26,20 @@ public class JGitClonerTest {
     }
 
     @Test
-    public void shouldClonePublicRepo() {
+    public void shouldClonePublicRepoAndCheckoutToGivenCommit() {
         String repoUrl = "https://github.com/potat0x/potapaas-test-cases";
 
-        String clonedRepoDir = cloner.cloneBranch(repoUrl, "master", temporaryReposDirectory).get();
+        String clonedRepoDir = cloner.cloneBranch(repoUrl, "webhook_push_event", temporaryReposDirectory).get();
 
         Condition<String> containsGitRepo = new Condition<>(
                 path -> Paths.get(path, ".git").toFile().isDirectory(),
                 "contains .git directory"
         );
         assertThat(clonedRepoDir).satisfies(containsGitRepo);
+        assertThat(cloner.getHashOfCurrentCommit(clonedRepoDir).get()).isEqualTo("f45320e1058693c832a17e3d922c7b0444adbe93");
+
+        cloner.checkout(clonedRepoDir, "199da24").get();
+        assertThat(cloner.getHashOfCurrentCommit(clonedRepoDir).get()).isEqualTo("199da24b6518931c41f373bc05f9faa322acbce6");
     }
 
     @Test(expected = NoSuchElementException.class)

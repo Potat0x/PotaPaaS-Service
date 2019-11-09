@@ -106,6 +106,7 @@ public class AppFacade {
                     Long oldAppInstanceId = appEntity.getAppInstance().getId();
                     return appManager.redeploy().map(oldContainerId -> {
                         appEntity.setAppInstance(new AppInstanceEntity(appManager.getContainerId(), appManager.getImageId()));
+                        appEntity.setCommitHash(appManager.getCommitHash());
                         appRepository.save(appEntity);
                         appInstanceRepository.deleteById(oldAppInstanceId);
                         return buildResponseDto(appManager, appEntity);
@@ -137,7 +138,7 @@ public class AppFacade {
                 .withSourceBranchName(requestDto.getSourceBranchName())
                 .withAutodeployEnabled(requestDto.isAutodeployEnabled())
                 .withWebhookSecret(generateRandomWebhookSecret())
-                .withCommitHash(requestDto.getCommitHash())
+                .withCommitHash(appManager.getCommitHash())
                 .withDatastoreUuid(requestDto.getDatastoreUuid());
     }
 

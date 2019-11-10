@@ -145,6 +145,7 @@ public final class AppManager {
     private Either<ErrorMessage, String> runContainer(String imageId, DockerImageManager.BuildType buildType) {
         HostConfig hostConfig = HostConfig.builder()
                 .publishAllPorts(buildType == DockerImageManager.BuildType.RELEASE)
+                .networkMode(PotapaasConfig.get("traefik_network_name"))
                 .build();
 
         Map<String, String> labels = new HashMap<>();
@@ -154,6 +155,9 @@ public final class AppManager {
         labels.put(PotapaasConfig.get("container_label_app_git_repo_branch"), requestDto.getSourceBranchName());
         labels.put(PotapaasConfig.get("container_label_app_type"), requestDto.getType());
         labels.put(PotapaasConfig.get("container_label_build_type"), buildType.toString());
+
+        labels.put("traefik.frontend.rule", "Host:" + requestDto.getName() + ".localhost");
+        labels.put("traefik.docker.network", PotapaasConfig.get("traefik_network_name"));
 
         ContainerConfig.Builder config = ContainerConfig.builder()
                 .image(imageId)

@@ -2,6 +2,7 @@ package pl.potat0x.potapaas.potapaasservice.user;
 
 import io.vavr.control.Either;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import pl.potat0x.potapaas.potapaasservice.system.errormessage.ErrorMessage;
 
@@ -13,10 +14,12 @@ import static pl.potat0x.potapaas.potapaasservice.system.errormessage.CustomErro
 public class UserFacade {
 
     private final UserRepository userRepository;
+    private final BCryptPasswordEncoder passwordEncoder;
 
     @Autowired
-    UserFacade(UserRepository userRepository) {
+    UserFacade(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     Either<ErrorMessage, UserResponseDto> getUserDetails(String username) {
@@ -33,7 +36,7 @@ public class UserFacade {
             return Either.left(message("Username \"" + requestDto.getUsername() + "\" is not available", 409));
         }
 
-        UserEntity createdUser = userRepository.save(new UserEntity(UUID.randomUUID().toString(), requestDto.getUsername(), requestDto.getPassword(), requestDto.getEmail()));
+        UserEntity createdUser = userRepository.save(new UserEntity(UUID.randomUUID().toString(), requestDto.getUsername(), encodePassword(requestDto.getPassword()), requestDto.getEmail()));
         return Either.right(createResponseDto(createdUser));
     }
 
@@ -43,8 +46,9 @@ public class UserFacade {
             return Either.left(userNotFoundMessage());
         }
 
-        if (userEntity.getPassword().equals(requestDto.getCurrentPassword())) {
-            userEntity.setPassword(requestDto.getNewPassword());
+        if (userEntity.getPassword().equals(encodePassword(requestDto.getCurrentPassword()))) {
+            String encodedNewPassword = encodePassword(requestDto.getNewPassword());
+            userEntity.setPassword(encodedNewPassword);
             userRepository.save(userEntity);
             return Either.right("Password changed");
         } else {
@@ -60,6 +64,10 @@ public class UserFacade {
 
         userRepository.delete(userToDelete);
         return Either.right(username);
+    }
+
+    private String encodePassword(String password) {
+        return passwordEncoder.encode(password);
     }
 
     private ErrorMessage userNotFoundMessage() {

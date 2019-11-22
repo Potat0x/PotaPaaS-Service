@@ -24,6 +24,7 @@ dependencies {
     implementation 'io.vavr:vavr:0.10.0'
     implementation 'org.eclipse.jgit:org.eclipse.jgit.pgm:5.5.0.201909110433-r'
     implementation 'com.spotify:docker-client:8.16.0'
+    implementation 'commons-validator:commons-validator:1.6'
     compileOnly 'org.projectlombok:lombok:1.18.8'
     annotationProcessor 'org.projectlombok:lombok:1.18.8'
 

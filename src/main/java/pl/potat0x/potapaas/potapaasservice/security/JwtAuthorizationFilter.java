@@ -6,6 +6,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 import javax.servlet.FilterChain;
@@ -18,10 +19,12 @@ import java.util.Collections;
 final class JwtAuthorizationFilter extends BasicAuthenticationFilter {
 
     private final byte[] jwtSecret;
+    private final UserDetailsService userDetailsService;
 
-    JwtAuthorizationFilter(AuthenticationManager authenticationManager, byte[] jwtSecret) {
+    JwtAuthorizationFilter(AuthenticationManager authenticationManager, byte[] jwtSecret, UserDetailsService userDetailsService) {
         super(authenticationManager);
         this.jwtSecret = jwtSecret;
+        this.userDetailsService = userDetailsService;
     }
 
     @Override
@@ -45,11 +48,17 @@ final class JwtAuthorizationFilter extends BasicAuthenticationFilter {
                     .verify(bearerToken);
 
             String username = decodedToken.getSubject();
-            if (username != null) {
-                return new UsernamePasswordAuthenticationToken(username, null, Collections.emptyList());
+            Long userId = getUserIdByUsername(username);
+            if (username != null && userId != null) {
+                return new UsernamePasswordAuthenticationToken(new Principal(username, userId), null, Collections.emptyList());
             }
         }
         return null;
+    }
+
+    private Long getUserIdByUsername(String username) {
+        ExtendedUserDetails userDetails = (ExtendedUserDetails) userDetailsService.loadUserByUsername(username);
+        return userDetails != null ? userDetails.getUserId() : null;
     }
 
     private String getBearerTokenValueFromAuthHeader(HttpServletRequest request) {

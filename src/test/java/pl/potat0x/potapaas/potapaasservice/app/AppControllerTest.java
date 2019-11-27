@@ -1,5 +1,6 @@
 package pl.potat0x.potapaas.potapaasservice.app;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,12 +10,15 @@ import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
+import pl.potat0x.potapaas.potapaasservice.TestAuthUtils;
 import pl.potat0x.potapaas.potapaasservice.core.AppType;
 import pl.potat0x.potapaas.potapaasservice.datastore.DatastoreRequestDto;
 import pl.potat0x.potapaas.potapaasservice.datastore.DatastoreResponseDto;
 import pl.potat0x.potapaas.potapaasservice.datastore.DatastoreType;
 import pl.potat0x.potapaas.potapaasservice.system.PotapaasConfig;
+import pl.potat0x.potapaas.potapaasservice.user.UserFacade;
 
 import java.util.List;
 import java.util.UUID;
@@ -24,16 +28,26 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles(profiles = {"test"})
+@Sql(statements = "insert into user_ (id, username, password, uuid) values(123, 'testuser', 'testpassword', 'def456') on conflict do nothing")
 public class AppControllerTest {
 
     @Autowired
     private AppFacade appFacade;
 
     @Autowired
+    private UserFacade userFacade;
+
+    @Autowired
     private TestRestTemplate testRestTemplate;
 
     @LocalServerPort
     private int port;
+
+    @Before
+    public void addAuthTokenToTestRestTemplate() {
+        String loginUrl = "http://127.0.0.1:" + port + "/login";
+        TestAuthUtils.authorizeTestRestTemplate(testRestTemplate, loginUrl, "testuser", "testpassword");
+    }
 
     @Test
     public void shouldCreateApp() {

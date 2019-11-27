@@ -1,35 +1,38 @@
 package pl.potat0x.potapaas.potapaasservice.user
 
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.http.ResponseEntity
 import org.springframework.test.context.ActiveProfiles
-import org.springframework.test.context.ContextConfiguration
 import pl.potat0x.potapaas.potapaasservice.PotapaasServiceApplication
+import pl.potat0x.potapaas.potapaasservice.TestAuthUtils
 import spock.lang.Specification
 
 import java.time.LocalDateTime
 
-@ContextConfiguration
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = [PotapaasServiceApplication.class])
 @ActiveProfiles(profiles = ["test"])
 class UserControllerTest extends Specification {
 
-    @Autowired
     TestRestTemplate testRestTemplate
 
     @LocalServerPort
     int port
 
+    def setup() {
+        testRestTemplate = new TestRestTemplate()
+    }
+
     def "user CRUD test"() {
         given:
         def username = "user123"
-        def validRequestDto = new UserRequestDto(username, "Valid-Password!1", "validemail@example.com")
+        def password = "Valid-Password!1"
+        def validRequestDto = new UserRequestDto(username, password, "validemail@example.com")
 
         when:
         ResponseEntity<UserResponseDto> response = testRestTemplate.postForEntity(userEndpoint(), validRequestDto, UserResponseDto.class)
+        authorizeTestRestTemplate(username, password)
 
         then:
         response.statusCodeValue == 201
@@ -48,7 +51,7 @@ class UserControllerTest extends Specification {
         testRestTemplate.delete(userEndpoint(username))
 
         then:
-        testRestTemplate.getForEntity(userEndpoint(username), UserResponseDto.class).statusCodeValue == 404
+        testRestTemplate.getForEntity(userEndpoint(username), UserResponseDto.class).statusCodeValue == 403
     }
 
     def "should return 422 while trying to create user with invalid DTO"() {
@@ -60,7 +63,7 @@ class UserControllerTest extends Specification {
 
         then:
         response.statusCodeValue == 422
-        testRestTemplate.getForEntity(userEndpoint(username), UserResponseDto.class).statusCodeValue in [404, 405]
+        testRestTemplate.getForEntity(userEndpoint(username), UserResponseDto.class).statusCodeValue == 403
 
         where:
         username             | password           | email
@@ -78,6 +81,7 @@ class UserControllerTest extends Specification {
         def initialPassword = "Initial-Valid-Password!1"
         def validRequestDto = new UserRequestDto(username, initialPassword, "validemail@example.com")
         testRestTemplate.postForEntity(potapaasUrl() + "/user", validRequestDto, UserResponseDto.class)
+        authorizeTestRestTemplate(username, initialPassword)
 
         when: "invalid change password request: given current password is different than password database"
         def response1 = changePasswordRequest(username, new ChangePasswordRequestDto("123", "New-Valid-Password!1"))
@@ -91,7 +95,6 @@ class UserControllerTest extends Specification {
         then:
         response2.statusCodeValue == 422
 
-
         when: "valid change password request"
         def response3 = changePasswordRequest(username, new ChangePasswordRequestDto(initialPassword, "New-Valid-Password!2"))
 
@@ -103,12 +106,17 @@ class UserControllerTest extends Specification {
         testRestTemplate.postForEntity(userEndpoint(username) + "/password", changePasswordRequestDto, String.class)
     }
 
+    def authorizeTestRestTemplate(String username, String password) {
+        String loginUrl = "http://127.0.0.1:" + port + "/login"
+        TestAuthUtils.authorizeTestRestTemplate(testRestTemplate, loginUrl, username, password)
+    }
+
     private String userEndpoint(String username) {
         potapaasUrl() + "/user/" + username
     }
 
     private String userEndpoint() {
-        userEndpoint("")
+        potapaasUrl() + "/user"
     }
 
     private String potapaasUrl() {

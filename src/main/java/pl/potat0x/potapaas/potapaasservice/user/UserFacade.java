@@ -2,7 +2,7 @@ package pl.potat0x.potapaas.potapaasservice.user;
 
 import io.vavr.control.Either;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import pl.potat0x.potapaas.potapaasservice.system.errormessage.ErrorMessage;
 
@@ -14,10 +14,10 @@ import static pl.potat0x.potapaas.potapaasservice.system.errormessage.CustomErro
 public class UserFacade {
 
     private final UserRepository userRepository;
-    private final BCryptPasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    UserFacade(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder) {
+    UserFacade(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }

@@ -12,7 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
-import pl.potat0x.potapaas.potapaasservice.TestAuthUtils;
+import pl.potat0x.potapaas.potapaasservice.security.TestAuthUtils;
 import pl.potat0x.potapaas.potapaasservice.core.AppType;
 import pl.potat0x.potapaas.potapaasservice.datastore.DatastoreRequestDto;
 import pl.potat0x.potapaas.potapaasservice.datastore.DatastoreResponseDto;
@@ -37,8 +37,7 @@ public class AppControllerTest {
     @Autowired
     private UserFacade userFacade;
 
-    @Autowired
-    private TestRestTemplate testRestTemplate;
+    private TestRestTemplate testRestTemplate = new TestRestTemplate();
 
     @LocalServerPort
     private int port;

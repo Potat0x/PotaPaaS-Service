@@ -1,4 +1,4 @@
-package pl.potat0x.potapaas.potapaasservice;
+package pl.potat0x.potapaas.potapaasservice.spring;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

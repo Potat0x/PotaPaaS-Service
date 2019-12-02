@@ -1,4 +1,4 @@
-package pl.potat0x.potapaas.potapaasservice;
+package pl.potat0x.potapaas.potapaasservice.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

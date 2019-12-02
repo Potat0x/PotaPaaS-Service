@@ -1,11 +1,10 @@
-package pl.potat0x.potapaas.potapaasservice;
+package pl.potat0x.potapaas.potapaasservice.security;
 
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import pl.potat0x.potapaas.potapaasservice.security.Principal;
 
 import java.util.Collections;
 import java.util.List;

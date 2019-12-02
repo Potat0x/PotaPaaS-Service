@@ -29,7 +29,7 @@ class UserEntity {
     public UserEntity(String uuid, String username, String password, String email) {
         this.uuid = uuid;
         this.username = username;
-        this.password = password; //todo: plain text
+        this.password = password;
         this.email = email;
         this.createdAt = LocalDateTime.now();
     }

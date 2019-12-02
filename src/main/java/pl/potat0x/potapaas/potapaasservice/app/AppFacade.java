@@ -116,7 +116,7 @@ public class AppFacade {
     }
 
     private Either<ErrorMessage, AppResponseDto> redeploy(String appUuid, AppRequestDto requestDto) {
-        if (checkIfAppCanBeRedeployedWithGivenName(appUuid, requestDto.getName())) {
+        if (!checkIfAppCanBeRedeployedWithGivenName(appUuid, requestDto.getName())) {
             return Either.left(appNameNotAvailableMessage(requestDto.getName()));
         }
 
@@ -218,7 +218,7 @@ public class AppFacade {
     }
 
     private boolean checkIfAppCanBeRedeployedWithGivenName(String appUuid, String name) {
-        return !isAppNameAvailable(name) && !checkIfAppIsOwnerOfGivenName(appUuid, name);
+        return isAppNameAvailable(name) || checkIfAppIsOwnerOfGivenName(appUuid, name);
     }
 
     private Either<ErrorMessage, AppManager> getAppManagerForRedeploying(String appUuid, AppRequestDto appRequestDto) {

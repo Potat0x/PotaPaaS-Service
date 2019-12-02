@@ -12,7 +12,7 @@ import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.jdbc.Sql
 import org.springframework.util.LinkedMultiValueMap
 import pl.potat0x.potapaas.potapaasservice.PotapaasServiceApplication
-import pl.potat0x.potapaas.potapaasservice.TestAuthUtils
+import pl.potat0x.potapaas.potapaasservice.security.TestAuthUtils
 import pl.potat0x.potapaas.potapaasservice.app.AppRequestDto
 import pl.potat0x.potapaas.potapaasservice.app.AppRequestDtoBuilder
 import pl.potat0x.potapaas.potapaasservice.app.AppResponseDto

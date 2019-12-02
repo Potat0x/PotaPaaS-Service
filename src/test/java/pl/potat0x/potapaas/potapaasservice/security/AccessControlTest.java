@@ -1,4 +1,4 @@
-package pl.potat0x.potapaas.potapaasservice;
+package pl.potat0x.potapaas.potapaasservice.security;
 
 
 import org.junit.Before;
@@ -32,7 +32,7 @@ import static org.assertj.core.api.Assertions.assertThat;
         "insert into user_ (id, username, password, uuid) values(101, 'testuser1', 'testpassword1', 'def456') on conflict do nothing",
         "insert into user_ (id, username, password, uuid) values(102, 'testuser2', 'testpassword2', 'def789') on conflict do nothing"
 })
-public class SecurityAccessControlTest {
+public class AccessControlTest {
 
     private TestRestTemplate user1 = new TestRestTemplate();
     private TestRestTemplate user2 = new TestRestTemplate();

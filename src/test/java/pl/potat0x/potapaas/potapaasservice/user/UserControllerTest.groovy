@@ -6,7 +6,7 @@ import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.http.ResponseEntity
 import org.springframework.test.context.ActiveProfiles
 import pl.potat0x.potapaas.potapaasservice.PotapaasServiceApplication
-import pl.potat0x.potapaas.potapaasservice.TestAuthUtils
+import pl.potat0x.potapaas.potapaasservice.security.TestAuthUtils
 import spock.lang.Specification
 
 import java.time.LocalDateTime

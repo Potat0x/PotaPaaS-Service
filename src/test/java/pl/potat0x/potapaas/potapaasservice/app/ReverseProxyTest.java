@@ -9,7 +9,7 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
-import pl.potat0x.potapaas.potapaasservice.TestAuthUtils;
+import pl.potat0x.potapaas.potapaasservice.security.TestAuthUtils;
 import pl.potat0x.potapaas.potapaasservice.core.AppType;
 import pl.potat0x.potapaas.potapaasservice.system.PotapaasConfig;
 
@@ -20,13 +20,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles(profiles = {"test"})
-public class ReverseProxyText {
+public class ReverseProxyTest {
 
     @Autowired
     private AppFacade appFacade;
 
-    @Autowired
-    private TestRestTemplate testRestTemplate;
+    private TestRestTemplate testRestTemplate = new TestRestTemplate();
 
     @Before
     public void setUpSpringSecurityAuthentication() {

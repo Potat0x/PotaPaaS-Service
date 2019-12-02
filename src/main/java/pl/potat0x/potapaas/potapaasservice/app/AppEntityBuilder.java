@@ -4,6 +4,7 @@ import pl.potat0x.potapaas.potapaasservice.core.AppType;
 
 final class AppEntityBuilder {
 
+    private Long userId;
     private AppInstanceEntity appInstance;
     private AppType type;
     private String uuid;
@@ -16,7 +17,12 @@ final class AppEntityBuilder {
     private String datastoreUuid;
 
     AppEntity build() {
-        return new AppEntity(appInstance, type, uuid, name, sourceRepoUrl, sourceBranchName, autodeployEnabled, webhookSecret, commitHash, datastoreUuid);
+        return new AppEntity(userId, appInstance, type, uuid, name, sourceRepoUrl, sourceBranchName, autodeployEnabled, webhookSecret, commitHash, datastoreUuid);
+    }
+
+    public AppEntityBuilder withUserId(Long userId) {
+        this.userId = userId;
+        return this;
     }
 
     AppEntityBuilder withAppInstance(AppInstanceEntity appInstance) {

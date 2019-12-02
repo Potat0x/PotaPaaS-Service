@@ -17,6 +17,8 @@ class DatastoreEntity {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    private Long userId;
+
     @Enumerated(EnumType.STRING)
     private DatastoreType type;
 
@@ -30,8 +32,9 @@ class DatastoreEntity {
     protected DatastoreEntity() {
     }
 
-    public DatastoreEntity(String uuid, DatastoreType type, String name, String username, String password, String containerId) {
+    public DatastoreEntity(String uuid, Long userId, DatastoreType type, String name, String username, String password, String containerId) {
         this.uuid = uuid;
+        this.userId = userId;
         this.type = type;
         this.name = name;
         this.username = username;
@@ -46,6 +49,10 @@ class DatastoreEntity {
 
     public String getUuid() {
         return uuid;
+    }
+
+    public Long getUserId() {
+        return userId;
     }
 
     public String getName() {

@@ -7,7 +7,7 @@ import lombok.ToString;
 
 @ToString
 @EqualsAndHashCode
-final class ChangePasswordRequestDto {
+public final class ChangePasswordRequestDto {
     private final String currentPassword;
     private final String newPassword;
 

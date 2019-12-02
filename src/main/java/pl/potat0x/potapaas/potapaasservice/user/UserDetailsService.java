@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import pl.potat0x.potapaas.potapaasservice.security.ExtendedUserDetails;
 
 import java.util.Collections;
+import java.util.List;
 
 @Service
 class UserDetailsService implements org.springframework.security.core.userdetails.UserDetailsService {
@@ -19,10 +20,11 @@ class UserDetailsService implements org.springframework.security.core.userdetail
 
     @Override
     public ExtendedUserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        UserEntity userEntity = userRepository.findOneByUsername(username);
-        if (userEntity == null) {
+        List<UserEntity> user = userRepository.findAllByUsername(username);
+        if (user.isEmpty()) {
             throw new UsernameNotFoundException("User not found");
         }
+        UserEntity userEntity = user.get(0);
         return new ExtendedUserDetails(userEntity.getUsername(), userEntity.getPassword(), userEntity.getId(), Collections.emptyList());
     }
 }

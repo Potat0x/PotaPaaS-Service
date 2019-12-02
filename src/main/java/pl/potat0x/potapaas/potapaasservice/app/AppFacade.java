@@ -6,15 +6,18 @@ import org.springframework.stereotype.Service;
 import pl.potat0x.potapaas.potapaasservice.core.AppManager;
 import pl.potat0x.potapaas.potapaasservice.core.AppManagerFactory;
 import pl.potat0x.potapaas.potapaasservice.core.AppType;
+import pl.potat0x.potapaas.potapaasservice.datastore.DatastoreFacade;
 import pl.potat0x.potapaas.potapaasservice.system.errormessage.ErrorMessage;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import static pl.potat0x.potapaas.potapaasservice.security.AuthenticatedPrincipalInfo.getUserId;
 import static pl.potat0x.potapaas.potapaasservice.system.errormessage.CustomErrorMessage.message;
 
 @Service
@@ -26,22 +29,29 @@ public class AppFacade {
     private final AppRepository appRepository;
     private final AppManagerFactory appManagerFactory;
     private final AppInstanceRepository appInstanceRepository;
+    private final DatastoreFacade datastoreFacade;
 
     @Autowired
-    AppFacade(AppRepository appRepository, AppManagerFactory appManagerFactory, AppInstanceRepository appInstanceRepository) {
+    AppFacade(AppRepository appRepository, AppManagerFactory appManagerFactory, AppInstanceRepository appInstanceRepository, DatastoreFacade datastoreFacade) {
         this.appRepository = appRepository;
         this.appInstanceRepository = appInstanceRepository;
         this.appManagerFactory = appManagerFactory;
+        this.datastoreFacade = datastoreFacade;
     }
 
     public Either<ErrorMessage, AppResponseDto> createAndDeployApp(AppRequestDto requestDto) {
+
         if (!isAppNameAvailable(requestDto.getName())) {
             return Either.left(appNameNotAvailableMessage(requestDto.getName()));
         }
 
+        if (!checkIfDatastoreIsAvailableIfSpecifiedInRequest(requestDto)) {
+            return Either.left(message("Datastore not found", 404));
+        }
+
         AppManager appManager = buildAppManagerForNewApp(requestDto);
         return appManager.deploy().map(appUuid -> {
-            AppEntity appEntity = buildAppEntity(appManager, requestDto).build();
+            AppEntity appEntity = buildAppEntity(getUserId(), appManager, requestDto).build();
             appRepository.save(appEntity);
             return buildResponseDto(appManager, appEntity);
         });
@@ -110,6 +120,10 @@ public class AppFacade {
             return Either.left(appNameNotAvailableMessage(requestDto.getName()));
         }
 
+        if (!checkIfDatastoreIsAvailableIfSpecifiedInRequest(requestDto)) {
+            return Either.left(message("Datastore not found", 404));
+        }
+
         return getAppManagerForRedeploying(appUuid, requestDto).flatMap(appManager -> getAppEntityForRedeploying(appUuid, requestDto).flatMap(appEntity -> {
                     Long oldAppInstanceId = appEntity.getAppInstance().getId();
                     return appManager.redeploy().map(oldContainerId -> {
@@ -123,12 +137,24 @@ public class AppFacade {
         );
     }
 
+    private boolean checkIfDatastoreIsAvailableIfSpecifiedInRequest(AppRequestDto requestDto) {
+        String datastoreUuid = requestDto.getDatastoreUuid();
+        if (datastoreUuid == null) {
+            return true;
+        }
+        return checkIfDatastoreExists(datastoreUuid);
+    }
+
     private Either<ErrorMessage, AppEntity> getAppEntity(String appUuid) {
-        AppEntity appEntity = appRepository.findOneByUuid(appUuid);
-        if (appEntity != null) {
-            return Either.right(appEntity);
+        List<AppEntity> appEntity = appRepository.findOneByUuid(appUuid);
+        if (!appEntity.isEmpty()) {
+            return Either.right(appEntity.get(0));
         }
         return Either.left(message("App not found", 404));
+    }
+
+    private boolean checkIfDatastoreExists(String datastoreUuid) {
+        return datastoreFacade.getDatastoreEntityByUuid(datastoreUuid).isRight();
     }
 
     private Either<ErrorMessage, AppManager> getAppManager(String appUuid) {
@@ -136,8 +162,9 @@ public class AppFacade {
                 .map(this::buildAppManagerForExistingApp);
     }
 
-    private AppEntityBuilder buildAppEntity(AppManager appManager, AppRequestDto requestDto) {
+    private AppEntityBuilder buildAppEntity(Long userId, AppManager appManager, AppRequestDto requestDto) {
         return new AppEntityBuilder()
+                .withUserId(userId)
                 .withAppInstance(new AppInstanceEntity(appManager.getContainerId(), appManager.getImageId()))
                 .withType(AppType.valueOf(requestDto.getType()))
                 .withUuid(appManager.getAppUuid())

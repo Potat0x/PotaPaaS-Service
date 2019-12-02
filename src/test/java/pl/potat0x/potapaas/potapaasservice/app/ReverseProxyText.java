@@ -1,5 +1,6 @@
 package pl.potat0x.potapaas.potapaasservice.app;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +9,7 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
+import pl.potat0x.potapaas.potapaasservice.TestAuthUtils;
 import pl.potat0x.potapaas.potapaasservice.core.AppType;
 import pl.potat0x.potapaas.potapaasservice.system.PotapaasConfig;
 
@@ -25,6 +27,11 @@ public class ReverseProxyText {
 
     @Autowired
     private TestRestTemplate testRestTemplate;
+
+    @Before
+    public void setUpSpringSecurityAuthentication() {
+        TestAuthUtils.setAuthenticatedPrincipalInSecurityContext("reverse-proxy-test-user", 234);
+    }
 
     @Test
     public void appShouldBeExposedViaReverseProxy() throws InterruptedException {

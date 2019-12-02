@@ -28,7 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles(profiles = {"test"})
-@Sql(statements = "insert into user_ (id, username, password, uuid) values(123, 'testuser', 'testpassword', 'def456') on conflict do nothing")
+@Sql(statements = "insert into user_ (id, username, password, uuid) values(123, 'app-controller-testuser', 'testpassword', 'def456') on conflict do nothing")
 public class AppControllerTest {
 
     @Autowired
@@ -46,7 +46,12 @@ public class AppControllerTest {
     @Before
     public void addAuthTokenToTestRestTemplate() {
         String loginUrl = "http://127.0.0.1:" + port + "/login";
-        TestAuthUtils.authorizeTestRestTemplate(testRestTemplate, loginUrl, "testuser", "testpassword");
+        TestAuthUtils.authorizeTestRestTemplate(testRestTemplate, loginUrl, "app-controller-testuser", "testpassword");
+    }
+
+    @Before
+    public void setUpSpringSecurityAuthentication() {
+        TestAuthUtils.setAuthenticatedPrincipalInSecurityContext("app-controller-testuser", 123);
     }
 
     @Test

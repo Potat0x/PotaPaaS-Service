@@ -25,7 +25,6 @@ import static pl.potat0x.potapaas.potapaasservice.system.errormessage.CustomErro
 @RequestMapping("/potapaas-push-event-listener")
 class WebhookListener {
 
-    @Autowired
     private WebhookFacade webhookFacade;
 
     @Autowired

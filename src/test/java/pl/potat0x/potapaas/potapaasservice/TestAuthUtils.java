@@ -13,10 +13,21 @@ import java.util.List;
 public final class TestAuthUtils {
 
     public static void authorizeTestRestTemplate(TestRestTemplate testRestTemplate, String loginUrl, String username, String password) {
-        setAuthHeader(testRestTemplate, getAuthToken(loginUrl, username, password));
+        setAuthHeaderInterceptor(testRestTemplate, getAuthToken(loginUrl, username, password));
     }
 
-    static String getAuthToken(String loginUrl, String username, String password) {
+    public static void setAuthenticatedPrincipalInSecurityContext(String username, long userId) {
+        SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(new Principal(username, userId), null, Collections.emptyList()));
+    }
+
+    private static void setAuthHeaderInterceptor(TestRestTemplate testRestTemplate, String authToken) {
+        testRestTemplate.getRestTemplate().setInterceptors(List.of((request, body, execution) -> {
+            request.getHeaders().add("Authorization", authToken);
+            return execution.execute(request, body);
+        }));
+    }
+
+    private static String getAuthToken(String loginUrl, String username, String password) {
 
         String loginRequestBody = "{" +
                 "\"username\": \"" + username + "\"," +
@@ -33,12 +44,5 @@ public final class TestAuthUtils {
             throw new RuntimeException(errorMessage);
         }
         return loginResponse.getHeaders().get("Authorization").get(0);
-    }
-
-    static void setAuthHeader(TestRestTemplate testRestTemplate, String authToken) {
-        testRestTemplate.getRestTemplate().setInterceptors(List.of((request, body, execution) -> {
-            request.getHeaders().add("Authorization", authToken);
-            return execution.execute(request, body);
-        }));
     }
 }

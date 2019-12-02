@@ -14,7 +14,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -24,6 +23,8 @@ class AppEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+
+    private Long userId;
 
     @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "app_instance_id", referencedColumnName = "id")
@@ -44,7 +45,8 @@ class AppEntity {
     private String datastoreUuid;
     private LocalDateTime createdAt;
 
-    public AppEntity(AppInstanceEntity appInstance, AppType type, String uuid, String name, String sourceRepoUrl, String sourceBranchName, boolean autodeployEnabled, String webhookSecret, String commitHash, String datastoreUuid) {
+    public AppEntity(Long userId, AppInstanceEntity appInstance, AppType type, String uuid, String name, String sourceRepoUrl, String sourceBranchName, boolean autodeployEnabled, String webhookSecret, String commitHash, String datastoreUuid) {
+        this.userId = userId;
         this.appInstance = appInstance;
         this.type = type;
         this.uuid = uuid;
@@ -59,6 +61,10 @@ class AppEntity {
     }
 
     protected AppEntity() {
+    }
+
+    public Long getUserId() {
+        return userId;
     }
 
     public String getUuid() {

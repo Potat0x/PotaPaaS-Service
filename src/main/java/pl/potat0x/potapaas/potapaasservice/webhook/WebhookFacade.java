@@ -18,7 +18,6 @@ import static pl.potat0x.potapaas.potapaasservice.system.errormessage.CustomErro
 @Service
 class WebhookFacade {
 
-    @Autowired
     private AppFacade appFacade;
 
     @Autowired

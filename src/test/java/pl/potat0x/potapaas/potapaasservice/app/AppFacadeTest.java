@@ -1,6 +1,7 @@
 package pl.potat0x.potapaas.potapaasservice.app;
 
 import io.vavr.control.Either;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,7 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
+import pl.potat0x.potapaas.potapaasservice.TestAuthUtils;
 import pl.potat0x.potapaas.potapaasservice.core.AppType;
 import pl.potat0x.potapaas.potapaasservice.system.PotapaasConfig;
 import pl.potat0x.potapaas.potapaasservice.system.errormessage.ErrorMessage;
@@ -29,6 +31,11 @@ public class AppFacadeTest {
     private TestRestTemplate testRestTemplate;
 
     private String testString = "LowercaseAndUppercaseTest";
+
+    @Before
+    public void setUpSpringSecurityAuthentication() {
+        TestAuthUtils.setAuthenticatedPrincipalInSecurityContext("app-facade-test-user", 456L);
+    }
 
     @Test
     public void shouldRedeployApp() {

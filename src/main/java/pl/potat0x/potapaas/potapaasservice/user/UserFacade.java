@@ -2,10 +2,13 @@ package pl.potat0x.potapaas.potapaasservice.user;
 
 import io.vavr.control.Either;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import pl.potat0x.potapaas.potapaasservice.security.Principal;
 import pl.potat0x.potapaas.potapaasservice.system.errormessage.ErrorMessage;
 
+import java.util.List;
 import java.util.UUID;
 
 import static pl.potat0x.potapaas.potapaasservice.system.errormessage.CustomErrorMessage.message;
@@ -23,11 +26,15 @@ public class UserFacade {
     }
 
     Either<ErrorMessage, UserResponseDto> getUserDetails(String username) {
-        UserEntity userEntity = userRepository.findOneByUsername(username);
-        if (userEntity == null) {
+        if (!checkIfAuthorizedUserIsEqualToRequestedUser(username)) {
+            return Either.left(userNotFoundMessage());
+        }
+
+        List<UserEntity> user = userRepository.findAllByUsername(username);
+        if (user.isEmpty()) {
             return Either.left(userNotFoundMessage());
         } else {
-            return Either.right(createResponseDto(userEntity));
+            return Either.right(createResponseDto(user.get(0)));
         }
     }
 
@@ -41,11 +48,16 @@ public class UserFacade {
     }
 
     Either<ErrorMessage, String> changePassword(String username, ChangePasswordRequestDto requestDto) {
-        UserEntity userEntity = userRepository.findOneByUsername(username);
-        if (userEntity == null) {
+        if (!checkIfAuthorizedUserIsEqualToRequestedUser(username)) {
             return Either.left(userNotFoundMessage());
         }
 
+        List<UserEntity> user = userRepository.findAllByUsername(username);
+        if (user.isEmpty()) {
+            return Either.left(userNotFoundMessage());
+        }
+
+        UserEntity userEntity = user.get(0);
         if (userEntity.getPassword().equals(encodePassword(requestDto.getCurrentPassword()))) {
             String encodedNewPassword = encodePassword(requestDto.getNewPassword());
             userEntity.setPassword(encodedNewPassword);
@@ -57,13 +69,22 @@ public class UserFacade {
     }
 
     Either<ErrorMessage, String> deleteUser(String username) {
-        UserEntity userToDelete = userRepository.findOneByUsername(username);
-        if (userToDelete == null) {
+        if (!checkIfAuthorizedUserIsEqualToRequestedUser(username)) {
             return Either.left(userNotFoundMessage());
         }
 
-        userRepository.delete(userToDelete);
+        List<UserEntity> userToDelete = userRepository.findAllByUsername(username);
+        if (userToDelete.isEmpty()) {
+            return Either.left(userNotFoundMessage());
+        }
+
+        userRepository.delete(userToDelete.get(0));
         return Either.right(username);
+    }
+
+    private boolean checkIfAuthorizedUserIsEqualToRequestedUser(String requestedUsername) {
+        Principal principal = (Principal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return requestedUsername.equals(principal.username);
     }
 
     private String encodePassword(String password) {

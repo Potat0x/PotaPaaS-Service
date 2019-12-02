@@ -1,17 +1,18 @@
 package pl.potat0x.potapaas.potapaasservice.webhook
 
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpMethod
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.ContextConfiguration
+import org.springframework.test.context.jdbc.Sql
 import org.springframework.util.LinkedMultiValueMap
 import pl.potat0x.potapaas.potapaasservice.PotapaasServiceApplication
-import pl.potat0x.potapaas.potapaasservice.app.AppFacade
+import pl.potat0x.potapaas.potapaasservice.TestAuthUtils
 import pl.potat0x.potapaas.potapaasservice.app.AppRequestDto
 import pl.potat0x.potapaas.potapaasservice.app.AppRequestDtoBuilder
 import pl.potat0x.potapaas.potapaasservice.app.AppResponseDto
@@ -28,24 +29,27 @@ import static org.assertj.core.api.Assertions.assertThat
 @ContextConfiguration
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = [PotapaasServiceApplication.class])
 @ActiveProfiles(profiles = ["test"])
+@Sql(statements = "insert into user_ (id, username, password, uuid) values(123, 'testuser', 'testpassword', 'def456') on conflict do nothing")
 class WebhookListenerTest extends Specification {
 
-    @Autowired
-    AppFacade appFacade
-
-    @Autowired
-    TestRestTemplate testRestTemplate
+    TestRestTemplate testRestTemplate = new TestRestTemplate()
+    TestRestTemplate webhookSender = new TestRestTemplate()
 
     @LocalServerPort
     int port
 
     static String validUuid = "00000000-0000-0000-0000-000000000000"
 
+    def setup() {
+        String loginUrl = potapaasUrl() + "/login"
+        TestAuthUtils.authorizeTestRestTemplate(testRestTemplate, loginUrl, "testuser", "testpassword")
+    }
+
     def "should redeploy or not redeploy app when receiving valid payload"() {
         given: "deployed app (commit 1)"
         String appUuid = createAppWithAutoDeployEnabled(autodeployEnabled).getAppUuid()
         waitForAppStart()
-        AppResponseDto appResponseDto = appFacade.getAppDetails(appUuid).get()
+        AppResponseDto appResponseDto = getApp(appUuid)
         String appUrl = "http://127.0.0.1:" + appResponseDto.getExposedPort()
         assertThat(testRestTemplate.getForEntity(appUrl, String.class).getBody()).isEqualTo("Commit 1")
 
@@ -55,7 +59,7 @@ class WebhookListenerTest extends Specification {
 
         then: "latest commit should be deployed (commit 4) if autodeploy is enabled and app branch name is the same as in payload"
         waitForAppStart()
-        String currentAppUrl = "http://127.0.0.1:" + appFacade.getAppDetails(appUuid).get().getExposedPort()
+        String currentAppUrl = "http://127.0.0.1:" + getApp(appUuid).getExposedPort()
         assertThat(testRestTemplate.getForEntity(currentAppUrl, String.class).getBody()).isEqualTo(expectedAppResponse)
 
         where:
@@ -83,13 +87,13 @@ class WebhookListenerTest extends Specification {
         def webhookPayload = '{ "ref": "refs/heads/webhook_push_event_nodejs" }'
 
         expect:
-        testRestTemplate.postForEntity(webhookListenerUrl(validUuid), webhookPayload, String.class).getStatusCode().value() == 403
+        webhookSender.postForEntity(webhookListenerUrl(validUuid), webhookPayload, String.class).getStatusCode().value() == 403
     }
 
     private ResponseEntity webhookRequest(String appUuid, String body, String webhookSecret) {
         def headers = new LinkedMultiValueMap<String, String>()
         headers.add("X-Hub-Signature", calcHmacSha1HexDigest(body, webhookSecret))
-        return testRestTemplate.exchange(webhookListenerUrl(appUuid), HttpMethod.POST, new HttpEntity<String>(body, headers), AppResponseDto.class)
+        return webhookSender.exchange(webhookListenerUrl(appUuid), HttpMethod.POST, new HttpEntity<String>(body, headers), AppResponseDto.class)
     }
 
     private static String calcHmacSha1HexDigest(String message, String secret) {
@@ -104,11 +108,24 @@ class WebhookListenerTest extends Specification {
                 .withCommitHash("f4f0e2ed")
                 .withAutodeployEnabled(autodeployEnabled)
                 .build()
-        return appFacade.createAndDeployApp(appRequestDtoCommit1).get()
+
+        ResponseEntity<AppResponseDto> responseEntity = testRestTemplate.postForEntity(appUrl(), appRequestDtoCommit1, AppResponseDto.class)
+        return responseEntity.getBody()
+    }
+
+    private String appUrl() {
+        return potapaasUrl() + "/app"
     }
 
     private String potapaasUrl() {
         return "http://127.0.0.1:" + port
+    }
+
+    private AppResponseDto getApp(String appUuid) {
+        String appUrl = appUrl() + "/" + appUuid
+        ResponseEntity<AppResponseDto> controllerResponse = testRestTemplate.getForEntity(appUrl, AppResponseDto.class)
+        assertThat(controllerResponse.getStatusCode()).isEqualTo(HttpStatus.OK)
+        return controllerResponse.getBody()
     }
 
     private String webhookListenerUrl(String appUuid) {

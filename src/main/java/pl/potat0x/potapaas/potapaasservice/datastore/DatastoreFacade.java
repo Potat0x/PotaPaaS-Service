@@ -9,16 +9,18 @@ import pl.potat0x.potapaas.potapaasservice.system.PotapaasConfig;
 import pl.potat0x.potapaas.potapaasservice.system.errormessage.ErrorMessage;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
 
 import static io.vavr.API.*;
 import static io.vavr.Predicates.isIn;
+import static pl.potat0x.potapaas.potapaasservice.security.AuthenticatedPrincipalInfo.getUserId;
 import static pl.potat0x.potapaas.potapaasservice.system.errormessage.CustomErrorMessage.message;
 
 @Service
-class DatastoreFacade {
+public class DatastoreFacade {
 
     private final DatastoreRepository datastoreRepository;
     private final DockerContainerManager containerManager;
@@ -36,7 +38,7 @@ class DatastoreFacade {
 
         DatastoreManager datastoreManager = createDatastoreManager(type);
         return datastoreManager.createAndStartDatastore(datastoreUuid)
-                .map(containerId -> new DatastoreEntity(datastoreUuid, type, name, randomUuid(), randomUuid(), containerId))
+                .map(containerId -> new DatastoreEntity(datastoreUuid, getUserId(), type, name, randomUuid(), randomUuid(), containerId))
                 .peek(datastoreRepository::save)
                 .map(this::createResponseDto);
     }
@@ -62,12 +64,12 @@ class DatastoreFacade {
                 });
     }
 
-    private Either<ErrorMessage, DatastoreEntity> getDatastoreEntityByUuid(String datastoreUuid) {
-        DatastoreEntity datastoreEntity = datastoreRepository.findOneByUuid(datastoreUuid);
-        if (datastoreEntity == null) {
+    public Either<ErrorMessage, DatastoreEntity> getDatastoreEntityByUuid(String datastoreUuid) {
+        List<DatastoreEntity> datastores = datastoreRepository.findAllByUuid(datastoreUuid);
+        if (datastores.isEmpty()) {
             return Either.left(message("Datastore not found", 404));
         }
-        return Either.right(datastoreEntity);
+        return Either.right(datastores.get(0));
     }
 
     private DatastoreManager createDatastoreManager(DatastoreType type) {

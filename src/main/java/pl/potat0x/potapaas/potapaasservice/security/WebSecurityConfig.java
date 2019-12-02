@@ -2,6 +2,7 @@ package pl.potat0x.potapaas.potapaasservice.security;
 
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -13,6 +14,7 @@ import pl.potat0x.potapaas.potapaasservice.system.PotapaasConfig;
 import java.security.SecureRandom;
 
 @EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final UserDetailsService userDetailsService;
@@ -28,6 +30,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         final byte[] jwtSecret = generateJwtSecret();
         http.csrf().disable().authorizeRequests()
                 .antMatchers(HttpMethod.POST, "/user").permitAll()
+                .antMatchers(HttpMethod.POST, "/potapaas-push-event-listener/**").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .addFilter(new JwtAuthenticationFilter(authenticationManager(), jwtSecret))

@@ -1,12 +1,14 @@
 package pl.potat0x.potapaas.potapaasservice.datastore;
 
 import io.vavr.control.Either;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
+import pl.potat0x.potapaas.potapaasservice.TestAuthUtils;
 import pl.potat0x.potapaas.potapaasservice.app.AppFacade;
 import pl.potat0x.potapaas.potapaasservice.app.AppRequestDto;
 import pl.potat0x.potapaas.potapaasservice.app.AppRequestDtoBuilder;
@@ -32,6 +34,11 @@ public class DatastoreFacadeTest {
 
     @Autowired
     private AppFacade appFacade;
+
+    @Before
+    public void setUpSpringSecurityAuthentication() {
+        TestAuthUtils.setAuthenticatedPrincipalInSecurityContext("datastore-facade-test-user", 123L);
+    }
 
     @Test
     public void shouldGetDatastoreDetailsIncludingListOfAttachedApps() {

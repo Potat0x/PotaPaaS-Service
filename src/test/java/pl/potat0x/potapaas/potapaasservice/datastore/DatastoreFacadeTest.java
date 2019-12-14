@@ -8,16 +8,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
-import pl.potat0x.potapaas.potapaasservice.security.TestAuthUtils;
+import pl.potat0x.potapaas.potapaasservice.api.UuidAndNameResponseDto;
 import pl.potat0x.potapaas.potapaasservice.app.AppFacade;
 import pl.potat0x.potapaas.potapaasservice.app.AppRequestDto;
 import pl.potat0x.potapaas.potapaasservice.app.AppRequestDtoBuilder;
 import pl.potat0x.potapaas.potapaasservice.app.AppResponseDto;
 import pl.potat0x.potapaas.potapaasservice.core.AppType;
+import pl.potat0x.potapaas.potapaasservice.security.TestAuthUtils;
 import pl.potat0x.potapaas.potapaasservice.system.errormessage.ErrorMessage;
 import pl.potat0x.potapaas.potapaasservice.validator.UuidValidator;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -61,12 +63,16 @@ public class DatastoreFacadeTest {
         //when
         AppResponseDto appResponseDto = createAppAndAttachItToDatastore(datastoreUuid);
         DatastoreResponseDto datastoreResponseDtoAfterAttachingApp = datastoreFacade.getDatastoreDetails(datastoreUuid).get();
+        List<UuidAndNameResponseDto> uuidAndNameResponseDtos = datastoreFacade.getUuidsAndNamesOfAllDatastores().get();
 
         //then
         String attachedAppUuid = appResponseDto.getAppUuid();
         expectedDatastoreResponseDto = new DatastoreResponseDto(datastoreUuid, datastoreName, DatastoreType.valueOf(datastoreType), datastoreResponseDto.getCreatedAt(), "running", Set.of(attachedAppUuid));
         assertThat(datastoreResponseDtoAfterAttachingApp).isEqualTo(expectedDatastoreResponseDto);
         assertThat(datastoreUuid).isEqualTo(appResponseDto.getDatastoreUuid());
+
+        UuidAndNameResponseDto expectedUuidAndNameResponseDto = new UuidAndNameResponseDto(datastoreUuid, datastoreName);
+        assertThat(uuidAndNameResponseDtos).contains(expectedUuidAndNameResponseDto);
     }
 
     @Test

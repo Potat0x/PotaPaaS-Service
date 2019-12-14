@@ -10,6 +10,7 @@ import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -73,6 +74,9 @@ public class AccessControlTest {
         assertThat(get(user1, user2DatastoreUrl)).isEqualTo(HttpStatus.NOT_FOUND);
         assertThat(get(user2, user2DatastoreUrl)).isEqualTo(HttpStatus.OK);
 
+        assertThat(user1.getForEntity(datastoreUrl, String.class).getBody()).doesNotContain("user2-datastore");
+        assertThat(user2.getForEntity(datastoreUrl, String.class).getBody()).contains("user2-datastore");
+
         assertThat(delete(user1, user2DatastoreUrl)).isEqualTo(HttpStatus.NOT_FOUND);
         assertThat(delete(user2, user2DatastoreUrl)).isEqualTo(HttpStatus.NO_CONTENT);
     }
@@ -91,6 +95,9 @@ public class AccessControlTest {
         String user2AppLogsUrl = user2AppUrl + "/logs";
         assertThat(get(user1, user2AppLogsUrl)).isEqualTo(HttpStatus.NOT_FOUND);
         assertThat(get(user2, user2AppLogsUrl)).isEqualTo(HttpStatus.OK);
+
+        assertThat(user1.getForEntity(appEndpointUrl, String.class).getBody()).doesNotContain("user2-app");
+        assertThat(user2.getForEntity(appEndpointUrl, String.class).getBody()).contains("user2-app");
 
         String user1DatastoreUuid = createDatastore(user1, "user1-datastore");
         String user2DatastoreUuid = createDatastore(user2, "user2-datastore");

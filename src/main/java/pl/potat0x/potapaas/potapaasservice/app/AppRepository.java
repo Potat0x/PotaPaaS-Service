@@ -7,6 +7,9 @@ import java.util.List;
 
 interface AppRepository extends CrudRepository<AppEntity, Long> {
 
+    @PostFilter("filterObject.userId.equals(principal.userId)")
+    List<AppEntity> findAll();
+
     //anonymous user is allowed while handling webhook (webhooks are secured by secret token)
     @PostFilter("isAnonymous() || filterObject.userId.equals(principal.userId)")
     List<AppEntity> findOneByUuid(String uuid);

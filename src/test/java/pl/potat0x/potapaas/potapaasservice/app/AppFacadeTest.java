@@ -10,6 +10,7 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
+import pl.potat0x.potapaas.potapaasservice.api.UuidAndNameResponseDto;
 import pl.potat0x.potapaas.potapaasservice.security.TestAuthUtils;
 import pl.potat0x.potapaas.potapaasservice.core.AppType;
 import pl.potat0x.potapaas.potapaasservice.system.PotapaasConfig;
@@ -164,6 +165,7 @@ public class AppFacadeTest {
         Either<ErrorMessage, AppResponseDto> deployNewAppResponse = appFacade.createAndDeployApp(redeployRequestDtoWithNameOfApp1);
         //then
         assertThat(deployNewAppResponse.getLeft().getHttpStatus()).isEqualTo(409);
+        assertThat(appFacade.getUuidsAndNamesOfAllApps().get()).contains(new UuidAndNameResponseDto(app1.getAppUuid(), app1.getName()));
 
         //when: redeploy app2 with name same as app1
         Either<ErrorMessage, AppResponseDto> app2redeployResponse = appFacade.redeployApp(app2.getAppUuid(), redeployRequestDtoWithNameOfApp1);

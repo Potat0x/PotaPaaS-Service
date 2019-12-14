@@ -3,6 +3,7 @@ package pl.potat0x.potapaas.potapaasservice.app;
 import io.vavr.control.Either;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import pl.potat0x.potapaas.potapaasservice.api.UuidAndNameResponseDto;
 import pl.potat0x.potapaas.potapaasservice.core.AppManager;
 import pl.potat0x.potapaas.potapaasservice.core.AppManagerFactory;
 import pl.potat0x.potapaas.potapaasservice.core.AppType;
@@ -16,6 +17,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 
 import static pl.potat0x.potapaas.potapaasservice.security.AuthenticatedPrincipalInfo.getUserId;
 import static pl.potat0x.potapaas.potapaasservice.system.errormessage.CustomErrorMessage.message;
@@ -87,6 +89,13 @@ public class AppFacade {
             AppManager appManager = buildAppManagerForExistingApp(appEntity);
             return buildResponseDto(appManager, appEntity);
         });
+    }
+
+    public Either<ErrorMessage, List<UuidAndNameResponseDto>> getUuidsAndNamesOfAllApps() {
+        return Either.right(appRepository.findAll().stream()
+                .map(appEntity -> new UuidAndNameResponseDto(appEntity.getUuid(), appEntity.getName()))
+                .collect(Collectors.toList())
+        );
     }
 
     public Either<ErrorMessage, String> deleteApp(String appUuid) {

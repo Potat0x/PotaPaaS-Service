@@ -13,6 +13,9 @@ interface DatastoreRepository extends CrudRepository<DatastoreEntity, Long> {
     @PostFilter("filterObject.userId.equals(principal.userId)")
     List<DatastoreEntity> findAllByUuid(String uuid);
 
+    @PostFilter("filterObject.userId.equals(principal.userId)")
+    List<DatastoreEntity> findAll();
+
     @Query(nativeQuery = true,
             value = "SELECT app.uuid FROM app " +
                     "JOIN datastore ON app.datastore_uuid = datastore.uuid " +

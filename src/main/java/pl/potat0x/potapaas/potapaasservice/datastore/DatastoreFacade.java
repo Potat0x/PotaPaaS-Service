@@ -3,6 +3,7 @@ package pl.potat0x.potapaas.potapaasservice.datastore;
 import io.vavr.control.Either;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import pl.potat0x.potapaas.potapaasservice.api.UuidAndNameResponseDto;
 import pl.potat0x.potapaas.potapaasservice.core.DockerContainerManager;
 import pl.potat0x.potapaas.potapaasservice.core.DockerNetworkManager;
 import pl.potat0x.potapaas.potapaasservice.system.PotapaasConfig;
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import static io.vavr.API.*;
 import static io.vavr.Predicates.isIn;
@@ -49,6 +51,14 @@ public class DatastoreFacade {
                     Set<String> attachedApps = datastoreRepository.findAllAppsConnectedToDatastore(datastoreUuid);
                     return createResponseDto(datastoreEntity, attachedApps);
                 });
+    }
+
+    Either<ErrorMessage, List<UuidAndNameResponseDto>> getUuidsAndNamesOfAllDatastores() {
+        return Either.right(
+                datastoreRepository.findAll().stream()
+                        .map(datastoreEntity -> new UuidAndNameResponseDto(datastoreEntity.getUuid(), datastoreEntity.getName()))
+                        .collect(Collectors.toList())
+        );
     }
 
     Either<ErrorMessage, String> deleteDatastore(String datastoreUuid) {

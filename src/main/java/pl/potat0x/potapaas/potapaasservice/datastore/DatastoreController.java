@@ -34,6 +34,11 @@ class DatastoreController {
         return ResponseResolver.toResponseEntity(datastoreFacade.getDatastoreDetails(datastoreUuid), HttpStatus.OK);
     }
 
+    @GetMapping
+    ResponseEntity getUuidsAndNamesOfAllDatastores() {
+        return ResponseResolver.toResponseEntity(datastoreFacade.getUuidsAndNamesOfAllDatastores(), HttpStatus.OK);
+    }
+
     @PostMapping
     ResponseEntity createDatastore(@RequestBody DatastoreRequestDto requestDto) {
         Validation<Seq<String>, DatastoreRequestDto> validation = new DatastoreRequestDtoValidator().validate(requestDto);

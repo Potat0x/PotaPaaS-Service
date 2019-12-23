@@ -79,9 +79,10 @@ public class AppFacade {
         }
     }
 
-    Either<ErrorMessage, String> getAppLogs(String appUuid) {
+    Either<ErrorMessage, LogsResponseDto> getAppLogs(String appUuid) {
         return getAppManager(appUuid)
-                .flatMap(AppManager::getLogs);
+                .flatMap(AppManager::getLogs)
+                .map(LogsResponseDto::new);
     }
 
     public Either<ErrorMessage, AppResponseDto> getAppDetails(String appUuid) {

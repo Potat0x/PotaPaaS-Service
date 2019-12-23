@@ -92,9 +92,9 @@ public class AppFacadeTest {
         //then
         assertThat(appResponseDto.getCommitHash()).startsWith(commitToDeploy1);
         assertThat(appFacade.getAppDetails(appUuid).get().getCommitHash()).startsWith(commitToDeploy1);
-        assertThat(appFacade.getAppLogs(appUuid).get()).contains(logExpectedInTest1);
-        assertThat(appFacade.getAppLogs(appUuid).get()).doesNotContain(logExpectedInTest2);
-        assertThat(appFacade.getAppLogs(appUuid).get()).doesNotContain(logExpectedInTest3);
+        assertThat(appFacade.getAppLogs(appUuid).get().getText()).contains(logExpectedInTest1);
+        assertThat(appFacade.getAppLogs(appUuid).get().getText()).doesNotContain(logExpectedInTest2);
+        assertThat(appFacade.getAppLogs(appUuid).get().getText()).doesNotContain(logExpectedInTest3);
 
 
         //when
@@ -108,10 +108,9 @@ public class AppFacadeTest {
         //then
         assertThat(redeployResponseDto.getCommitHash()).startsWith(commitToDeploy2);
         assertThat(appFacade.getAppDetails(appUuid).get().getCommitHash()).startsWith(commitToDeploy2);
-        assertThat(appFacade.getAppLogs(appUuid).get()).contains(logExpectedInTest2);
-        assertThat(appFacade.getAppLogs(appUuid).get()).doesNotContain(logExpectedInTest1);
-        assertThat(appFacade.getAppLogs(appUuid).get()).doesNotContain(logExpectedInTest3);
-
+        assertThat(appFacade.getAppLogs(appUuid).get().getText()).contains(logExpectedInTest2);
+        assertThat(appFacade.getAppLogs(appUuid).get().getText()).doesNotContain(logExpectedInTest1);
+        assertThat(appFacade.getAppLogs(appUuid).get().getText()).doesNotContain(logExpectedInTest3);
 
         //when
         AppRequestDtoBuilder redeployRequestDtoWithNoCommitSpecified = validAppRequestDtoBuilder()
@@ -124,9 +123,9 @@ public class AppFacadeTest {
         //then
         assertThat(redeployWithNoCommitSpecifiedResponseDto.getCommitHash()).isEqualTo(commitToDeploy3ExpectedHash);
         assertThat(appFacade.getAppDetails(appUuid).get().getCommitHash()).isEqualTo(commitToDeploy3ExpectedHash);
-        assertThat(appFacade.getAppLogs(appUuid).get()).contains(logExpectedInTest3);
-        assertThat(appFacade.getAppLogs(appUuid).get()).doesNotContain(logExpectedInTest1);
-        assertThat(appFacade.getAppLogs(appUuid).get()).doesNotContain(logExpectedInTest2);
+        assertThat(appFacade.getAppLogs(appUuid).get().getText()).contains(logExpectedInTest3);
+        assertThat(appFacade.getAppLogs(appUuid).get().getText()).doesNotContain(logExpectedInTest1);
+        assertThat(appFacade.getAppLogs(appUuid).get().getText()).doesNotContain(logExpectedInTest2);
     }
 
     @Test

@@ -75,7 +75,7 @@ class UserControllerTest extends Specification {
         "valid-username-123" | "Valid-Password!1" | null
     }
 
-    def "change password test"() {
+    def "should change password"() {
         given:
         def username = "user123"
         def initialPassword = "Initial-Valid-Password!1"

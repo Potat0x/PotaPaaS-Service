@@ -58,7 +58,7 @@ public class UserFacade {
         }
 
         UserEntity userEntity = user.get(0);
-        if (userEntity.getPassword().equals(encodePassword(requestDto.getCurrentPassword()))) {
+        if (passwordEncoder.matches(requestDto.getCurrentPassword(), userEntity.getPassword())) {
             String encodedNewPassword = encodePassword(requestDto.getNewPassword());
             userEntity.setPassword(encodedNewPassword);
             userRepository.save(userEntity);

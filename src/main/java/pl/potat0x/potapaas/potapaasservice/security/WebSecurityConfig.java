@@ -9,9 +9,6 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import pl.potat0x.potapaas.potapaasservice.system.PotapaasConfig;
-
-import java.security.SecureRandom;
 
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
@@ -19,33 +16,28 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final UserDetailsService userDetailsService;
     private final PasswordEncoder passwordEncoder;
+    private final JwtSecretConfig jwtSecretConfig;
 
-    public WebSecurityConfig(UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
+    public WebSecurityConfig(UserDetailsService userDetailsService, PasswordEncoder passwordEncoder, JwtSecretConfig jwtSecretConfig) {
         this.userDetailsService = userDetailsService;
         this.passwordEncoder = passwordEncoder;
+        this.jwtSecretConfig = jwtSecretConfig;
     }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        final byte[] jwtSecret = generateJwtSecret();
         http.csrf().disable().authorizeRequests()
                 .antMatchers(HttpMethod.POST, "/user").permitAll()
                 .antMatchers(HttpMethod.POST, "/potapaas-push-event-listener/**").permitAll()
                 .anyRequest().authenticated()
                 .and()
-                .addFilter(new JwtAuthenticationFilter(authenticationManager(), jwtSecret))
-                .addFilter(new JwtAuthorizationFilter(authenticationManager(), jwtSecret, userDetailsService))
+                .addFilter(new JwtAuthenticationFilter(authenticationManager(), jwtSecretConfig.getJwtSecret()))
+                .addFilter(new JwtAuthorizationFilter(authenticationManager(), jwtSecretConfig.getJwtSecret(), userDetailsService))
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
     }
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder);
-    }
-
-    private byte[] generateJwtSecret() {
-        byte[] randomBytes = new byte[PotapaasConfig.getInt("jwt_secret_size_in_bytes")];
-        new SecureRandom().nextBytes(randomBytes);
-        return randomBytes;
     }
 }

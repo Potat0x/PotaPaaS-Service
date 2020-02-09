@@ -1,0 +1,11 @@
+version: "3.5"
+
+services:
+  database:
+    container_name: potapaas_postgres
+    image: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=potapaas
+      - POSTGRES_PASSWORD=potapaas-database-password

@@ -46,7 +46,7 @@ public class ReverseProxyTest {
         appFacade.createAndDeployApp(appRequestDto.build()).get();
         waitUntilAppWillBeExposedViaReverseProxy();
 
-        String appUrl = "http://" + appName + ".localhost";
+        String appUrl = "http://" + appName + PotapaasConfig.get("subdomain");
         ResponseEntity<String> testAppResponse = testRestTemplate.getForEntity(appUrl, String.class);
 
         //then

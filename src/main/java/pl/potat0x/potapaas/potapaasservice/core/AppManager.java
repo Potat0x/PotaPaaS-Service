@@ -156,7 +156,7 @@ public final class AppManager {
         labels.put(PotapaasConfig.get("container_label_app_type"), requestDto.getType());
         labels.put(PotapaasConfig.get("container_label_build_type"), buildType.toString());
 
-        labels.put("traefik.frontend.rule", "Host:" + requestDto.getName() + ".localhost");
+        labels.put("traefik.frontend.rule", "Host:" + requestDto.getName() + PotapaasConfig.get("subdomain"));
         labels.put("traefik.docker.network", PotapaasConfig.get("traefik_network_name"));
 
         ContainerConfig.Builder config = ContainerConfig.builder()
